@@ -1,0 +1,104 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use DB;
+use App\Http\Requests\RegisterRequest;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Auth;
+use RealRashid\SweetAlert\Facades\Alert;
+use App\Models\User;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Crypt;
+
+
+class DashboardController extends Controller
+{
+
+    //Alert::success('Success','Welcome '.auth()->user()->first_name );
+    
+    
+    public function showDashboard(Request $request)
+    {
+       
+        
+        $users = User::distinct('first_name')->count();
+        $users_count_last_30days = User::where('created_at', '>', now()->subDays(30)->endOfDay())->count();
+        $total_subscription = DB::table("subscription_payment_details")->count();
+        $total_subscription_last_30days = DB::table("subscription_payment_details")->where('paymentdate', '>', now()->subDays(30)->endOfDay())->count();
+        $total_albums = DB::table("users")->sum('albums');
+        $total_albumss = (int)$total_albums;
+        $total_tracks = DB::table("trackdetails")->where(['Release Count'=>0,'Release Count'=>1])->distinct('User Name')->count();
+        $total_trackss = (int)$total_tracks;
+        $total_labels = DB::table("labeldetails")->count();
+        $total_labelss = (int)$total_labels;
+        $get_all_users = DB::table("users")->orderBy('id','desc')->paginate(10);
+        $subscribers = DB::table("subscription_payment_details")->distinct('email')->orderBy('id','desc')->paginate(10);
+
+        
+        if ($request->ajax()) {
+            $view = view('dashboard.pages.data', compact('subscribers'))->render();
+            $vieww = view('dashboard.pages.dataa', compact('get_all_users'))->render();
+            return response()->json(['html' => $view,'newhtml'=>$vieww]);
+        }
+
+       
+        return view('dashboard.pages.home',compact(
+            'users',
+            'users_count_last_30days',
+            'total_subscription',
+            'total_subscription_last_30days',
+            'total_albumss',
+            'total_trackss',
+            'total_labelss',
+            'get_all_users',
+            'subscribers'
+        ));
+    }
+
+    
+    
+    public function analytics(Request $request)
+    {
+        return view('dashboard.pages.analytics');
+    }
+
+    public function profile(Request $request)
+    {
+        return view('dashboard.pages.profile');
+    }
+    
+
+    public function showDashboardd(Request $request){
+        $token = $request->pt;
+        $decrypted = Crypt::decryptString($token);
+
+        Session::put('tokken',$decrypted);
+
+       if ($decrypted) {
+        $response = Http::withToken($decrypted)->get('http://superadmin.test/api/user');
+        $loggedUserInfo = $response->body();
+        $rel = json_decode($loggedUserInfo);
+        $user = User::where('id',$rel->user_details->id)->first();
+        Auth::setUser($user);
+        return Redirect::to('http://superadmin.test/dashboard');
+       }
+
+        return Redirect::to('http://auth.test');
+    }
+    public function logout(Request $request) {
+        $rri = Session::get('tokken');
+        $decrypted = $rri;
+        $response = Http::withToken($decrypted)->post('http://superadmin.test/api/logout');
+        if($response->successful() == true){
+            return Redirect::to('http://auth.test');
+            $request->session()->forget('tokken');
+        }
+       
+        
+      }
+    
+}
