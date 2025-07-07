@@ -6901,7 +6901,7 @@ h6, .h6 {
 }
 
 .br-white {
-  border-color: var(--base) !important;
+  border-color: #ce11e7 !important;
 }
 
 .border-light-white {
@@ -15561,7 +15561,8 @@ td.fc-header-center {
 }
 .sidebar-menu .sidebar-submenu li.active-page a {
   /* background-color: var(--button-secondary); */
-  color: var(--text-primary-light);
+  /* color: var(--text-primary-light); */
+  color: #700084;
 }
 
 .sidebar-menu .sidebar-submenu li a {

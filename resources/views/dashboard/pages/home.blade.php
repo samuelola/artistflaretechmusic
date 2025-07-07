@@ -5,7 +5,7 @@
 @section('content')
 
 
-@include('sweetalert::alert') 
+
 
 <main class="dashboard-main">
   <div class="navbar-header">
@@ -154,6 +154,28 @@
           </div>
         </div><!-- card end -->
       </div>
+      <div class="col">
+      <div class="card shadow-none border bg-gradient-start-1 h-100">
+          <div class="card-body p-20">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+              <div>
+                <p class="fw-medium text-primary-light mb-1">Rewards</p>
+                <h6 class="mb-0">0</h6>
+              </div>
+              <div class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
+                
+                <!-- <iconify-icon icon="octicon:issue-tracks-24" width="1em" height="1em" class="text-white text-2xl mb-0"></iconify-icon> -->
+                <iconify-icon icon="fluent:reward-12-regular" width="1em" height="1em" class="text-white text-2xl mb-0"></iconify-icon>
+              </div>
+            </div>
+            <p class="fw-medium text-sm text-primary-light mt-12 mb-0 d-flex align-items-center gap-2">
+              <!-- <span class="d-inline-flex align-items-center gap-1 text-success-main"><iconify-icon icon="bxs:up-arrow" class="text-xs"></iconify-icon> +$5,000</span> 
+              Last 30 days expense -->
+            </p>
+          </div>
+        </div><!-- card end -->
+      </div>
+      
     </div>
 
     <div class="row gy-4 mt-1">
@@ -272,6 +294,7 @@
                           <th scope="col">Country</th>
                           <th scope="col">State</th>
                           <th scope="col" class="text-center">Status</th>
+                          <th scope="col" class="text-center">Actions</th>
                         </tr>
                       </thead>
                       <tbody id="data-wrapperr">
@@ -365,23 +388,48 @@
                     <table class="table bordered-table sm-table mb-0">
                       <thead>
                         <tr>
-                          <th scope="col">Users</th>
-                          <th scope="col">Registered On</th>
-                          <th scope="col">Albums</th>
-                          <th scope="col">Tracks</th>
-                          <th scope="col">Language</th>
-                          <th scope="col">Country</th>
-                          <th scope="col">State</th>
-                          <th scope="col" class="text-center">Status</th>
+                          <th scope="col">Subscription Name</th>
+                          <th scope="col">Artist No</th>
+                          <th scope="col">Stock keeping Unit</th>
+                          <th scope="col">Subscription Duration</th>
+                          <th scope="col">No of Tracks</th>
+                          <th scope="col">No of Product</th>
+                          <th scope="col">subscription_for</th>
+                          <th scope="col">Track File Quality</th>
+                          <th scope="col">Currency Symbol</th>
+                          <th scope="col">Currency Country</th>
+                          <th scope="col">Subscription Amount</th>
+                          <th scope="col">Include Tax</th>
+                          <th scope="col">Plan Info Text</th>
+                          <th scope="col">Subscription Limit Per Year</th>
+                          <th scope="col">Is This Free Subscription</th>
+                          <th scope="col">Is Cancellation Enable</th>
+                          <th scope="col">Is One Time Subscription</th>
+                          
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody id="data-wrapperrplan">
                       
-                          
+                           @include('dashboard.pages.dataaplan')
                         
                       </tbody>
                     </table>
                   </div>
+
+                  <div class="text-center mt-8">
+                    <button class="btn btn-primary-600 load-more-dataaplan"><i class="fa fa-refresh" id="myIcon"></i> Load More Data...</button>
+                  </div>
+                <div class="auto-loaddplan text-center" style="display: none;">
+                        <svg version="1.1" id="L9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            x="0px" y="0px" height="60" viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
+                            <path fill="#000"
+                                d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
+                                <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s"
+                                    from="0 50 50" to="360 50 50" repeatCount="indefinite" />
+                            </path>
+                        </svg>
+                    </div>
+                </div>
 
             </div>
             

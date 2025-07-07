@@ -16,7 +16,7 @@
                               </div>
                             </div>
                           </td>
-                          <td>{{$rel->join_date}}</td>
+                          <td>{{ \Carbon\Carbon::parse($rel->join_date)->format('d/m/Y')}}</td>
                           <td>{{$rel->albums}}</td>
                           <td>{{$rel->tracks}}</td>
                           <td>
@@ -52,6 +52,21 @@
                                 }
                             ?>
                             
+                          </td>
+                          <td>
+                           <?php 
+                             $encrypted = encrypt($rel->id);
+                           //   $hash = \Crypt::encryptString($rel->id);
+                           //   $shortened = substr($hash, 0, 10);
+                           
+                           ?>
+                           <a href="{{route('viewdashboardusers',$encrypted)}}">
+                              <span class="badge text-sm fw-semibold border border-lilac-600 text-lilac-600 bg-transparent px-20 py-9 radius-4 text-white">
+                                 View
+                              </span>
+                           </a>
+                          
+                          <span class="badge text-sm fw-semibold border border-danger-600 text-danger-600 bg-transparent px-20 py-9 radius-4 text-white">Delete</span>
                           </td>
                         </tr>
            @endforeach

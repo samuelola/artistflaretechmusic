@@ -13,37 +13,37 @@
     <link rel="apple-touch-icon" sizes="180x180" href="flare_tech/apple-touch-icon.png" />
     <link rel="manifest" href="flare_tech/site.webmanifest" /> -->
     <!-- remix icon font css  -->
-    <link rel="stylesheet" href="assets/css/remixicon.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/remixicon.css')}}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
     
     <!-- BootStrap css -->
-    <link rel="stylesheet" href="assets/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/bootstrap.min.css')}}" />
     <!-- Apex Chart css -->
-    <link rel="stylesheet" href="assets/css/lib/apexcharts.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/apexcharts.css')}}" />
     <!-- Data Table css -->
-    <link rel="stylesheet" href="assets/css/lib/dataTables.min.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/dataTables.min.css')}}" />
     <!-- Text Editor css -->
-    <link rel="stylesheet" href="assets/css/lib/editor-katex.min.css" />
-    <link rel="stylesheet" href="assets/css/lib/editor.atom-one-dark.min.css" />
-    <link rel="stylesheet" href="assets/css/lib/editor.quill.snow.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/editor-katex.min.css')}}" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/editor.atom-one-dark.min.css')}}" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/editor.quill.snow.css')}}" />
     <!-- Date picker css -->
-    <link rel="stylesheet" href="assets/css/lib/flatpickr.min.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/flatpickr.min.css')}}" />
     <!-- Calendar css -->
-    <link rel="stylesheet" href="assets/css/lib/full-calendar.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/full-calendar.css')}}" />
     <!-- Vector Map css -->
-    <link rel="stylesheet" href="assets/css/lib/jquery-jvectormap-2.0.5.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/jquery-jvectormap-2.0.5.css')}}" />
     <!-- Popup css -->
-    <link rel="stylesheet" href="assets/css/lib/magnific-popup.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/magnific-popup.css')}}" />
     <!-- Slick Slider css -->
-    <link rel="stylesheet" href="assets/css/lib/slick.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/slick.css')}}" />
     <!-- prism css -->
-    <link rel="stylesheet" href="assets/css/lib/prism.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/prism.css')}}" />
     <!-- file upload css -->
-    <link rel="stylesheet" href="assets/css/lib/file-upload.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/file-upload.css')}}" />
 
-    <link rel="stylesheet" href="assets/css/lib/audioplayer.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/lib/audioplayer.css')}}" />
     <!-- main css -->
-    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="{{asset('assets/css/style.css')}}" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     

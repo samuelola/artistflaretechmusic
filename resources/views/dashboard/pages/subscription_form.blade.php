@@ -56,56 +56,77 @@
               <h6 class="text-lg mb-0">Add Subscription</h6>
               
             </div>
+          <form method="post" action="{{route('add_subscription')}}">  
+             @csrf
             <div class="row gy-3 mt-3">
               <div class="col-md-6">
                 <label class="form-label">Subscription Name</label>
-                <input type="text" name="#0" class="form-control" placeholder="Enter Subscription Name">
+                <input type="text" value="{{ old('subscription_name') }}" name="subscription_name" class="form-control" placeholder="Enter Subscription Name">
+                @error('subscription_name')
+                  <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                  @enderror
               </div>
               <div class="col-md-6">
                 <label class="form-label">No. of Artists</label>
-                <select class="form-control js-example-basic-single" style="width: 100% !important">
+                <select name="artist_no" class="form-control js-example-basic-single" style="width: 100% !important">
                      <option>Select No of Artist</option>
                      @foreach($num as $val)
                      <option value="{{$val->the_number}}">{{$val->the_number}}</option>
                      @endforeach
+                     
                 </select>
+                @error('artist_no')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
               </div>
             </div> 
 
             <div class="row gy-3 mt-2">  
               <div class="col-md-6">
                 <label class="form-label">Stock Keeping Unit</label>
-                <input type="text" name="" class="form-control" placeholder="Enter Stock Keeping Unit">
+                <input value="{{ old('stock_keeping_unit') }}" type="number" name="stock_keeping_unit" class="form-control" placeholder="Enter Stock Keeping Unit">
+                @error('stock_keeping_unit')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
               </div>
               <div class="col-md-6">
               <label class="form-label">No. of Tracks</label>
-                 <select class="form-control js-example-basic-singlee" style="width: 100% !important">
+                 <select name="no_of_tracks" class="form-control js-example-basic-singlee" style="width: 100% !important">
                      <option>Select No of Tracks</option>
                      @foreach($num as $val)
                      <option value="{{$val->the_number}}">{{$val->the_number}}</option>
                      @endforeach
                 </select>
+                @error('no_of_tracks')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
               </div>
             </div> 
             
             <div class="row gy-3 mt-2">  
               <div class="col-md-6">
               <label class="form-label">No. of Products</label>
-                <select class="form-control js-example-basic-singlee" style="width: 100% !important">
+                <select name="no_of_products" class="form-control js-example-basic-singlee" style="width: 100% !important">
                      <option>Select No Products</option>
                      @foreach($num as $val)
                      <option value="{{$val->the_number}}">{{$val->the_number}}</option>
                      @endforeach
                 </select>
+                @error('no_of_products')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
               </div>
               <div class="col-md-6">
                  <label class="form-label">Max No. of Tracks per Products.</label>
-                 <select class="form-control js-example-basic-singlee" style="width: 100% !important">
+                 <select name="max_no_of_tracks_per_products" class="form-control js-example-basic-singlee" style="width: 100% !important">
                      <option>Select No. of Tracks per Products.</option>
                      @foreach($number_of_trackproduct as $val)
                      <option value="{{$val->the_number}}">{{$val->the_number}}</option>
                      @endforeach
                 </select>
+                @error('max no_of_tracks_per_products')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
               </div>
             </div> 
 
@@ -113,148 +134,176 @@
             <div class="row gy-3 mt-2">  
               <div class="col-md-6">
               <label class="form-label">Max No. of Artists per Products.</label>
-                 <select class="form-control js-example-basic-singlee" style="width: 100% !important">
+                 <select name="max_no_of_artists_per_products" class="form-control js-example-basic-singlee" style="width: 100% !important">
                      <option>Select No. of Tracks per Products.</option>
                      @foreach($number_of_trackproduct as $val)
                      <option value="{{$val->the_number}}">{{$val->the_number}}</option>
                      @endforeach
                 </select>
+                @error('max_no_of_artists_per_products')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
               </div>
               <div class="col-md-6">
                  <label class="form-label">Subscription for</label>
-                 <select class="form-control js-example-basic-singlee" multiple="multiple" style="width: 100% !important">
-                       <option selected="selected" value="Album">Album</option>
-                       <option value="white">Single</option>
-                       <option value="purple">Compilation Album</option>
+                 <select name="subscription_for[]" class="form-control js-example-basic-singlee" multiple="multiple" style="width: 100% !important">
+                       <option value="Album">Album</option>
+                       <option value="Single">Single</option>
+                       <option value="Compilation Album">Compilation Album</option>
+                       <option value="EP">EP</option>
                  </select>
+                 @error('subscription_for')
+                  <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                  @enderror
               </div>
             </div> 
 
             <div class="row gy-3 mt-2">  
               <div class="col-md-6">
               <label class="form-label">Track File Quality</label>
-                 <select class="form-control js-example-basic-singlee" multiple="multiple" style="width: 100% !important">
-                      <option selected="selected" value="Stereo">Stereo</option>
+                 <select name="track_file_quality" class="form-control js-example-basic-singlee" multiple="multiple" style="width: 100% !important">
+                      <option value="Stereo">Stereo</option>
                 </select>
+                @error('track_file_quality')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
               </div>
               <div class="col-md-6">
                  <label class="form-label">Currency</label>
-                 <select class="form-control js-example-basic-singlee" style="width: 100% !important">
+                 <select name="currency" class="form-control js-example-basic-singlee" style="width: 100% !important">
                         @foreach($currency as $val)
-                        <option value="{{$val->symbol}}">{{$val->country}} {{$val->currency}}-{{$val->symbol}}</option>
+                        <option value="{{$val->code}}">{{$val->country}} {{$val->currency}}-{{$val->symbol}}</option>
                         @endforeach
                  </select>
+                 @error('currency')
+                  <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                  @enderror
               </div>
             </div>
 
             <div class="row gy-3 mt-2">  
               <div class="col-md-6">
               <label class="form-label">Subscription Amount</label>
-                <input type="number" name="" class="form-control">
+                <input value="{{ old('subscription_amount') }}" step=".01" type="number" name="subscription_amount" class="form-control">
+                @error('subscription_amount')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
               </div>
-              <div class="col-md-6">
-                 <label class="form-label">Include Tax</label>
-                 <select class="form-control js-example-basic-singlee" style="width: 100% !important">
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
-                 </select>
-              </div>
-            </div>
-
-
-            <div class="row gy-3 mt-2">  
               <div class="col-md-6">
               <label class="form-label">Plan Info Text</label>
-                <input type="text" name="" class="form-control" placeholder="Enter Plan Info Text">
-              </div>
-              <div class="col-md-6">
-                 <label class="form-label">Include Tax</label>
-                 <select class="form-control js-example-basic-singlee" style="width: 100% !important">
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
-                 </select>
+                <input value="{{ old('plan_info_text') }}" type="text" name="plan_info_text" class="form-control" placeholder="Enter Plan Info Text">
+                @error('plan_info_text')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
               </div>
             </div>
 
 
             <div class="row gy-3 mt-2">  
+              
               <div class="col-md-6">
+                 <label class="form-label">Include Tax</label>
+                 <select name="include_tax" class="form-control js-example-basic-singlee" style="width: 100% !important">
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                 </select>
+                 @error('include_tax')
+                  <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                  @enderror
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Subscription Duration</label>
+                <select name="subscription_duration" class="form-control js-example-basic-singlee" style="width: 100% !important">
+
+                     @foreach($subscription_duration as $val)
+                     <option value="{{$val->duration}}">{{$val->duration}}</option>
+                     @endforeach
+                </select>
+                @error('subscription_duration')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
+              </div>
+
+            </div>
+
+
+            <div class="row gy-3 mt-2">  
+              
+              <div class="col-md-6">
+                 <label class="form-label">Subscription Limit per year</label>
+                 <select name="subscription_limit_per_year" class="form-control js-example-basic-singlee" style="width: 100% !important">
+                     
+                     @foreach($subscription_limit as $val)
+                     <option value="{{$val->the_number}}">{{$val->the_number}}</option>
+                     @endforeach
+                </select>
+                @error('subscription_limit_per_year')
+                <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
+                @enderror
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Is this free Subscription</label><br/>
+                <label class="switch">
+                  <input type="checkbox" id="mySwitch1" value="0">
+                  <span class="slider round"></span>
+                </label>
+                <input type="hidden" name="is_this_free_subscription" id="free_sub" value="0"/>
+                
+              </div>
+
+              <!-- <div class="col-md-6">
               <label class="form-label">Subscription Duration</label>
-                <select class="form-control js-example-basic-singlee" style="width: 100% !important">
+                <select name="sub_duration" class="form-control js-example-basic-singlee" style="width: 100% !important">
                      <option>Select Duration</option>
                      @foreach($subscription_duration as $val)
                      <option value="{{$val->duration}}">{{$val->duration}}</option>
                      @endforeach
                 </select>
-              </div>
-              <div class="col-md-6">
-                 <label class="form-label">Subscription Limit per year</label>
-                 <select class="form-control js-example-basic-singlee" style="width: 100% !important">
-                     <option>Select Limit per year</option>
-                     @foreach($subscription_limit as $val)
-                     <option value="{{$val->the_number}}">{{$val->the_number}}</option>
-                     @endforeach
-                </select>
-              </div>
+              </div> -->
+
             </div> 
 
 
-            <div class="row gy-3 mt-2">  
-              <div class="col-md-6">
-              <label class="form-label">Subscription Duration</label>
-                <select class="form-control js-example-basic-singlee" style="width: 100% !important">
-                     <option>Select Duration</option>
-                     @foreach($subscription_duration as $val)
-                     <option value="{{$val->duration}}">{{$val->duration}}</option>
-                     @endforeach
-                </select>
-              </div>
-              <div class="col-md-6">
-                 <label class="form-label">Subscription Limit per year</label>
-                 <select class="form-control js-example-basic-singlee" style="width: 100% !important">
-                     <option>Select Limit per year</option>
-                     @foreach($subscription_limit as $val)
-                     <option value="{{$val->the_number}}">{{$val->the_number}}</option>
-                     @endforeach
-                </select>
-              </div>
-            </div> 
+             
 
             <div class="row gy-3 mt-2">  
-              <div class="col-md-6">
-              <label class="form-label">Is this free Subscription</label><br/>
-              <label class="switch">
-                <input type="checkbox" id="mySwitch1" value="0">
-                <span class="slider round"></span>
-              </label>
-              <input type="hidden" name="free_sub" id="free_sub" value=""/>
-              </div>
+              
               <div class="col-md-6">
                  <label class="form-label">Is cancellation enable</label><br/>
                  <label class="switch">
                     <input type="checkbox" id="mySwitch2" value="0">
                     <span class="slider round"></span>
                   </label>
-                  <input type="hidden" name="cancellation" id="cancellation"  value=""/>
+                  <input type="hidden" name="is_cancellation_enable" id="cancellation"  value="0"/>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">One Time Subscription</label><br/>
+                <label class="switch">
+                  <input type="checkbox" id="mySwitch3" value="0">
+                  <span class="slider round"></span>
+                </label>
+                  <input type="hidden" name="is_one_time_subscription" id="one_time"  value="0"/>
+                </div>
+            </div> 
+
+            <div class="row gy-3 mt-2">  
+              
+              <div class="col-md-6">
+                 <label class="form-label">Display Color</label><br/>
+                 <input type="color" name="display_color" value="#700070" class="form-control" style="width: 100px;">
               </div>
             </div> 
 
             <div class="row gy-3 mt-2">  
+              
               <div class="col-md-6">
-              <label class="form-label">One Time Subscription</label><br/>
-              <label class="switch">
-                <input type="checkbox" id="mySwitch3" value="0">
-                <span class="slider round"></span>
-              </label>
-                 <input type="hidden" name="one_time" id="one_time"  value=""/>
-              </div>
-              <div class="col-md-6">
-                 <label class="form-label">Display Color</label><br/>
-                 <input type="color" name="" value="#700070" class="form-control" style="width: 100px;">
+              <button type="submit" class="btn btn-primary-600 radius-8 px-20 py-11">Submit</button>
               </div>
             </div> 
 
+            
 
+             </form>
           </div>
       </div>
     </div>

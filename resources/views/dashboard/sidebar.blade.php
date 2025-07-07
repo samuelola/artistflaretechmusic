@@ -21,16 +21,40 @@
           <span>Dashboard</span>
         </a>
       </li>
+
       <li>
-        <a href="{{route('subscription')}}">
-          <!-- <iconify-icon icon="solar:home-smile-angle-outline" class="menu-icon"></iconify-icon> -->
-          <iconify-icon icon="streamline:subscription-cashflow" width="14" height="14" class="menu-icon"></iconify-icon>
-          <span>Subscription</span>
+        <a href="#">
+        <iconify-icon icon="raphael:users" width="16" height="16"  class="menu-icon"></iconify-icon>
+           <span>Users</span> 
         </a>
+       
       </li>
+      
       <li class="dropdown">
         <a href="javascript:void(0)">
-        <iconify-icon icon="mdi-light:music" width="24" height="24" ></iconify-icon>
+        <iconify-icon icon="streamline:subscription-cashflow" width="16" height="16"  class="menu-icon"></iconify-icon>
+          <span>Subscription</span> 
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="{{route('subscription')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>Add Subscription</a>
+          </li>
+          <li>
+            <a href="#"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>All Subscriptions</a>
+          </li>
+          <!-- <li>
+            <a href="invoice-add.html"><i class="ri-circle-fill circle-icon text-info-main w-auto"></i> Add new</a>
+          </li>
+          <li>
+            <a href="invoice-edit.html"><i class="ri-circle-fill circle-icon text-danger-main w-auto"></i> Edit</a>
+          </li> -->
+        </ul>
+      </li>
+
+
+      <li class="dropdown">
+        <a href="javascript:void(0)">
+        <iconify-icon icon="mdi-light:music" width="16" height="16" style="margin-inline-end: 0.4rem;"></iconify-icon>
           <span>Catalog\Releases</span> 
         </a>
         <ul class="sidebar-submenu">
@@ -52,7 +76,7 @@
       
       <li class="dropdown">
         <a href="javascript:void(0)" class="menu-icon">
-        <iconify-icon icon="hugeicons:analytics-up" width="24" height="24"></iconify-icon>
+        <iconify-icon icon="hugeicons:analytics-up" width="16" height="16" style="margin-inline-end: 0.4rem;"></iconify-icon>
           <span>Analytics</span> 
         </a>
         <ul class="sidebar-submenu">

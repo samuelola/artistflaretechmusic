@@ -37,12 +37,14 @@ class DashboardController extends Controller
         $total_labelss = (int)$total_labels;
         $get_all_users = DB::table("users")->orderBy('id','desc')->paginate(10);
         $subscribers = DB::table("subscription_payment_details")->distinct('email')->orderBy('id','desc')->paginate(10);
+        $plans = DB::table('subscription_plan')->paginate(5);
 
         
         if ($request->ajax()) {
             $view = view('dashboard.pages.data', compact('subscribers'))->render();
             $vieww = view('dashboard.pages.dataa', compact('get_all_users'))->render();
-            return response()->json(['html' => $view,'newhtml'=>$vieww]);
+            $viewplan = view('dashboard.pages.dataaplan', compact('plans'))->render();
+            return response()->json(['html' => $view,'newhtml'=>$vieww,'newhtmlplan'=>$viewplan]);
         }
 
        
@@ -55,7 +57,8 @@ class DashboardController extends Controller
             'total_trackss',
             'total_labelss',
             'get_all_users',
-            'subscribers'
+            'subscribers',
+            'plans'
         ));
     }
 
@@ -68,6 +71,9 @@ class DashboardController extends Controller
 
     public function profile(Request $request)
     {
+        if (Session::has('success')){
+            Alert::Success('Success', Session::get('success'));
+        }
         return view('dashboard.pages.profile');
     }
     
@@ -75,7 +81,6 @@ class DashboardController extends Controller
     public function showDashboardd(Request $request){
         $token = $request->pt;
         $decrypted = Crypt::decryptString($token);
-
         Session::put('tokken',$decrypted);
 
        if ($decrypted) {
@@ -99,6 +104,16 @@ class DashboardController extends Controller
         }
        
         
-      }
+    }
+
+    public function viewDashboard(Request $request, $id){
+        
+        if (Session::has('success')){
+            Alert::Success('Success', Session::get('success'));
+        }
+        $decrypted = decrypt($id);
+        $user_info = DB::table('users')->where('id',$decrypted)->first();
+        return view('dashboard.pages.users.user_info',compact('user_info'));
+    }
     
 }
