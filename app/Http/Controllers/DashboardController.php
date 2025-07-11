@@ -29,15 +29,16 @@ class DashboardController extends Controller
         $users_count_last_30days = User::where('created_at', '>', now()->subDays(30)->endOfDay())->count();
         $total_subscription = DB::table("subscription_payment_details")->count();
         $total_subscription_last_30days = DB::table("subscription_payment_details")->where('paymentdate', '>', now()->subDays(30)->endOfDay())->count();
-        $total_albums = DB::table("users")->sum('albums');
+        //$total_albums = DB::table("users")->sum('albums');
+        $total_albums = User::sum('albums');
         $total_albumss = (int)$total_albums;
         $total_tracks = DB::table("trackdetails")->where(['Release Count'=>0,'Release Count'=>1])->distinct('User Name')->count();
         $total_trackss = (int)$total_tracks;
         $total_labels = DB::table("labeldetails")->count();
         $total_labelss = (int)$total_labels;
-        $get_all_users = DB::table("users")->orderBy('id','desc')->paginate(10);
+        $get_all_users = User::orderBy('id','desc')->paginate(10);
         $subscribers = DB::table("subscription_payment_details")->distinct('email')->orderBy('id','desc')->paginate(10);
-        $plans = DB::table('subscription_plan')->paginate(5);
+        $plans = DB::table('subscription_plan')->orderBy('id','asc')->paginate(10);
 
         
         if ($request->ajax()) {
@@ -47,7 +48,60 @@ class DashboardController extends Controller
             return response()->json(['html' => $view,'newhtml'=>$vieww,'newhtmlplan'=>$viewplan]);
         }
 
-       
+
+        // $deposit = DB::table('users')
+        //              ->select([
+        //                DB::raw('YEAR(join_date)as year'),
+        //                DB::raw('SUM(albums) as albums'),
+        //                DB::raw('SUM(tracks) as tracks')
+        //              ])
+        //              ->orderBy('year', 'ASC')
+        //              ->groupBy('year')
+        //              ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+        //              ->get();
+
+        $thealbums = DB::table('users')
+                     ->select([
+                       DB::raw('YEAR(join_date)as year'),
+                       DB::raw('SUM(albums) as albums'),
+                     ])
+                     ->orderBy('year', 'ASC')
+                     ->groupBy('year')
+                     ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->get(); 
+                     
+        $albumvalue = [];              
+            foreach($thealbums as $dd){
+                $albumvalue[] = $dd->albums;
+        }
+
+        $thetracks = DB::table('users')
+                     ->select([
+                       DB::raw('YEAR(join_date)as year'),
+                       DB::raw('SUM(tracks) as tracks'),
+                     ])
+                     ->orderBy('year', 'ASC')
+                     ->groupBy('year')
+                     ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->get(); 
+                     
+        $albumvalue = [];              
+            foreach($thealbums as $dd){
+                $albumvalue[] = $dd->albums;
+        }
+
+        $trackvalue = [];              
+            foreach($thetracks as $dd){
+                $trackvalue[] = $dd->tracks;
+        }
+                     
+        $theyear = \DB::table('users')
+        ->select(\DB::raw('YEAR(join_date)as year'))
+        ->orderBy('year', 'ASC')           
+        ->groupBy('year')
+        ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+        ->get();  
+   
         return view('dashboard.pages.home',compact(
             'users',
             'users_count_last_30days',
@@ -58,7 +112,10 @@ class DashboardController extends Controller
             'total_labelss',
             'get_all_users',
             'subscribers',
-            'plans'
+            'plans',
+            'theyear',
+            'albumvalue',
+            'trackvalue'
         ));
     }
 

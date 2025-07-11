@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\ChangePasswordController;
+use App\Http\Controllers\UserController;
 
 Route::middleware('check.user')->group(function () {
     Route::get('/dashboardd', [DashboardController::class,'showDashboardd'])->name('dashboardd');
@@ -18,10 +19,16 @@ Route::middleware('superadmincheck')->group(function () {
     Route::post('/update_profile',[FileUploadController::class,'updateProfile'])->name('update_profile');
     Route::post('/user_update_profile/{id}',[FileUploadController::class,'userUpdateProfile'])->name('update_user_profile');
     Route::get('/subscription', [SubscriptionController::class,'subscription_form'])->name('subscription');
+    Route::get('/all_subscription', [SubscriptionController::class,'allsubscription'])->name('allsubscription');
     Route::post('/add_subscription', [SubscriptionController::class,'add_subscription'])->name('add_subscription');
+    Route::get('/edit_subscription/{id}', [SubscriptionController::class,'edit_subscription'])->name('edit_subscription');
     Route::get('/view_users/{id}', [DashboardController::class,'viewDashboard'])->name('viewdashboardusers');
     Route::post('change-password/{id}',[ChangePasswordController::class,'store'])->name('change.password');
     Route::post('change_user_password/{id}',[ChangePasswordController::class,'storeUserPassword'])->name('change.user.password');
+    Route::get('/users',[UserController::class,'allUser'])->name('allUser');
+    Route::delete('/delete_user/{id}',[UserController::class,'deleteUser'])->name('deleteUser');
+    Route::post('/editSub/{id}',[SubscriptionController::class,'editSub'])->name('editSub');
+
 });
 
 

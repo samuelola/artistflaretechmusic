@@ -184,12 +184,12 @@
           <div class="card-body">
             <div class="d-flex flex-wrap align-items-center justify-content-between">
               <h6 class="text-lg mb-0">Album/Track Chart</h6>
-              <!-- <select class="form-select bg-base form-select-sm w-auto radius-8">
-                <option>Yearly</option>
-                <option>Monthly</option>
-                <option>Weekly</option>
-                <option>Today</option>
-              </select> -->
+              <select class="form-select bg-base form-select-sm w-auto radius-8 js-example-basic-singlee">
+                <option>Year</option>
+                @foreach($theyear  as $vall)
+              <option value="{{$vall->year}}">{{$vall->year}}</option>
+                @endforeach
+              </select>
             </div>
             
             <!-- <div id="chart" class="pt-28 apexcharts-tooltip-style-1"></div> -->
@@ -443,4 +443,193 @@
   </div>
 
 @endsection
+
+@section('script')
+<script>
+    var ENDPOINT = "{{ route('dashboard') }}";
+    var page = 1;
+  
+    $(".load-more-dataaplan").click(function(){
+        page++;
+        infinteLoadMorerplan(page);
+    });
+    
+  
+    /*------------------------------------------
+    --------------------------------------------
+    call infinteLoadMore()
+    --------------------------------------------
+    --------------------------------------------*/
+    function infinteLoadMorerplan(page) {
+        $.ajax({
+                url: ENDPOINT + "?page=" + page,
+                datatype: "html",
+                type: "get",
+                beforeSend: function () {
+                    $('.auto-loaddplan').show();
+                }
+            })
+            .done(function (response) {
+
+                console.log(response.newhtmlplan);
+                if (response.newhtmlplan == '') {
+                    $('.auto-loaddplan').html("We don't have more data to display :(");
+                    return;
+                }
+
+                $('.auto-loaddplan').hide();
+                $("#data-wrapperrplan").append(response.newhtmlplan);
+            })
+            .fail(function (jqXHR, ajaxOptions, thrownError) {
+                console.log('Server error occured');
+            });
+    }
+</script>
+
+
+<script>
+   // =========================== Sales Statistic Line Chart Start ===============================
+   var options = {
+    series: [
+    {
+      name: 'Albums',
+      data: [
+        <?php 
+           foreach ($albumvalue  as $valuee) {
+               echo "'$valuee',";
+           }
+        
+        ?>
+      ]
+    },
+    {
+      name: 'Tracks',
+      data: [
+        <?php 
+           foreach ($trackvalue  as $valuee) {
+               echo "'$valuee',";
+           }
+        
+        ?>
+      ]
+    }
+  ],
+    chart: {
+      height: 350,
+      type: 'line',
+      toolbar: {
+        show: false
+      },
+      zoom: {
+        enabled: false
+      },
+      dropShadow: {
+        enabled: true,
+        top: 6,
+        left: 0,
+        blur: 4,
+        color: "#000",
+        opacity: 0.1,
+      },
+    },
+    colors: ["#FF1654", "#247BA0"], // Set color for series
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: 'smooth',
+      colors: ["#FF1654", "#247BA0"], // Specify the line color here
+      width: 3
+    },
+    markers: {
+      size: 0,
+      strokeWidth: 3,
+      hover: {
+        size: 8
+      }
+    },
+    tooltip: {
+      enabled: true,
+      x: {
+        show: true,
+      },
+      y: {
+        show: false,
+      },
+      z: {
+        show: false,
+      }
+    },
+    grid: {
+      row: {
+        colors: ['transparent', 'transparent'], // takes an array which will be repeated on columns
+        opacity: 0.5
+      },
+      borderColor: '#D1D5DB',
+      strokeDashArray: 3,
+    },
+    yaxis: {
+      labels: {
+        formatter: function (value) {
+          return value;
+        },
+        // formatter: function (value) {
+        //   return "$" + value + "k";
+        // },
+        style: {
+          fontSize: "14px"
+        }
+      },
+    },
+    xaxis: {
+      categories: [
+        <?php 
+           foreach ($theyear  as $valuee) {
+               echo "'$valuee->year',";
+           }
+        
+        ?>
+      ],
+      tooltip: {
+        enabled: false
+      },
+      labels: {
+        formatter: function (value) {
+          return value;
+        },
+        style: {
+          fontSize: "14px"
+        }
+      },
+      axisBorder: {
+        show: false
+      },
+      crosshairs: {
+        show: true,
+        width: 20,
+        stroke: {
+          width: 0
+        },
+        fill: {
+          type: 'solid',
+          color: '#487FFF40',
+          // gradient: {
+          //   colorFrom: '#D8E3F0',
+          //   // colorTo: '#BED1E6',
+          //   stops: [0, 100],
+          //   opacityFrom: 0.4,
+          //   opacityTo: 0.5,
+          // },
+        }
+      }
+    }
+  };
+
+    var chart = new ApexCharts(document.querySelector("#chart1"), options);
+    chart.render();
+  // =========================== Sales Statistic Line Chart End ===============================
+</script>
+@endsection
+
+
 

@@ -7,7 +7,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FlareTechMusic | @yield('title')</title>
-    <link rel="icon" type="image/png" href="flare_logo2.png" sizes="96x96" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{asset('flare_logo2.png')}}" sizes="96x96" />
     <!-- <link rel="icon" type="image/svg+xml" href="flare_tech/favicon.svg" />
     <link rel="shortcut icon" href="flare_tech/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="flare_tech/apple-touch-icon.png" />
@@ -15,13 +16,13 @@
     <!-- remix icon font css  -->
     <link rel="stylesheet" href="{{asset('assets/css/remixicon.css')}}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-    
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.css" />
     <!-- BootStrap css -->
     <link rel="stylesheet" href="{{asset('assets/css/lib/bootstrap.min.css')}}" />
     <!-- Apex Chart css -->
     <link rel="stylesheet" href="{{asset('assets/css/lib/apexcharts.css')}}" />
     <!-- Data Table css -->
-    <link rel="stylesheet" href="{{asset('assets/css/lib/dataTables.min.css')}}" />
+    <!-- <link rel="stylesheet" href="{{asset('datatables.css')}}" /> -->
     <!-- Text Editor css -->
     <link rel="stylesheet" href="{{asset('assets/css/lib/editor-katex.min.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/css/lib/editor.atom-one-dark.min.css')}}" />
@@ -45,7 +46,7 @@
     <!-- main css -->
     <link rel="stylesheet" href="{{asset('assets/css/style.css')}}" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
+    
     
     <style>
 .switch {

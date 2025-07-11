@@ -23,7 +23,7 @@
       </li>
 
       <li>
-        <a href="#">
+        <a href="{{route('allUser')}}">
         <iconify-icon icon="raphael:users" width="16" height="16"  class="menu-icon"></iconify-icon>
            <span>Users</span> 
         </a>
@@ -40,7 +40,7 @@
             <a href="{{route('subscription')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>Add Subscription</a>
           </li>
           <li>
-            <a href="#"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>All Subscriptions</a>
+            <a href="{{route('allsubscription')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>All Subscriptions</a>
           </li>
           <!-- <li>
             <a href="invoice-add.html"><i class="ri-circle-fill circle-icon text-info-main w-auto"></i> Add new</a>

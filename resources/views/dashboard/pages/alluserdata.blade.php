@@ -1,4 +1,4 @@
-            @foreach($get_all_users as $rel)
+        @foreach($get_all_users as $rel)
                         <tr>
                           <td>
                             <div class="d-flex align-items-center">
@@ -11,24 +11,24 @@
                               ?>
                               
                               <div class="flex-grow-1">
-                                <h6 class="text-md mb-0 fw-medium">{{$rel->first_name}}{{$rel->first_name}}</h6>
-                                <span class="text-sm  fw-medium">{{$rel->email}}</span>
+                                <h6 class="text-md mb-0 fw-medium">{{$rel->first_name ?? ""}}{{$rel->last_name ?? ""}}</h6>
+                                <span class="text-sm fw-medium">{{$rel->email ?? ""}}</span>
                               </div>
                             </div>
                           </td>
                           <td>{{ \Carbon\Carbon::parse($rel->join_date)->format('d/m/Y')}}</td>
-                          <td>{{$rel->albums}}</td>
-                          <td>{{$rel->tracks}}</td>
+                          <td>{{$rel->albums ?? ""}}</td>
+                          <td>{{$rel->tracks ?? ""}}</td>
                           <td>
                               <?php 
                                  $lang = \DB::table('languages')->where('iso',$rel->language)->first();
-                                 echo $lang->name;
+                                 echo $lang->name ?? "";
                               ?>
                           </td>
                           <td>
                              <?php 
                                  $country = \DB::table('countries')->where('iso2',$rel->country)->first();
-                                 echo $country->name;
+                                 echo $country->name ?? "";
                               ?>
                           </td>
                           <td>
@@ -38,16 +38,16 @@
                                     
                                     echo "Not Available";
                                  }else{
-                                    echo $state->name;
+                                    echo $state->name ?? "";
                                  }
                               ?>
                           </td>
                           <td class="text-center"> 
                             <?php
                                
-                                if($rel->user_status == 1){
+                                if($rel->active == 'Yes'){
                                   ?><span class="bg-success-focus text-success-main px-24 py-4 rounded-pill fw-medium text-sm">Active</span> <?php
-                                }elseif($rel->user_status == 0){
+                                }elseif($rel->active == 'No'){
                                    ?><span class="bg-danger-focus text-danger-main px-24 py-4 rounded-pill fw-medium text-sm">Not Active</span> <?php
                                 }
                             ?>
@@ -79,4 +79,4 @@
                           </div>
                           </td>
                         </tr>
-           @endforeach
+@endforeach

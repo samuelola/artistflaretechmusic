@@ -39,18 +39,18 @@
                             @endif
                             
                             <h6 class="mb-0 mt-16">{{ucfirst($user_info->first_name ?? '')}} {{ucfirst($user_info->last_name ?? '')}}</h6>
-                            <span class="text-secondary-light mb-16">{{$user_info->email ?? ''}}</span>
+                            <span class=" mb-16">{{$user_info->email ?? ''}}</span>
                         </div>
                         <div class="mt-24">
                             <h6 class="text-xl mb-16">Personal Info</h6>
                             <ul>
                                 <li class="d-flex align-items-center gap-1 mb-12">
                                     <span class="w-30 text-md fw-semibold text-primary-light">Full Name</span>
-                                    <span class="w-70 text-secondary-light fw-medium">: {{ucfirst($user_info->first_name ?? '')}} {{ucfirst($user_info->last_name ?? '')}}</span>
+                                    <span class="w-70 fw-medium">: {{ucfirst($user_info->first_name ?? '')}} {{ucfirst($user_info->last_name ?? '')}}</span>
                                 </li>
                                 <li class="d-flex align-items-center gap-1 mb-12">
                                     <span class="w-30 text-md fw-semibold text-primary-light">Role</span>
-                                    <span class="w-70 text-secondary-light fw-medium">: 
+                                    <span class="w-70 fw-medium">: 
                                     <?php 
                                         $role = \DB::table('roles')->where('id',$user_info->role_id)->first();
                                         if(is_null($role)){
@@ -64,15 +64,15 @@
                                 </li>
                                 <li class="d-flex align-items-center gap-1 mb-12">
                                     <span class="w-30 text-md fw-semibold text-primary-light"> Email</span>
-                                    <span class="w-70 text-secondary-light fw-medium">: {{$user_info->email ?? ''}}</span>
+                                    <span class="w-70 fw-medium">: {{$user_info->email ?? ''}}</span>
                                 </li>
                                 <li class="d-flex align-items-center gap-1 mb-12">
                                     <span class="w-30 text-md fw-semibold text-primary-light"> Phone Number</span>
-                                    <span class="w-70 text-secondary-light fw-medium">: {{$user_info->phone_number ?? 'None'}}</span>
+                                    <span class="w-70 fw-medium">: {{$user_info->phone_number ?? 'None'}}</span>
                                 </li>
                                 <li class="d-flex align-items-center gap-1 mb-12">
                                     <span class="w-30 text-md fw-semibold text-primary-light">Country</span>
-                                    <span class="w-70 text-secondary-light fw-medium">: 
+                                    <span class="w-70 fw-medium">: 
                                     <?php 
                                         $country = \DB::table('countries')->where('iso2',$user_info->country)->first();
                                         echo $country->name;
@@ -81,7 +81,7 @@
                                 </li>
                                 <li class="d-flex align-items-center gap-1 mb-12">
                                     <span class="w-30 text-md fw-semibold text-primary-light"> State</span>
-                                    <span class="w-70 text-secondary-light fw-medium">: 
+                                    <span class="w-70 fw-medium">: 
                                     <?php 
                                         $state = \DB::table('states')->where('id',$user_info->state)->first();
                                         if(is_null($state)){
@@ -95,13 +95,15 @@
                                 </li>
                                 <li class="d-flex align-items-center gap-1 mb-12">
                                     <span class="w-30 text-md fw-semibold text-primary-light">Status</span>
-                                    <span class="w-70 text-secondary-light fw-medium">: 
+                                    <span class="w-70 fw-medium">: 
                                     <?php
                                
-                                            if($user_info->active == 'Yes'){
+                                            if($user_info->user_status == 1){
                                                 ?><span class="bg-success-focus text-success-main px-24 py-4 rounded-pill fw-medium text-sm">Active</span> <?php
-                                            }elseif($user_info->active == 'No'){
-                                                ?><span class="bg-danger-focus text-danger-main px-24 py-4 rounded-pill fw-medium text-sm">Not Active</span> <?php
+                                            }elseif($user_info->user_status == 0){
+                                                ?>
+                                                <span class="bg-danger-focus text-danger-main px-24 py-4 rounded-pill fw-medium text-sm">Not Active</span> 
+                                                <?php
                                             }
                                         ?>
                            
@@ -109,19 +111,19 @@
                                 </li>
                                 <li class="d-flex align-items-center gap-1">
                                     <span class="w-30 text-md fw-semibold text-primary-light">Albums</span>
-                                    <span class="w-70 text-secondary-light fw-medium">:
+                                    <span class="w-70 fw-medium">:
                                     {{$user_info->albums}}
                                     </span>
                                 </li>
                                 <li class="d-flex align-items-center gap-1">
                                     <span class="w-30 text-md fw-semibold text-primary-light">Tracks</span>
-                                    <span class="w-70 text-secondary-light fw-medium">:
+                                    <span class="w-70 fw-medium">:
                                     {{$user_info->tracks}}
                                     </span>
                                 </li>
                                 <li class="d-flex align-items-center gap-1">
                                     <span class="w-30 text-md fw-semibold text-primary-light">Joined Date</span>
-                                    <span class="w-70 text-secondary-light fw-medium">:
+                                    <span class="w-70 fw-medium">:
                                     {{ \Carbon\Carbon::parse($user_info->join_date)->format('d/m/Y')}}
                                     </span>
                                 </li>
@@ -247,8 +249,13 @@
                                             <div class="mb-20">
                                                 <label for="email" class="form-label fw-semibold text-primary-light text-sm mb-8">Actions <span class="text-danger-600">*</span></label>
                                                 <select class="form-control" name="user_status">
-                                                  <option selected value="1">Activate</option> 
-                                                  <option value="0">Deactivate</option>
+                                                  @if($user_info->user_status == 1)
+                                                    <option selected value="{{$user_info->user_status}}">Activate</option>
+                                                    <option value="0">Deactivate</option>
+                                                  @elseif($user_info->user_status == 0)
+                                                    <option selected value="{{$user_info->user_status}}">Deactivate</option>
+                                                    <option value="1">Activate</option>
+                                                  @endif
                                                 </select>
                                             </div>
                                         </div>

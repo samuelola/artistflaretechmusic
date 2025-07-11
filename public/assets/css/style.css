@@ -1541,7 +1541,8 @@ th {
 }
 
 .text-secondary-light {
-  color: var(--text-secondary-light);
+  /* color: var(--text-secondary-light); */
+  color: #f6f6f7;
 }
 
 .text-secondary-dark {
@@ -13731,8 +13732,10 @@ html[data-theme=dark] .text-style .apexcharts-text.apexcharts-yaxis-label {
 }
 
 .dropdown > button.show {
-  background-color: var(--primary-50);
-  color: var(--primary-600) !important;
+  /* background-color: var(--primary-50);
+  color: var(--primary-600) !important; */
+  background-color: transparent;
+    color: #fff !important;
 }
 
 .dropdown > button.show .text-primary-light {
