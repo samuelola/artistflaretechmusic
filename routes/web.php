@@ -28,7 +28,8 @@ Route::middleware('superadmincheck')->group(function () {
     Route::get('/users',[UserController::class,'allUser'])->name('allUser');
     Route::delete('/delete_user/{id}',[UserController::class,'deleteUser'])->name('deleteUser');
     Route::post('/editSub/{id}',[SubscriptionController::class,'editSub'])->name('editSub');
-
+    Route::get('/filter_info',[DashboardController::class,'filterInfo'])->name('filter_info');
+    
 });
 
 

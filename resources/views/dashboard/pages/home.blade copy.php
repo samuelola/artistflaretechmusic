@@ -179,43 +179,30 @@
     </div>
 
     <div class="row gy-4 mt-1">
-      <div class="col-md-12">
-           <form>
-                 @csrf
-                 <div style="float:left">
-                      <select id="filter_language" name="filter_language" class="form-select bg-base form-select-sm w-auto radius-8 js-example-basic-singlee">
-                        <option>Language</option>
-                        @foreach($thelang  as $vall)
-                        <option value="{{$vall->iso}}">{{$vall->name}}</option>
-                        @endforeach
-                      </select>
-                 </div>
-                  <div>
-                      <select id="filter_name" name="filter_name" class="form-select bg-base form-select-sm w-auto radius-8 js-example-basic-singlee">
-                        <option value="0">Year</option>
-                        @foreach($theyear  as $vall)
-                        <option value="{{$vall->year}}">{{$vall->year}}</option>
-                        @endforeach
-                      </select>
-                      <!-- <button id="filter"  class="btn btn-primary btn-sm">Filter</button> -->
-                      <button id="filter_reset"  class="btn btn-info btn-sm">Reset</button>
-                  </div>
-              </form>
-      </div>
       <div class="col-xxl-6 col-xl-12">
         <div class="card h-100">
           <div class="card-body">
             <div class="d-flex flex-wrap align-items-center justify-content-between">
               <h6 class="text-lg mb-0">Album/Track Chart</h6>
-              
+              <form>
+                 @csrf
+                  <div>
+                      <select id="filter_name" name="filter_name" class="form-select bg-base form-select-sm w-auto radius-8 js-example-basic-singlee">
+                        <option>Year</option>
+                        @foreach($theyear  as $vall)
+                        <option value="{{$vall->year}}">{{$vall->year}}</option>
+                        @endforeach
+                      </select>
+                      <button id="filter"  class="btn btn-primary btn-sm">Filter</button>
+                      <button id="filter_reset"  class="btn btn-info btn-sm">Reset</button>
+                  </div>
+              </form>
               
             </div>
             
             <!-- <div id="chart" class="pt-28 apexcharts-tooltip-style-1"></div> -->
             <div id="chart1"></div>
-            <div id="wollal"></div>
-            <div id="wolla2"></div>
-            
+            <div id="newchart1"></div>
             
           </div>
         </div>
@@ -595,7 +582,9 @@
         formatter: function (value) {
           return value;
         },
-        
+        // formatter: function (value) {
+        //   return "$" + value + "k";
+        // },
         style: {
           fontSize: "14px"
         }
@@ -652,157 +641,41 @@
 
 
 <script>
-  $('#filter_language').on('change', function (e) {
-       e.preventDefault();
-       $('#chart1').hide();
-       $('#wollal').hide();
-       var filter_language = $('#filter_language').val();
-        $.ajax({
-           
-             headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-             },
-             url: '{{route("filter_info")}}',
-             method: 'GET',
-             data: { filter_language_data: filter_language },
-             success: function (res) {
 
-                let fgg = res.langdata;
-                let langyear = fgg.map(a => a.year);
-                let langalbums = fgg.map(a => a.albums);
-                let langthe_tracks = fgg.map(a => a.tracks);
-                console.log(fgg);
-                $('#wolla2')
-                .empty()
-                .append(
-                  '<div id="newchartlang"></div>'
-                ) 
+ let chart;
 
-                var options = {
-    series: [
-    {
-      name: 'Albums',
-      data: langalbums
-    },
-    {
-      name: 'Tracks',
-      data: langthe_tracks
+    // Initialize empty chart
+    function renderChart(data) {
+        const options = {
+            chart: {
+                type: 'line',
+                height: 350
+            },
+            series: [{
+                name: "Sales",
+                data: data.map(item => item.value)
+            }],
+            xaxis: {
+                categories: data.map(item => item.date)
+            }
+        };
+
+        if (chart) {
+            chart.updateOptions(options);
+        } else {
+            chart = new ApexCharts(document.querySelector("#chart"), options);
+            chart.render();
+        }
     }
-  ],
-    chart: {
-      height: 350,
-      type: 'line',
-      toolbar: {
-        show: false
-      },
-      zoom: {
-        enabled: false
-      },
-      dropShadow: {
-        enabled: true,
-        top: 6,
-        left: 0,
-        blur: 4,
-        color: "#000",
-        opacity: 0.1,
-      },
-    },
-    colors: ["#FF1654", "#247BA0"], // Set color for series
-    dataLabels: {
-      enabled: false
-    },
-    stroke: {
-      curve: 'smooth',
-      colors: ["#FF1654", "#247BA0"], // Specify the line color here
-      width: 3
-    },
-    markers: {
-      size: 0,
-      strokeWidth: 3,
-      hover: {
-        size: 8
-      }
-    },
-    tooltip: {
-      enabled: true,
-      x: {
-        show: true,
-      },
-      y: {
-        show: false,
-      },
-      z: {
-        show: false,
-      }
-    },
-    grid: {
-      row: {
-        colors: ['transparent', 'transparent'], // takes an array which will be repeated on columns
-        opacity: 0.5
-      },
-      borderColor: '#D1D5DB',
-      strokeDashArray: 3,
-    },
-    yaxis: {
-      labels: {
-        formatter: function (value) {
-          return value;
-        },
-       
-        style: {
-          fontSize: "14px"
-        }
-      },
-    },
-    xaxis: {
-      categories: langyear,
-      tooltip: {
-        enabled: false
-      },
-      labels: {
-        formatter: function (value) {
-          return value;
-        },
-        style: {
-          fontSize: "14px"
-        }
-      },
-      axisBorder: {
-        show: false
-      },
-      crosshairs: {
-        show: true,
-        width: 20,
-        stroke: {
-          width: 0
-        },
-        fill: {
-          type: 'solid',
-          color: '#487FFF40',
-          
-        }
-      }
-    }
-  };
 
-    var chart = new ApexCharts(document.querySelector("#newchartlang"), options);
-    chart.render();
-                
-             }
-
-         });        
-  });
-  
 </script>
 
 <script>
-   
-   $('#filter_name').on('change', function (e) {
+
+   $('#filter').on('click', function (e) {
        
         e.preventDefault();
-        let chart;
         $('#chart1').hide();
-        $('#wollal').show();
         var filter_chart_data = $('#filter_name').val();
         $.ajax({
             headers: {
@@ -810,151 +683,10 @@
             },
             url: '{{route("filter_info")}}',
             method: 'GET',
-            data: { date_filter_data: filter_chart_data},
-            cache: false,
-            async: true,
+            data: { date_filter_data: filter_chart_data },
             success: function (res) {
-
-              if(res.data){
-
-                console.log(res.data);
-                var theyyear = res.theyyear;
-                //console.log(theyyear);
-                var fg = res.data;
-                let the_year = fg.map(a => theyyear+"-"+a.month);
-                let the_albums = fg.map(a => a.albums);
-                let the_tracks = fg.map(a => a.tracks);
-
-                if(res.nodata){
-                   alert('no data');
-                }else{
-                    // add chart here
-                   $('#wollal')
-                   .empty()
-                   .append(
-                      '<div id="newchart1"></div>'
-                   )   
-
-                   var options = {
-                          series: [
-                          {
-                            name: 'Albums',
-                            data: the_albums
-                          },
-                          {
-                            name: 'Tracks',
-                            data: the_tracks
-                          }
-                        ],
-                          chart: {
-                            height: 350,
-                            type: 'line',
-                            toolbar: {
-                              show: false
-                            },
-                            zoom: {
-                              enabled: false
-                            },
-                            dropShadow: {
-                              enabled: true,
-                              top: 6,
-                              left: 0,
-                              blur: 4,
-                              color: "#000",
-                              opacity: 0.1,
-                            },
-                          },
-                          colors: ["#FF1654", "#247BA0"], // Set color for series
-                          dataLabels: {
-                            enabled: false
-                          },
-                          stroke: {
-                            curve: 'smooth',
-                            colors: ["#FF1654", "#247BA0"], // Specify the line color here
-                            width: 3
-                          },
-                          markers: {
-                            size: 0,
-                            strokeWidth: 3,
-                            hover: {
-                              size: 8
-                            }
-                          },
-                          tooltip: {
-                            enabled: true,
-                            x: {
-                              show: true,
-                            },
-                            y: {
-                              show: false,
-                            },
-                            z: {
-                              show: false,
-                            }
-                          },
-                          grid: {
-                            row: {
-                              colors: ['transparent', 'transparent'],
-                              opacity: 0.5
-                            },
-                            borderColor: '#D1D5DB',
-                            strokeDashArray: 3,
-                          },
-                          yaxis: {
-                            labels: {
-                              formatter: function (value) {
-                                return value;
-                              },
-                              
-                              style: {
-                                fontSize: "14px"
-                              }
-                            },
-                          },
-                          xaxis: {
-                            categories: the_year,
-                            tooltip: {
-                              enabled: false
-                            },
-                            labels: {
-                              formatter: function (value) {
-                                return value;
-                              },
-                              style: {
-                                fontSize: "14px"
-                              }
-                            },
-                            axisBorder: {
-                              show: false
-                            },
-                            crosshairs: {
-                              show: true,
-                              width: 20,
-                              stroke: {
-                                width: 0
-                              },
-                              fill: {
-                                type: 'solid',
-                                color: '#487FFF40',
-                                
-                              }
-                            }
-                          }
-                        };
-
-                      if (chart) {
-                              chart.updateOptions(options);
-                          } else {
-                              chart = new ApexCharts(document.querySelector("#newchart1"), options);
-                              chart.render();
-                      }
-
-                //endchart
-                }
-                
-              }
-             
-
+              console.log(res.data)
+                // renderChart(res.data);
             }
         });
     });
@@ -964,8 +696,6 @@
     $('#filter_reset').on('click', function (e) {
         e.preventDefault();
         location.reload();
-        // $("#filter_name option").prop("selected", false).trigger( "change" );
-        // $("#filter_language option").prop("selected", false).trigger( "change" );
     });
 </script>
 @endsection

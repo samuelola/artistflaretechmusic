@@ -68,7 +68,8 @@ class DashboardController extends Controller
                      ->orderBy('year', 'ASC')
                      ->groupBy('year')
                      ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
-                     ->get(); 
+                     ->get();
+                      
                      
         $albumvalue = [];              
             foreach($thealbums as $dd){
@@ -95,12 +96,15 @@ class DashboardController extends Controller
                 $trackvalue[] = $dd->tracks;
         }
                      
-        $theyear = \DB::table('users')
-        ->select(\DB::raw('YEAR(join_date)as year'))
+        $theyear = DB::table('users')
+        ->select(DB::raw('YEAR(join_date)as year'))
         ->orderBy('year', 'ASC')           
         ->groupBy('year')
         ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
-        ->get();  
+        ->get();
+        
+         $thelang = DB::table('languages')
+        ->get();
    
         return view('dashboard.pages.home',compact(
             'users',
@@ -115,12 +119,68 @@ class DashboardController extends Controller
             'plans',
             'theyear',
             'albumvalue',
-            'trackvalue'
+            'trackvalue',
+            'thelang'
         ));
     }
 
-    
-    
+    public function filterInfo(Request $request){
+
+        // if($request->has('date_filter_data')){
+        //     $year_data = DB::table('users')
+        //              ->select([
+        //                DB::raw('YEAR(join_date)as year'),
+        //                DB::raw('SUM(albums) as albums'),
+        //                DB::raw('SUM(tracks) as tracks')
+        //              ])
+        //              ->orderBy('year', 'ASC')
+        //              ->groupBy('year')
+        //              ->where(DB::raw('YEAR(join_date)'), '=', $request->date_filter_data )
+        //              ->get();
+        //     return response()->json(['data' => $year_data]); 
+        // }
+
+        if($request->has('date_filter_data')){
+            $year_data = DB::table('users')
+                     ->select([
+                       DB::raw('MONTH(join_date)as month'),
+                       DB::raw('SUM(albums) as albums'),
+                       DB::raw('SUM(tracks) as tracks')
+                     ])
+                     ->orderBy('month', 'ASC')
+                     ->groupBy('month')
+                     ->where(DB::raw('YEAR(join_date)'), '=', $request->date_filter_data )
+                     ->get();
+            if($year_data){
+                 return response()->json(['data' => $year_data,'theyyear'=>$request->date_filter_data]);                
+            }else{
+                 return response()->json(['nodata'=>'No data found']); 
+            }         
+            
+        }
+        
+        if($request->has('filter_language_data')){
+            $lang_data = DB::table('users')
+                     ->select([
+                       DB::raw('YEAR(join_date)as year'), 
+                       DB::raw('SUM(albums) as albums'),
+                       DB::raw('SUM(tracks) as tracks')
+                     ])
+                     ->orderBy('year', 'ASC')
+                     ->groupBy('year')
+                     ->where('language',$request->filter_language_data)
+                     ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->get();
+            if($lang_data){
+                 return response()->json(['langdata' => $lang_data]);                
+            }else{
+                 return response()->json(['nodata'=>'No data found']); 
+            }         
+        }
+
+        
+    }
+
     public function analytics(Request $request)
     {
         return view('dashboard.pages.analytics');
