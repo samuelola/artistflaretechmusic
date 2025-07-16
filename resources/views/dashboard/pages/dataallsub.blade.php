@@ -59,7 +59,7 @@
                     <span class="text-secondary-light text-lg">Duration &nbsp; {{$allsub->subscription_duration}}</span>
                 </li>
             </ul>
-            <button type="button" class="bg-lilac-600 bg-hover-lilac-700 text-white text-center border border-lilac-600 text-sm btn-sm px-12 py-10 w-100 radius-8 mt-28" data-bs-toggle="modal" data-bs-target="#exampleModal">Get started</button>
+            <!-- <button type="button" class="bg-lilac-600 bg-hover-lilac-700 text-white text-center border border-lilac-600 text-sm btn-sm px-12 py-10 w-100 radius-8 mt-28" data-bs-toggle="modal" data-bs-target="#exampleModal">Get started</button> -->
         </div>
     </div>
 @endforeach  

@@ -52,7 +52,16 @@
       </li>
 
 
-      <li class="dropdown">
+      <li>
+        <a href="{{route('allTracks')}}">
+        <iconify-icon icon="material-symbols-light:track-changes" width="16" height="16"></iconify-icon>
+           <span>Tracks</span> 
+        </a>
+       
+      </li>
+
+
+      <!-- <li class="dropdown">
         <a href="javascript:void(0)">
         <iconify-icon icon="mdi-light:music" width="16" height="16" style="margin-inline-end: 0.4rem;"></iconify-icon>
           <span>Catalog\Releases</span> 
@@ -71,7 +80,7 @@
             <a href="#"><iconify-icon icon="iconoir:label" width="24" height="24"></iconify-icon>Label</a>
           </li>
         </ul>
-      </li>
+      </li> -->
       
       
       <li class="dropdown">

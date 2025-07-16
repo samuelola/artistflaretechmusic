@@ -187,7 +187,7 @@ chart.render();
   <?php 
     $users = \App\Models\User::distinct('first_name')->count();
     $total_subsscribe = \DB::table("subscription_payment_details")->distinct('email')->count();
-    $total_tracks = \DB::table("trackdetails")->where(['Release Count'=>0,'Release Count'=>1])->distinct('User Name')->count();
+    $total_tracks = \DB::table("trackdetails")->where(['ReleaseCount'=>0,'ReleaseCount'=>1])->distinct('UserName')->count();
     $total_albums = \DB::table("users")->sum('albums');
     $total_albumss = (int)$total_albums;
     $total_labels = \DB::table("labeldetails")->count();

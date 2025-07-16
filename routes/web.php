@@ -26,10 +26,13 @@ Route::middleware('superadmincheck')->group(function () {
     Route::post('change-password/{id}',[ChangePasswordController::class,'store'])->name('change.password');
     Route::post('change_user_password/{id}',[ChangePasswordController::class,'storeUserPassword'])->name('change.user.password');
     Route::get('/users',[UserController::class,'allUser'])->name('allUser');
+    Route::get('/add_new_user',[UserController::class,'addNewUser'])->name('add_new_user');
     Route::delete('/delete_user/{id}',[UserController::class,'deleteUser'])->name('deleteUser');
     Route::post('/editSub/{id}',[SubscriptionController::class,'editSub'])->name('editSub');
     Route::get('/filter_info',[DashboardController::class,'filterInfo'])->name('filter_info');
-    
+    Route::get('/alltracks',[DashboardController::class,'allTracks'])->name('allTracks');
+    Route::get('/view_tracks/{id}',[DashboardController::class,'viewTracks'])->name('view_tracks');
+    Route::get('/states', [UserController::class,'allState'])->name('all_states');
 });
 
 

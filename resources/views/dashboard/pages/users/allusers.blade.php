@@ -68,6 +68,11 @@
                <button id="gridView" tooltip="grid view">
                   <iconify-icon icon="bitcoin-icons:grid-outline" width="36" height="36"></iconify-icon>
                </button> -->
+
+               <a href="{{route('add_new_user')}}" class="btn btn-primary text-sm btn-sm px-12 py-12 radius-8 d-flex align-items-center gap-2"> 
+                    <iconify-icon icon="ic:baseline-plus" class="icon text-xl line-height-1"></iconify-icon>
+                    Add New User
+                </a>
                
                
             </div>

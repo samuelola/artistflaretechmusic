@@ -183,6 +183,14 @@
            <form>
                  @csrf
                  <div style="float:left">
+                      <select id="filter_country" name="filter_country" class="form-select bg-base form-select-sm w-auto radius-8 js-example-basic-singlee">
+                        <option>Country</option>
+                        @foreach($thecountry  as $vall)
+                        <option value="{{$vall->iso2}}">{{$vall->name}}</option>
+                        @endforeach
+                      </select>
+                 </div>
+                 <div style="float:left">
                       <select id="filter_language" name="filter_language" class="form-select bg-base form-select-sm w-auto radius-8 js-example-basic-singlee">
                         <option>Language</option>
                         @foreach($thelang  as $vall)
@@ -215,6 +223,7 @@
             <div id="chart1"></div>
             <div id="wollal"></div>
             <div id="wolla2"></div>
+            <div id="wolla3"></div>
             
             
           </div>
@@ -650,6 +659,152 @@
   // =========================== Sales Statistic Line Chart End ===============================
 </script>
 
+
+
+<script>
+  $('#filter_country').on('change', function (e) {
+       e.preventDefault();
+       $('#chart1').hide();
+       $('#wollal').hide();
+       $('#wolla2').hide();
+       var filter_country = $('#filter_country').val();
+        $.ajax({
+           
+             headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+             },
+             url: '{{route("filter_info")}}',
+             method: 'GET',
+             data: { filter_country_data: filter_country },
+             success: function (res) {
+
+                let fggcon = res.countrydata;
+                let conyear = fggcon.map(a => a.year);
+                let conalbums = fggcon.map(a => a.albums);
+                let contracks = fggcon.map(a => a.tracks);
+                console.log(fggcon);
+                $('#wolla3')
+                .empty()
+                .append(
+                  '<div id="newchartcountry"></div>'
+                ) 
+
+                var options = {
+    series: [
+    {
+      name: 'Albums',
+      data: conalbums
+    },
+    {
+      name: 'Tracks',
+      data: contracks
+    }
+  ],
+    chart: {
+      height: 350,
+      type: 'line',
+      toolbar: {
+        show: false
+      },
+      zoom: {
+        enabled: false
+      },
+      dropShadow: {
+        enabled: true,
+        top: 6,
+        left: 0,
+        blur: 4,
+        color: "#000",
+        opacity: 0.1,
+      },
+    },
+    colors: ["#FF1654", "#247BA0"], // Set color for series
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: 'smooth',
+      colors: ["#FF1654", "#247BA0"], // Specify the line color here
+      width: 3
+    },
+    markers: {
+      size: 0,
+      strokeWidth: 3,
+      hover: {
+        size: 8
+      }
+    },
+    tooltip: {
+      enabled: true,
+      x: {
+        show: true,
+      },
+      y: {
+        show: false,
+      },
+      z: {
+        show: false,
+      }
+    },
+    grid: {
+      row: {
+        colors: ['transparent', 'transparent'], // takes an array which will be repeated on columns
+        opacity: 0.5
+      },
+      borderColor: '#D1D5DB',
+      strokeDashArray: 3,
+    },
+    yaxis: {
+      labels: {
+        formatter: function (value) {
+          return value;
+        },
+       
+        style: {
+          fontSize: "14px"
+        }
+      },
+    },
+    xaxis: {
+      categories: conyear,
+      tooltip: {
+        enabled: false
+      },
+      labels: {
+        formatter: function (value) {
+          return value;
+        },
+        style: {
+          fontSize: "14px"
+        }
+      },
+      axisBorder: {
+        show: false
+      },
+      crosshairs: {
+        show: true,
+        width: 20,
+        stroke: {
+          width: 0
+        },
+        fill: {
+          type: 'solid',
+          color: '#487FFF40',
+          
+        }
+      }
+    }
+  };
+
+    var chart = new ApexCharts(document.querySelector("#newchartcountry"), options);
+    chart.render();
+                
+             }
+
+         });        
+  });
+  
+</script>
 
 <script>
   $('#filter_language').on('change', function (e) {

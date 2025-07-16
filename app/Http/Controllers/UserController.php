@@ -20,4 +20,21 @@ class UserController extends Controller
         User::find($decrypted)->delete();
         return back();
     }
+
+    public function addNewUser(Request $request){
+        $all_countries = DB::table('countries')->get();
+        $languages = DB::table('languages')->get();
+        return view("dashboard.pages.users.addnew_user",compact('all_countries','languages'));
+    }
+
+    public function allState(Request $request)
+    {
+        $country_id = $request->country_id;
+        $all_states = DB::table('states')->where('country_code',$country_id)->get();
+        return response([
+            'success' => true,
+            'data' => $all_states,
+        ]);
+        
+    }
 }

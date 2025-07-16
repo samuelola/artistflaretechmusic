@@ -32,7 +32,7 @@ class DashboardController extends Controller
         //$total_albums = DB::table("users")->sum('albums');
         $total_albums = User::sum('albums');
         $total_albumss = (int)$total_albums;
-        $total_tracks = DB::table("trackdetails")->where(['Release Count'=>0,'Release Count'=>1])->distinct('User Name')->count();
+        $total_tracks = DB::table("trackdetails")->where(['ReleaseCount'=>0,'ReleaseCount'=>1])->distinct('UserName')->count();
         $total_trackss = (int)$total_tracks;
         $total_labels = DB::table("labeldetails")->count();
         $total_labelss = (int)$total_labels;
@@ -105,6 +105,11 @@ class DashboardController extends Controller
         
          $thelang = DB::table('languages')
         ->get();
+
+        $thecountry = DB::table('countries')
+        ->get();
+
+        
    
         return view('dashboard.pages.home',compact(
             'users',
@@ -120,7 +125,8 @@ class DashboardController extends Controller
             'theyear',
             'albumvalue',
             'trackvalue',
-            'thelang'
+            'thelang',
+            'thecountry'
         ));
     }
 
@@ -153,9 +159,7 @@ class DashboardController extends Controller
                      ->get();
             if($year_data){
                  return response()->json(['data' => $year_data,'theyyear'=>$request->date_filter_data]);                
-            }else{
-                 return response()->json(['nodata'=>'No data found']); 
-            }         
+            }      
             
         }
         
@@ -173,11 +177,27 @@ class DashboardController extends Controller
                      ->get();
             if($lang_data){
                  return response()->json(['langdata' => $lang_data]);                
-            }else{
-                 return response()->json(['nodata'=>'No data found']); 
             }         
         }
 
+        if($request->has('filter_country_data')){
+            $country_data = DB::table('users')
+                     ->select([
+                       DB::raw('YEAR(join_date)as year'), 
+                       DB::raw('SUM(albums) as albums'),
+                       DB::raw('SUM(tracks) as tracks')
+                     ])
+                     ->orderBy('year', 'ASC')
+                     ->groupBy('year')
+                     ->where('country',$request->filter_country_data)
+                     ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->get();
+            if($country_data){
+                 return response()->json(['countrydata' => $country_data]);                
+            }        
+        }
+       
+        
         
     }
 
@@ -231,6 +251,20 @@ class DashboardController extends Controller
         $decrypted = decrypt($id);
         $user_info = DB::table('users')->where('id',$decrypted)->first();
         return view('dashboard.pages.users.user_info',compact('user_info'));
+    }
+
+    public function allTracks(Request $request){
+         $all_th_tracks = DB::table('trackdetails')->orderBy('id','desc')->paginate(10);
+         if ($request->ajax()) {
+            $viewttracks = view('dashboard.pages.trackspage', compact('all_th_tracks'))->render();
+            return response()->json(['htmltracks' => $viewttracks]);
+        }
+         return view('dashboard.pages.tracks',compact('all_th_tracks'));
+    }
+
+    public function viewTracks(Request $request,$id){
+         $track_user_detail = DB::table('trackdetails')->where('id',$id)->first();
+         return view('dashboard.pages.track_details',compact('track_user_detail'));
     }
     
 }
