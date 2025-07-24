@@ -98,9 +98,9 @@
                                     <span class="w-70 fw-medium">: 
                                     <?php
                                
-                                            if($user_info->user_status == 1){
+                                            if($user_info->active== 'Yes'){
                                                 ?><span class="bg-success-focus text-success-main px-24 py-4 rounded-pill fw-medium text-sm">Active</span> <?php
-                                            }elseif($user_info->user_status == 0){
+                                            }elseif($user_info->active == 'No'){
                                                 ?>
                                                 <span class="bg-danger-focus text-danger-main px-24 py-4 rounded-pill fw-medium text-sm">Not Active</span> 
                                                 <?php
@@ -248,13 +248,13 @@
                                         <div class="col-sm-6">
                                             <div class="mb-20">
                                                 <label for="email" class="form-label fw-semibold text-primary-light text-sm mb-8">Actions <span class="text-danger-600">*</span></label>
-                                                <select class="form-control" name="user_status">
-                                                  @if($user_info->user_status == 1)
-                                                    <option selected value="{{$user_info->user_status}}">Activate</option>
-                                                    <option value="0">Deactivate</option>
-                                                  @elseif($user_info->user_status == 0)
-                                                    <option selected value="{{$user_info->user_status}}">Deactivate</option>
-                                                    <option value="1">Activate</option>
+                                                <select class="form-control" name="active">
+                                                  @if($user_info->active == 'Yes')
+                                                    <option selected value="{{$user_info->active}}">Activate</option>
+                                                    <option value="No">Deactivate</option>
+                                                  @elseif($user_info->active == 'No')
+                                                    <option selected value="{{$user_info->active}}">Deactivate</option>
+                                                    <option value="Yes">Activate</option>
                                                   @endif
                                                 </select>
                                             </div>

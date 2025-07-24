@@ -31,7 +31,7 @@
   
   <div class="dashboard-main-body">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-  <h6 class="fw-semibold mb-0">All Users</h6>
+  <h6 class="fw-semibold mb-0">All Active Users</h6>
   <!-- <ul class="d-flex align-items-center gap-2">
     <li class="fw-medium">
       <a href="index.html" class="d-flex align-items-center gap-1 hover-text-primary">
@@ -53,36 +53,25 @@
 ">
           <div class="card-body">
             <div class="d-flex flex-wrap align-items-center justify-content-between">
-              <h6 class="text-lg mb-0">All users ({{$users}})</h6>
-                  <div>
-                  <!-- <a href="#" id="listView">
-                      <iconify-icon icon="material-symbols-light:list" width="40" height="40"></iconify-icon>
-                      
-                  </a> -->
-                  <!-- <a href="#" id="gridView">
-                      
-                  </a>  -->
-                  <!-- <button id="listView">
-                    <iconify-icon icon="material-symbols-light:list" width="40" height="40"></iconify-icon>
-                  </button>
-                  <button id="gridView" tooltip="grid view">
-                      <iconify-icon icon="bitcoin-icons:grid-outline" width="36" height="36"></iconify-icon>
-                  </button> -->
-
-                  <a href="{{route('add_new_user')}}" style="margin-left: 520px;" class="btn btn-primary-600 text-sm btn-sm px-12 py-12 radius-8 d-flex align-items-center gap-2"> 
-                        <iconify-icon icon="ic:baseline-plus" class="icon text-xl line-height-1"></iconify-icon>
-                        Add New User 
-                    </a>
-    
-                </div>
-
-                <div style="float:left">
+              <h6 class="text-lg mb-0">All Active users({{$activeusers}})</h6>
+              <div>
+               <!-- <a href="#" id="listView">
+                   <iconify-icon icon="material-symbols-light:list" width="40" height="40"></iconify-icon>
+                   
+               </a> -->
+               <!-- <a href="#" id="gridView">
                   
-                    <a href="{{route('users.export')}}" class="btn btn-primary-600 text-sm btn-sm px-12 py-12 radius-8 d-flex align-items-center gap-2"> 
-                        <iconify-icon icon="entypo:export" width="20" height="20"></iconify-icon>
-                        Export
-                    </a>
-                </div>
+               </a>  -->
+               <!-- <button id="listView">
+                 <iconify-icon icon="material-symbols-light:list" width="40" height="40"></iconify-icon>
+               </button>
+               <button id="gridView" tooltip="grid view">
+                  <iconify-icon icon="bitcoin-icons:grid-outline" width="36" height="36"></iconify-icon>
+               </button> -->
+
+              
+               
+            </div>
               
             </div>
 

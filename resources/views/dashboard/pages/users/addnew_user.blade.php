@@ -31,7 +31,7 @@
   
   <div class="dashboard-main-body">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-  <h6 class="fw-semibold mb-0">Tracks</h6>
+  <h6 class="fw-semibold mb-0">Add User</h6>
   
 </div>
 
@@ -42,7 +42,8 @@
                <div class="col-xxl-6 col-xl-8 col-lg-10">
                     <div class="card border">
                         <div class="card-body">
-                            <form action="#">
+                            <form action="{{route('create_user')}}" method="post">
+                                @csrf
                                  <div class="row mb-3">
                                         <div class="col-md-6">
 
@@ -175,9 +176,9 @@
                             </div>
 
                             <div class="d-flex align-items-center justify-content-center gap-3" style="margin-top:20px;">
-                                <button type="button" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8"> 
+                                <!-- <button type="button" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8"> 
                                     Cancel
-                                </button>
+                                </button> -->
                                 <button type="submit" class="btn btn-primary border border-primary-600 text-md px-56 py-12 radius-8"> 
                                     Save
                                 </button>

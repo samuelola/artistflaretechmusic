@@ -55,7 +55,7 @@ class FileUploadController extends Controller
                     'profile_image'=>$newFileName,
                     'phone_number' => $request->phone_number,
                     'role_id' => $request->role_id,
-                    'user_status' =>$request->user_status
+                    'active' =>$request->active
                 ]);  // update the record in the DB.
             return redirect()->back()->with('success','Profile Updated Successful'); 
         }
@@ -69,7 +69,7 @@ class FileUploadController extends Controller
                 'email'=>$request->email,
                 'phone_number' => $request->phone_number,
                 'role_id' => $request->role_id,
-                'user_status' =>$request->user_status
+                'active' =>$request->active
             ]);
         return redirect()->back()->with('success','Profile Updated Successful'); 
 

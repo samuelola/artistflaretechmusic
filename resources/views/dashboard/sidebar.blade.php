@@ -22,12 +22,37 @@
         </a>
       </li>
 
-      <li>
+      <!-- <li>
         <a href="{{route('allUser')}}">
         <iconify-icon icon="raphael:users" width="16" height="16"  class="menu-icon"></iconify-icon>
            <span>Users</span> 
         </a>
        
+      </li> -->
+
+      <li class="dropdown">
+        <a href="javascript:void(0)" class="menu-icon">
+        <iconify-icon icon="raphael:users" width="16" height="16" style="margin-inline-end: 0.4rem;"></iconify-icon>
+          <span>User</span> 
+        </a>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="{{route('allUser')}}">
+              <iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>
+              All Users</a>
+          </li>
+          <li>
+            <a href="{{route('allActiveUser')}}">
+              <iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>
+              Active Users</a>
+          </li>
+          <li>
+            <a href="{{route('allInactiveUser')}}">
+              <iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>
+              Inactive Users</a>
+          </li>
+          
+        </ul>
       </li>
       
       <li class="dropdown">
@@ -54,11 +79,29 @@
 
       <li>
         <a href="{{route('allTracks')}}">
-        <iconify-icon icon="material-symbols-light:track-changes" width="16" height="16"></iconify-icon>
+        <iconify-icon icon="material-symbols-light:track-changes" width="16" height="16" class="menu-icon"></iconify-icon>
            <span>Tracks</span> 
         </a>
        
       </li>
+
+      <li>
+        <a href="{{route('admin_analytics')}}">
+        <!-- <iconify-icon icon="material-symbols-light:track-changes" width="16" height="16"></iconify-icon> -->
+        <iconify-icon icon="pixel:analytics" width="16" height="16" class="menu-icon"></iconify-icon>
+           <span>Analytics</span> 
+        </a>
+       
+      </li>
+
+
+      <!-- <li>
+        <a href="#">
+        <iconify-icon icon="material-symbols-light:track-changes" width="16" height="16"></iconify-icon>
+           <span>Labels</span> 
+        </a>
+       
+      </li> -->
 
 
       <!-- <li class="dropdown">
@@ -83,18 +126,21 @@
       </li> -->
       
       
-      <li class="dropdown">
+      <!-- <li class="dropdown">
         <a href="javascript:void(0)" class="menu-icon">
-        <iconify-icon icon="hugeicons:analytics-up" width="16" height="16" style="margin-inline-end: 0.4rem;"></iconify-icon>
-          <span>Analytics</span> 
+        <iconify-icon icon="arcticons:permissionchecker" width="16" height="16" style="margin-inline-end: 0.4rem;"></iconify-icon>
+          <span>Roles/Permissions</span> 
         </a>
         <ul class="sidebar-submenu">
           <li>
-            <a href="{{route('analytics')}}"><iconify-icon icon="pajamas:live-stream" width="16" height="16"></iconify-icon>Streams/Downloads</a>
+            <a href="#">
+              <iconify-icon icon="oui:app-users-roles" width="16" height="16"></iconify-icon>
+              Create Roles</a>
           </li>
           
         </ul>
-      </li>
+      </li> -->
+
       
       <li>
         <a href="{{ route('dashboard.logout') }}" onclick="event.preventDefault(); document.getElementById('frm-logout').submit();">

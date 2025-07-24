@@ -20,11 +20,7 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $guarded = [];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -55,5 +51,10 @@ class User extends Authenticatable
 
     public function lang(){
         return $this->belongsTo(Language::class,'language','iso');
+    }
+
+    public function hasPermissionRole($permission): bool
+    {
+        return $this->role->permissions()->where('name', $permission)->exists();
     }
 }

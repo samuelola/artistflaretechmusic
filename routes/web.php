@@ -6,6 +6,8 @@ use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AnalyticsController;
+
 
 Route::middleware('check.user')->group(function () {
     Route::get('/dashboardd', [DashboardController::class,'showDashboardd'])->name('dashboardd');
@@ -22,7 +24,7 @@ Route::middleware('superadmincheck')->group(function () {
     Route::get('/all_subscription', [SubscriptionController::class,'allsubscription'])->name('allsubscription');
     Route::post('/add_subscription', [SubscriptionController::class,'add_subscription'])->name('add_subscription');
     Route::get('/edit_subscription/{id}', [SubscriptionController::class,'edit_subscription'])->name('edit_subscription');
-    Route::get('/view_users/{id}', [DashboardController::class,'viewDashboard'])->name('viewdashboardusers');
+    Route::get('/view_user/{id}', [DashboardController::class,'viewDashboard'])->name('viewdashboardusers');
     Route::post('change-password/{id}',[ChangePasswordController::class,'store'])->name('change.password');
     Route::post('change_user_password/{id}',[ChangePasswordController::class,'storeUserPassword'])->name('change.user.password');
     Route::get('/users',[UserController::class,'allUser'])->name('allUser');
@@ -33,6 +35,13 @@ Route::middleware('superadmincheck')->group(function () {
     Route::get('/alltracks',[DashboardController::class,'allTracks'])->name('allTracks');
     Route::get('/view_tracks/{id}',[DashboardController::class,'viewTracks'])->name('view_tracks');
     Route::get('/states', [UserController::class,'allState'])->name('all_states');
+    Route::post('/create_user', [UserController::class,'createUser'])->name('create_user');
+    Route::get('/active_user', [UserController::class,'allActiveUser'])->name('allActiveUser');
+    Route::get('/inactive_user', [UserController::class,'allInactiveUser'])->name('allInactiveUser');
+    Route::get('users-export', [UserController::class,'export'])->name('users.export');
+    Route::get('admin_analytics', [AnalyticsController::class,'adminAnalytics'])->name('admin_analytics');
+    Route::get('/filter_artist',[AnalyticsController::class,'filterArtistInfo'])->name('filter_artist');
+    Route::get('/filter_artist_track',[AnalyticsController::class,'filterArtistTrackInfo'])->name('filter_artist_track');
 });
 
 

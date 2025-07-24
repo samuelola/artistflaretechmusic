@@ -73,24 +73,7 @@ var chart = new ApexCharts(document.querySelector("#chartt"), options);
 chart.render();
 </script>  
 
-<script>
-   var options = {
-  chart: {
-    type: 'bar'
-  },
-  series: [{
-    name: 'sales',
-    data: [30,40,35,50,49,60,70,91,125]
-  }],
-  xaxis: {
-    categories: [1991,1992,1993,1994,1995,1996,1997, 1998,1999]
-  }
-}
-
-var chart = new ApexCharts(document.querySelector("#charttt"), options);
-
-chart.render();
-</script> 
+ 
 
 
 <script>
@@ -268,17 +251,14 @@ chart.render();
       },
       fill: {
           type: 'gradient',
-          colors: ['#008ffb'], // Set the starting color (top color) here
+          colors: ['#ce11e7'], // Set the starting color (top color) here
           gradient: {
-              
               type: 'vertical',  // Gradient direction (vertical)
-              
-             
               stops: [0, 100],
           },
       },
       grid: {
-          show: false,
+          show: true,
           borderColor: '#D1D5DB',
           strokeDashArray: 4, // Use a number for dashed style
           position: 'back',
