@@ -7,7 +7,8 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AnalyticsController;
-
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PermissionController;
 
 Route::middleware('check.user')->group(function () {
     Route::get('/dashboardd', [DashboardController::class,'showDashboardd'])->name('dashboardd');
@@ -42,6 +43,25 @@ Route::middleware('superadmincheck')->group(function () {
     Route::get('admin_analytics', [AnalyticsController::class,'adminAnalytics'])->name('admin_analytics');
     Route::get('/filter_artist',[AnalyticsController::class,'filterArtistInfo'])->name('filter_artist');
     Route::get('/filter_artist_track',[AnalyticsController::class,'filterArtistTrackInfo'])->name('filter_artist_track');
+    Route::get('/filter_artist_album',[AnalyticsController::class,'filterArtistAlbum'])->name('filter_artist_album');
+    
+    Route::get('/manage_role', [RoleController::class,'manageRole'])->name('manage_role');
+    Route::post('/create_role', [RoleController::class,'createRole'])->name('create_role');
+    Route::post('/delete_role', [RoleController::class,'deleteRole'])->name('delete_role');
+    Route::post('/update_role', [RoleController::class,'updateRole'])->name('update_role');
+
+
+    Route::get('/manage_permission', [PermissionController::class,'managePermission'])->name('manage_permission');
+    Route::post('/create_permission', [PermissionController::class,'createPermission'])->name('create_permission');
+    Route::post('/delete_permission', [PermissionController::class,'deletePermission'])->name('delete_permission');
+    Route::post('/update_permission', [PermissionController::class,'updatePermission'])->name('update_permission');
+
+    // assign permission to role routes
+    Route::get('/assign_permission_role', [PermissionController::class,'assignPermissionRole'])->name('assign_permission_role');
+    Route::post('/create_permission_role', [PermissionController::class,'createPermissionRole'])->name('create_permission_role');
+    Route::get('/edit_permission_role/{id}', [PermissionController::class,'editPermissionRole'])->name('edit_permission_role');
+    Route::post('/update_permission_role', [PermissionController::class,'updatePermissionRole'])->name('update_permission_role');
+    
 });
 
 

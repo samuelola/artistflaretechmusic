@@ -137,6 +137,21 @@ class AnalyticsController extends Controller
         ->take(50)
         ->get();
 
+        $label_data= DB::table('labeldetails')->take(50)->get();
+        $get_user_albums = DB::table('product_details')->distinct()->pluck('Label_Name')->toArray();
+        $theartisalbums = DB::table('product_details')
+        ->select([
+            DB::raw("REPLACE(Label_Name, \"'\", '') as Labell_Name"),
+            DB::raw('COUNT(Label_Name) as album_count'),
+        ])          
+        ->where('Label_Name', '!=', '' )
+        ->groupBy('Labell_Name')
+        ->take(50)
+        ->get();
+        // dd($theartisalbums);
+
+
+
        return view('dashboard.pages.analytics',compact(
         'first_namevalue',
         'name_countvalue',
@@ -152,7 +167,10 @@ class AnalyticsController extends Controller
         'trackvalue',
         'theyear',
         'theartisttracks',
-        'get_user_artists'
+        'get_user_artists',
+        'get_user_albums',
+        'label_data',
+        'theartisalbums'
        ));
     }
 
@@ -191,4 +209,23 @@ class AnalyticsController extends Controller
             }         
          }
     }
+
+    public function filterArtistAlbum(Request $request){
+
+        
+        if($request->has('filter_artist_album_data')){
+            $artist_data = DB::table('product_details')
+                     ->select([
+                      'Label_Name',
+                      DB::raw('COUNT(Label_name) as sound_count'),
+                     ])
+                     ->where('Label_Name',$request->filter_artist_album_data)
+                     ->groupBy('Label_Name')
+                     ->get();
+            if($artist_data){
+                 return response()->json(['artist_sound_data' => $artist_data]);                
+            }         
+         }
+    }
 }
+

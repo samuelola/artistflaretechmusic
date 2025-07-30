@@ -94,6 +94,33 @@
        
       </li>
 
+      <li>
+        <a href="{{route('manage_role')}}">
+        
+        <iconify-icon icon="oui:app-users-roles" width="16" height="16" class="menu-icon"></iconify-icon>
+           <span>Roles</span> 
+        </a>
+       
+      </li>
+
+      <li>
+        <a href="{{route('manage_permission')}}">
+        
+        <iconify-icon icon="icon-park:permissions" width="16" height="16" class="menu-icon"></iconify-icon>
+           <span>Permission</span> 
+        </a>
+       
+      </li>
+
+      <li>
+        <a href="{{route('assign_permission_role')}}">
+        
+        <iconify-icon icon="icon-park:permissions" width="16" height="16" class="menu-icon"></iconify-icon>
+           <span>Assign Permission Role</span> 
+        </a>
+       
+      </li>
+
 
       <!-- <li>
         <a href="#">

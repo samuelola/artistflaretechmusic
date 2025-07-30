@@ -123,7 +123,7 @@
                 <div class="card h-100 radius-8 border-0 overflow-hidden">
                     <div class="card-body p-24">
                         <div class="d-flex align-items-center flex-wrap gap-2 justify-content-between">
-                          <h6 class="mb-2 fw-bold text-lg">Top 5 Languages Table</h6>
+                          <h6 class="mb-2 fw-bold text-lg">Top 5 Languages</h6>
                           
                         </div>
                         <div id="defaultLineChart" class="apexcharts-tooltip-style-1"></div>
@@ -133,7 +133,7 @@
             <div class="col-md-6">
                 <div class="card h-100 p-0">
                     <div class="card-header border-bottom bg-base py-16 px-24">
-                        <h6 class="text-lg fw-semibold mb-0">Top 5 Languages</h6>
+                        <h6 class="text-lg fw-semibold mb-0">Top 5 Languages Table</h6>
                     </div>
                     <div class="card-body p-24">
                         <table class="table basic-border-table mb-0">
@@ -174,6 +174,7 @@
                                     <option value="{{$get_all_artist->id}}">{{$get_all_artist->first_name}}&nbsp;{{$get_all_artist->last_name}}</option>
                                   @endforeach 
                               </select>
+                              <button id="filter_artistreset"  class="btn btn-primary-600 btn-sm">Reset</button>
                             </form>
                     </div>
 
@@ -201,6 +202,7 @@
                                     <option value="{{$get_user_artist}}">{{$get_user_artist}}</option>
                                   @endforeach 
                               </select>
+                              <button id="filter_trackreset"  class="btn btn-primary-600 btn-sm">Reset</button>
                             </form>
                     </div>
 
@@ -214,8 +216,61 @@
               </div>
         </div>
         
+        <div class="row" style="margin-top:20px;">
 
-    
+           <!--start firstcolum-->
+              <div class="col-lg-12">
+                  <div class="card h-100">
+                          <div class="card-body">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between">
+                              <h6 class="text-lg mb-0">Labels</h6>
+                              <!-- <select class="form-select bg-base form-select-sm w-auto radius-8">
+                                <option>Yearly</option>
+                                <option>Monthly</option>
+                                <option>Weekly</option>
+                                <option>Today</option>
+                              </select> -->
+                            </div>
+                            
+                            <div id="charttt1"></div>
+                            
+                            
+                          </div>
+                    </div>
+              </div>
+               <!--end firstcolum-->
+        </div>
+
+        <div class="row" style="margin-top:20px;">
+
+           <!--start firstcolum-->
+              <div class="col-lg-12">
+                  <div class="card h-100">
+                          <div class="card-body">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between">
+                              <h6 class="text-lg mb-0">Albums</h6>
+                                  <form>
+                                  @csrf
+                                  <select id="filter_artist_albums" name="filter_artist_albums" class="form-select bg-base form-select-sm w-auto radius-8 js-example-basic-singlee">
+                                    <option>Select Albums</option>
+                                      @foreach($get_user_albums as $key=>$get_user_album)
+                                        <option value="{{$get_user_album}}">{{$get_user_album}}</option>
+                                      @endforeach 
+                                  </select>
+                                  <button id="filter_albumreset"  class="btn btn-primary-600 btn-sm">Reset</button>
+                                </form>
+                            </div>
+                            
+                            <div id="columnGroupBarChart1"></div>
+                            <div id="wollaacolumn1"></div>
+                            
+                          </div>
+                    </div>
+              </div>
+               <!--end firstcolum-->
+        </div>
+          
+       
   </div>
 
 @endsection
@@ -224,7 +279,8 @@
 <script>
    var options = {
   chart: {
-    type: 'bar'
+    type: 'bar',
+    height: 400
   },
   series: [{
     name: 'user count',
@@ -254,6 +310,51 @@
 }
 
 var chart = new ApexCharts(document.querySelector("#charttt"), options);
+
+chart.render();
+</script>
+
+<script>
+   var options = {
+  chart: {
+    type: 'bar'
+  },
+  series: [{
+    name: 'Play count',
+    data: [
+            <?php 
+                foreach ($label_data as $value) {
+                  echo "$value->PlayCount,";
+                }
+              ?>
+          ]
+  }],
+  dataLabels: {
+          enabled: false
+      },
+  yaxis: {
+       
+          labels: {
+              formatter: function (value) {
+                  return (value / 1000).toFixed(0) + 'k';
+              }
+          }
+  },    
+  xaxis: {
+    title: {
+      text: 'Label'
+    },
+    categories: [
+            <?php 
+                foreach ($label_data as $value) {
+                  echo "'$value->LabelName',";
+                }
+              ?>
+          ]
+  }
+}
+
+var chart = new ApexCharts(document.querySelector("#charttt1"), options);
 
 chart.render();
 </script>
@@ -338,7 +439,7 @@ var options = {
             ]
         }],
         chart: {
-            height: 264,
+            height: 400,
             type: 'line',
             toolbar: {
                 show: false
@@ -729,7 +830,7 @@ var options = {
       }],
       chart: {
           type: 'bar',
-          height: 264,
+          height: 464,
           toolbar: {
               show: false
           }
@@ -917,4 +1018,226 @@ var options = {
         
   });
 </script>
+<script>
+    $('#filter_trackreset').on('click', function (e) {
+        e.preventDefault();
+        location.reload();
+    });
+</script>
+
+<script>
+    $('#filter_artistreset').on('click', function (e) {
+        e.preventDefault();
+        location.reload();
+    });
+</script>
+
+<script>
+    $('#filter_albumreset').on('click', function (e) {
+        e.preventDefault();
+        location.reload();
+    });
+</script>
+
+
+
+<script>
+   var options = {
+      series: [{
+          name: "Albums",
+          data: [
+                    <?php
+                      foreach($theartisalbums as $theartisalbum){
+                          echo "'$theartisalbum->album_count',";
+                      }
+                    
+                    ?>
+          ]
+      }],
+      chart: {
+          type: 'bar',
+          height: 500,
+          toolbar: {
+              show: false
+          }
+      },
+      plotOptions: {
+          bar: {
+            horizontal: false,
+            borderRadius: 8,
+            columnWidth: 10,
+            borderRadiusApplication: 'end', // 'around', 'end'
+            borderRadiusWhenStacked: 'last', // 'all', 'last'
+            columnWidth: '23%',
+            endingShape: 'rounded',
+          }
+      },
+      dataLabels: {
+          enabled: false
+      },
+      fill: {
+          type: 'gradient',
+          colors: ['#487FFF'], // Set the starting color (top color) here
+          gradient: {
+              shade: 'light', // Gradient shading type
+              type: 'vertical',  // Gradient direction (vertical)
+              shadeIntensity: 0.5, // Intensity of the gradient shading
+              gradientToColors: ['#487FFF'], // Bottom gradient color (with transparency)
+              inverseColors: false, // Do not invert colors
+              opacityFrom: 1, // Starting opacity
+              opacityTo: 1,  // Ending opacity
+              stops: [0, 100],
+          },
+      },
+      grid: {
+          show: true,
+          borderColor: '#D1D5DB',
+          strokeDashArray: 4, // Use a number for dashed style
+          position: 'back',
+      },
+      xaxis: {
+          title: {
+      text: 'Label'
+          },
+          type: 'category',
+          categories: [
+                     <?php
+                      foreach($theartisalbums as $theartisalbum){
+                          echo "'$theartisalbum->Labell_Name',";
+                      }
+                    
+                    ?>
+          ]
+      },
+      yaxis: {
+          title: {
+          text: 'Track'
+          },
+          labels: {
+              // formatter: function (value) {
+              //     return (value / 1000).toFixed(0) + 'k';
+              // }
+          }
+      },
+      tooltip: {
+          y: {
+              // formatter: function (value) {
+              //     return value / 1000 + 'k';
+              // }
+          }
+      }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#columnGroupBarChart1"), options);
+    chart.render();
+</script>
+
+
+
+<script>
+   $('#filter_artist_albums').on('change', function (e) {
+      e.preventDefault();
+      $('#columnGroupBarChart1').hide();
+      $('#wollaacolumn1').show();
+      
+      var filter_artist_albums = $('#filter_artist_albums').val();
+        $.ajax({
+             headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+             },
+             url: '{{route("filter_artist_album")}}',
+             method: 'GET',
+             data: { filter_artist_album_data: filter_artist_albums },
+              success: function (res) {
+                 let fggcon = res.artist_sound_data;
+                 let ArtistLabelName = fggcon.map(a => a.Label_Name);
+                 let SoundCount = fggcon.map(a => a.sound_count);
+                 console.log(ArtistLabelName);
+                $('#wollaacolumn1')
+                   .empty()
+                   .append(
+                      '<div id="newcharttrack11"></div>'
+                   )
+                
+                  var options = {
+      series: [{
+          name: "Label Count",
+          data: SoundCount
+      }],
+      chart: {
+          type: 'bar',
+          height: 500,
+          toolbar: {
+              show: false
+          }
+      },
+      plotOptions: {
+          bar: {
+            horizontal: false,
+            borderRadius: 8,
+            columnWidth: 10,
+            borderRadiusApplication: 'end', // 'around', 'end'
+            borderRadiusWhenStacked: 'last', // 'all', 'last'
+            columnWidth: '2%',
+            endingShape: 'rounded',
+          }
+      },
+      dataLabels: {
+          enabled: false
+      },
+      fill: {
+          type: 'gradient',
+          colors: ['#487FFF'], // Set the starting color (top color) here
+          gradient: {
+              shade: 'light', // Gradient shading type
+              type: 'vertical',  // Gradient direction (vertical)
+              shadeIntensity: 0.5, // Intensity of the gradient shading
+              gradientToColors: ['#487FFF'], // Bottom gradient color (with transparency)
+              inverseColors: false, // Do not invert colors
+              opacityFrom: 1, // Starting opacity
+              opacityTo: 1,  // Ending opacity
+              stops: [0, 100],
+          },
+      },
+      grid: {
+          show: true,
+          borderColor: '#D1D5DB',
+          strokeDashArray: 4, // Use a number for dashed style
+          position: 'back',
+      },
+      xaxis: {
+          title: {
+      text: 'Label Name'
+          },
+          type: 'category',
+          categories: ArtistLabelName
+      },
+      yaxis: {
+          title: {
+          text: 'Track'
+          },
+          labels: {
+              // formatter: function (value) {
+              //     return (value / 1000).toFixed(0) + 'k';
+              // }
+          }
+      },
+      tooltip: {
+          y: {
+              // formatter: function (value) {
+              //     return value / 1000 + 'k';
+              // }
+          }
+      }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#newcharttrack11"), options);
+    chart.render();
+
+              }
+        });
+   });
+  
+</script>
+
 @endsection

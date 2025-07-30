@@ -166,7 +166,7 @@
               <div class="col-md-6">
                  <label class="form-label">Currency</label>
                  <select name="currency" class="form-control js-example-basic-singlee" style="width: 100% !important">
-                        @foreach($currency as $val)editsubscription
+                        @foreach($currency as $val)
                         <option value="{{$val->code}}" {{$val->code == $editsubscription->currency ? 'selected' : ''}}>{{$val->country}} {{$val->currency}}-{{$val->symbol}}</option>
                         @endforeach
                  </select>

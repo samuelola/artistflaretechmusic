@@ -861,7 +861,8 @@ th {
 }
 
 .text-success-600 {
-  color: var(--success-600) !important;
+  /* color: var(--success-600) !important; */
+  color: #151615 !important;
 }
 
 .text-success-700 {

@@ -649,7 +649,7 @@
        $('#wolla2').hide();
        var filter_country = $('#filter_country').val();
         $.ajax({
-           
+             
              headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
              },
