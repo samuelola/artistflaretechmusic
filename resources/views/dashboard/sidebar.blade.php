@@ -1,4 +1,14 @@
 <aside class="sidebar">
+  @php
+  $permissionUser = App\Models\PermissionRole::getPermission('users',Auth::user()->role_id);
+  $permissionSubscription = App\Models\PermissionRole::getPermission('Subscription',Auth::user()->role_id);
+  $permissionaddsub = App\Models\PermissionRole::getPermission('add-subscription',Auth::user()->role_id);
+  $permissionaddallsub = App\Models\PermissionRole::getPermission('all-subscriptions',Auth::user()->role_id);
+  $permissionroles = App\Models\PermissionRole::getPermission('Roles',Auth::user()->role_id);
+  $permissionPermissions = App\Models\PermissionRole::getPermission('Permissions',Auth::user()->role_id);
+  $permissionedituserPermission = App\Models\PermissionRole::getPermission('delete-users',Auth::user()->role_id);
+  $permissiondeleteuserPermission = App\Models\PermissionRole::getPermission('edit-users',Auth::user()->role_id);
+  @endphp
   <button type="button" class="sidebar-close-btn">
     <iconify-icon icon="radix-icons:cross-2"></iconify-icon>
   </button>
@@ -30,10 +40,11 @@
        
       </li> -->
 
+      @if(!empty($permissionUser))
       <li class="dropdown">
         <a href="javascript:void(0)" class="menu-icon">
         <iconify-icon icon="raphael:users" width="16" height="16" style="margin-inline-end: 0.4rem;"></iconify-icon>
-          <span>User</span> 
+          <span>Users</span> 
         </a>
         <ul class="sidebar-submenu">
           <li>
@@ -54,19 +65,28 @@
           
         </ul>
       </li>
+      @endif
       
+
+      @if(!empty($permissionSubscription))
       <li class="dropdown">
         <a href="javascript:void(0)">
         <iconify-icon icon="streamline:subscription-cashflow" width="16" height="16"  class="menu-icon"></iconify-icon>
           <span>Subscription</span> 
         </a>
         <ul class="sidebar-submenu">
+          @if(!empty($permissionaddsub))
           <li>
             <a href="{{route('subscription')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>Add Subscription</a>
           </li>
+          @endif  
+
+          @if(!empty($permissionaddallsub))
           <li>
+          
             <a href="{{route('allsubscription')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>All Subscriptions</a>
           </li>
+          @endif  
           <!-- <li>
             <a href="invoice-add.html"><i class="ri-circle-fill circle-icon text-info-main w-auto"></i> Add new</a>
           </li>
@@ -75,7 +95,7 @@
           </li> -->
         </ul>
       </li>
-
+      @endif
 
       <li>
         <a href="{{route('allTracks')}}">
@@ -94,6 +114,8 @@
        
       </li>
 
+      
+    @if(!empty($permissionroles))  
       <li>
         <a href="{{route('manage_role')}}">
         
@@ -102,24 +124,34 @@
         </a>
        
       </li>
-
-      <li>
-        <a href="{{route('manage_permission')}}">
-        
+    @endif
+      
+   
+    @if(!empty($permissionPermissions)) 
+       <li class="dropdown">
+        <a href="javascript:void(0)">
         <iconify-icon icon="icon-park:permissions" width="16" height="16" class="menu-icon"></iconify-icon>
-           <span>Permission</span> 
+          <span>Permissions</span> 
         </a>
-       
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="{{route('manage_permission')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>Manage Permissions</a>
+          </li>
+          <li>
+            <a href="{{route('assign_permission_role')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>Assign Permission Role</a>
+          </li>
+          
+        </ul>
       </li>
+    @endif
+      
 
-      <li>
-        <a href="{{route('assign_permission_role')}}">
-        
+      <!-- <li>
+        <a href="{{route('assign_permission_route')}}">
         <iconify-icon icon="icon-park:permissions" width="16" height="16" class="menu-icon"></iconify-icon>
-           <span>Assign Permission Role</span> 
+           <span>Assign Permission Route</span> 
         </a>
-       
-      </li>
+      </li> -->
 
 
       <!-- <li>

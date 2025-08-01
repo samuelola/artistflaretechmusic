@@ -64,6 +64,7 @@ class AnalyticsController extends Controller
                 ->groupBy('languages.name')
                 ->where('users.language', '!=','')
                 ->orderBy('language_count', 'DESC')
+                ->where('active','Yes')
                 ->take(5)
                 ->get();
 
@@ -94,6 +95,7 @@ class AnalyticsController extends Controller
                      ->orderBy('year', 'ASC')
                      ->groupBy('year')
                      ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->where('active','Yes')
                      ->get();
                       
                      
@@ -110,6 +112,7 @@ class AnalyticsController extends Controller
                      ->orderBy('year', 'ASC')
                      ->groupBy('year')
                      ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->where('active','Yes')
                      ->get(); 
                      
 
@@ -123,6 +126,7 @@ class AnalyticsController extends Controller
         ->orderBy('year', 'ASC')           
         ->groupBy('year')
         ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+        ->where('active','Yes')
         ->get();
         
         // trackdetails
@@ -187,6 +191,7 @@ class AnalyticsController extends Controller
                      ->groupBy('year')
                      ->where('id',$request->date_filter_data)
                      ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->where('active','Yes')
                      ->get();
             if($artist_data){
                  return response()->json(['artistdata' => $artist_data]);                

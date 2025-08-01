@@ -1,7 +1,7 @@
-<html lang="en" data-theme="light"><!-- Mirrored from wowdash.wowtheme7.com/demo/error.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 09 Jun 2025 09:51:00 GMT --><head>
-    <meta charset="UTF-8" />
+<html lang="en" data-theme="theme-light"><!-- Mirrored from wowdash.wowtheme7.com/demo/access-denied.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 09 Jun 2025 09:51:01 GMT --><head>
+   <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FlareTechMusic | Page not found</title>
+    <title>FlareTechMusic | Access Denied</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{asset('flare_logo2.png')}}" sizes="96x96" />
     <link rel="stylesheet" href="{{asset('assets/css/remixicon.css')}}" />
@@ -37,26 +37,39 @@
     <!-- main css -->
     <link rel="stylesheet" href="{{asset('assets/css/style.css')}}" />
     <link rel="stylesheet" href="{{asset('assets/css/music.css')}}" />
+  </head>
   <body>
 
 
-  
-    
-    <div class="card basic-data-table">
-      <div class="card-body py-80 px-32 text-center">
-        <div class="max-w-454-px mx-auto">
-          <img src="{{asset('assets/images/error/404-img.png')}}" alt="Thumbnail" class="mb-24">
-        </div>
-        <h6 class="mb-16">Page not Found</h6>
-        <!-- <p class="max-w-650-px mx-auto">400 Bad Request response status code indicates that the server cannot or will not process the request due to something that is perceived to be a client error</p> -->
-        <a href="{{route('dashboard')}}" class="btn btn-danger-600 radius-8 px-40 py-16">Back to Home</a>
-      </div>
-    </div>
-  </div>
 
+
+
+<div class="custom-bg">
+    <div class="container container--xl">
+        <div class="d-flex align-items-center justify-content-between py-24">
+            <a href="index.html" class="">
+                <img style="width:160px;" src="{{asset('flare_main.png')}}" alt="">
+            </a>
+            <a href="{{route('dashboard')}}" class="btn btn-outline-primary-600 text-sm"> Go To Home </a>
+        </div>
+
+        <!-- <div class="py-res-120 text-center"> -->
+        <div class="pt-48 pb-40 text-center">
+            <div class="max-w-500-px mx-auto">
+                <img src="{{asset('assets/images/forbidden/forbidden-img.png')}}" alt="">
+            </div>
+            <div class="max-w-700-px mx-auto mt-40">
+                <h3 class="mb-24 max-w-1000-px">Access Denied</h3>
+                <p class="text-neutral-500 max-w-700-px text-lg">You don't have authorization to get to this page. If it's not too much trouble, contact your site executive to demand access.</p>
+                <a href="{{route('dashboard')}}" class="btn btn-primary-600 px-32 py-16 flex-shrink-0 d-inline-flex align-items-center justify-content-center gap-8 mt-28"> 
+                    <i class="ri-home-4-line"></i> Go Back To Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
   
-  
-   <!-- jQuery library js -->
+  <!-- jQuery library js -->
   <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
   <script src="{{asset('assets/js/lib/jquery-3.7.1.min.js')}}"></script>
   <!-- Bootstrap js -->

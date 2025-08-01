@@ -9,6 +9,9 @@ use App\Http\Requests\PermissionRequest;
 use App\Services\PermissionService;
 use App\Models\Role;
 use App\Models\PermissionRole;
+use Illuminate\Support\Facades\Route;
+use App\Models\PermissionRoute;
+
 
 class PermissionController extends Controller
 {
@@ -32,6 +35,8 @@ class PermissionController extends Controller
    {
         try{
            $validatedData = $request->validated();
+           $validatedData['slug'] = $request->name;
+           $validatedData['groupbyy'] = 1;
            $this->permissionService->createPermission($validatedData);
            return response()->json([
                'success'=> true,
@@ -89,7 +94,7 @@ class PermissionController extends Controller
 
    public function assignPermissionRole(Request $request)
    {
-      $roles = Role::whereNotIn('name',['SuperAdmin'])->get();
+      $roles = Role::all();
       $permissions = Permission::all();
       $permission_with_roles = Permission::with('roles')->whereHas('roles')->get();
       return view('dashboard.pages.permissions.assign_permission_role',compact('roles','permissions','permission_with_roles'));
@@ -133,7 +138,8 @@ class PermissionController extends Controller
 
    public function editPermissionRole(Request $request,$id)
    {
-       $roles = Role::whereNotIn('name',['SuperAdmin'])->get();
+       //$roles = Role::whereNotIn('name',['SuperAdmin'])->get();
+       $roles = Role::all();
        $permissions = Permission::all();
        $permission_with_roles = Permission::with('roles')->whereHas('roles')->get();
        $getPermissionRoles = PermissionRole::where('permission_id',$id)->get();
@@ -144,7 +150,6 @@ class PermissionController extends Controller
        }
 
        
-
        return view('dashboard.pages.permissions.edit_permission_role',compact(
          'roles',
          'permissions',
@@ -172,4 +177,139 @@ class PermissionController extends Controller
       PermissionRole::insert($insertData);
       return redirect()->route('assign_permission_role');
    }
+
+   public function deletePermissionRole(Request $request)
+   {
+       try{
+           $data = $request->permission_id;
+           $ids = PermissionRole::where('permission_id',$data)->get();
+           foreach ($ids as $value) {
+              $result_data =  PermissionRole::where('permission_id',$value->permission_id)->delete();
+           }
+           
+           return response()->json([
+               'success'=> true,
+               'msg' => 'Permission deleted'
+           ]); 
+
+        }catch(\Exception $e)
+        {
+           return response()->json([
+               'success'=> false,
+               'msg' => $e->getMessage()
+           ]);
+        }
+   }
+
+
+   public function assignPermissionRoute(Request $request)
+   {
+      $routes = Route::getRoutes();
+      $middlewareGroup = 'superadmincheck';
+      $routeDetails = [];
+      foreach($routes as $route){
+         $middlewares = $route->gatherMiddleware();
+         if(in_array($middlewareGroup, $middlewares)){
+             $routeName = $route->getName();
+             if($routeName !== 'dashboard' && $routeName !== 'dashboard.logout'){
+                 $routeDetails[] = [
+                 'name' => $routeName,
+                 'url'  => $route->uri()
+                ];
+             }
+            
+         }
+      }
+
+      $permissions = Permission::all();
+      $routerPermissions = PermissionRoute::with('permission')->get();
+      $permission_with_roles = Permission::with('roles')->whereHas('roles')->get();
+      return view('dashboard.pages.permissions.assign_permission_route',compact('permissions','permission_with_roles','routeDetails','routerPermissions'));
+   }
+
+   public function createPermissionRoute(Request $request)
+   {
+       try{
+        
+        $ifExist = PermissionRoute::where([
+            'permission_id'=> $request->permission_id,
+         ])->first();
+
+         if($ifExist){ 
+            return response()->json([
+               'success'=> false,
+               'msg' => 'Permission is already assigned!'
+           ]);
+         }
+         PermissionRoute::create([
+            'router'=> $request->route,
+            'permission_id'=> $request->permission_id,
+         ]);
+ 
+         return response()->json([
+               'success'=> true,
+               'msg' => 'Permission is assigned to selected route!'
+           ]);
+
+
+       }catch(\Exception $e)
+        {
+           return response()->json([
+               'success'=> false,
+               'msg' => $e->getMessage()
+           ]);
+        }
+   }
+
+
+   public function editPermissionRoute(Request $request,$id)
+   {
+
+      $routes = Route::getRoutes();
+      $middlewareGroup = 'superadmincheck';
+      $routeDetails = [];
+      foreach($routes as $route){
+         $middlewares = $route->gatherMiddleware();
+         if(in_array($middlewareGroup, $middlewares)){
+             $routeName = $route->getName();
+             if($routeName !== 'dashboard' && $routeName !== 'dashboard.logout'){
+                 $routeDetails[] = [
+                 'name' => $routeName,
+                 'url'  => $route->uri()
+                ];
+             }
+            
+         }
+      }
+       
+       $permissions = Permission::all();
+       $getPermissionRolew = Permission::where('id',$id)->first();
+       $permission_route = PermissionRoute::where('id',$id)->first();
+
+       return view('dashboard.pages.permissions.edit_permission_route',compact(
+         'permissions',
+         'routeDetails',
+         'getPermissionRolew',
+         'permission_route'
+      ));
+   }
+
+
+   public function updatePermissionRoute(Request $request)
+   {
+       $permission = $request->permission_id;
+       $routes  =  $request->routes;
+       PermissionRoute::where('permission_id',$permission)->delete();
+       $insertData = [];
+       foreach($routes as $route){
+           $insertData[] = [
+                'permission_id'=> $request->permission_id,
+                'router' => $route
+           ];
+       }
+
+      PermissionRoute::insert($insertData);
+      return redirect()->route('assign_permission_route');
+   }
+
 }

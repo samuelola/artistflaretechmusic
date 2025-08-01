@@ -13,7 +13,6 @@ class PermissionService implements PermissionInterface
     public function createPermission($data){
         $result_data =  Permission::create($data);
         return $result_data;
-        
     }
 
     public function updatePermission($id,$name){

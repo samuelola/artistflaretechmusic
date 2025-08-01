@@ -275,7 +275,7 @@
                                 <!-- <h6 class="text-md text-primary-light mb-16">Change Password</h6> -->
                                 <form method="post" action="{{route('change.user.password',['id'=>$user_info->id ])}}" enctype="multipart/form-data">
                                     @csrf
-                                    <div class="mb-20">
+                                        <!-- <div class="mb-20">
                                             <label for="your-password" class="form-label fw-semibold text-primary-light text-sm mb-8">Current Password <span class="text-danger-600">*</span></label>
                                             <div class="position-relative">
                                                 <input type="password" name="current_password" class="form-control radius-8" id="your-password" placeholder="Enter New Password*" required>
@@ -284,7 +284,7 @@
                                             @error('current_password')
                                             <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
                                             @enderror
-                                        </div>
+                                        </div> -->
                                         <div class="mb-20">
                                             <label for="your-password" class="form-label fw-semibold text-primary-light text-sm mb-8">New Password <span class="text-danger-600">*</span></label>
                                             <div class="position-relative">

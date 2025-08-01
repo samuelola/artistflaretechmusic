@@ -8,6 +8,7 @@ use DB;
 use App\Models\Role;
 use App\Http\Requests\RoleRequest;
 use App\Services\RoleService;
+use App\Models\permission;
 
 class RoleController extends Controller
 {
@@ -21,7 +22,7 @@ class RoleController extends Controller
 
    public function manageRole(Request $request)
    {
-      $roles = Role::whereNotIn('name',['SuperAdmin'])->get();
+      $roles = Role::all();               
       return view('dashboard.pages.roles.manage_role',compact('roles'));
    }
     

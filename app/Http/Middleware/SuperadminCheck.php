@@ -30,7 +30,7 @@ class SuperadminCheck
         if($response->successful() == true){
             $rel = json_decode($loggedUserInfo);
             $user = User::where('id',$rel->user_details->id)->first();
-            if($user->role_id == UserStatus::SuperAdmin){
+            if($user->role_id == UserStatus::SuperAdmin || $user->role_id == UserStatus::Admin ){
                 Auth::setUser($user);
                 if (Auth::check()) {
                     return $next($request);
@@ -40,14 +40,9 @@ class SuperadminCheck
             }else{
                 return Redirect::to('http://auth.test');
             }
-            
-            
         }
         
         return Redirect::to('http://auth.test');
 
-        
-        
-        
     }
 }

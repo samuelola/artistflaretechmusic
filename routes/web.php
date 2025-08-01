@@ -56,11 +56,18 @@ Route::middleware('superadmincheck')->group(function () {
     Route::post('/delete_permission', [PermissionController::class,'deletePermission'])->name('delete_permission');
     Route::post('/update_permission', [PermissionController::class,'updatePermission'])->name('update_permission');
 
-    // assign permission to role routes
+    // assign permission to role 
     Route::get('/assign_permission_role', [PermissionController::class,'assignPermissionRole'])->name('assign_permission_role');
     Route::post('/create_permission_role', [PermissionController::class,'createPermissionRole'])->name('create_permission_role');
     Route::get('/edit_permission_role/{id}', [PermissionController::class,'editPermissionRole'])->name('edit_permission_role');
     Route::post('/update_permission_role', [PermissionController::class,'updatePermissionRole'])->name('update_permission_role');
+    Route::post('/delete_permission_role', [PermissionController::class,'deletePermissionRole'])->name('delete_permission_role');
+    
+    // assign permission to route
+    Route::get('/assign_permission_route', [PermissionController::class,'assignPermissionRoute'])->name('assign_permission_route');
+    Route::post('/create_permission_route', [PermissionController::class,'createPermissionRoute'])->name('create_permission_route');
+    Route::get('/edit_permission_route/{id}', [PermissionController::class,'editPermissionRoute'])->name('edit_permission_route');
+    Route::post('/update_permission_route', [PermissionController::class,'updatePermissionRoute'])->name('update_permission_route');
     
 });
 

@@ -9,6 +9,8 @@ class Permission extends Model
 {
     protected $fillable = [
         'name',
+        'slug',
+        'groupbyy'
     ];
 
     public function roles()

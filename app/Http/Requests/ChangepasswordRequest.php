@@ -23,7 +23,7 @@ class ChangepasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'current_password' => ['required', new MatchOldPassword],
+            // 'current_password' => ['required', new MatchOldPassword],
             'new_password' => ['required'],
             'confirm_password' => ['same:new_password'],
         ];
@@ -32,7 +32,7 @@ class ChangepasswordRequest extends FormRequest
      public function messages()
     {
         return [
-            'current_password.required' => 'Current Password field is required',
+            // 'current_password.required' => 'Current Password field is required',
             'new_password.required' => 'New Password field is required',
             'confirm_password.required' => 'Confirm Password field is required', 
         ];

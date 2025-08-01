@@ -7,6 +7,13 @@
 
 @include('sweetalert::alert') 
 
+@php 
+
+$permissionedituserPermission = App\Models\PermissionRole::getPermission('delete-users',Auth::user()->role_id);
+$permissiondeleteuserPermission = App\Models\PermissionRole::getPermission('edit-users',Auth::user()->role_id);
+
+@endphp
+
 <main class="dashboard-main">
   <div class="navbar-header">
   <div class="row align-items-center justify-content-between">
@@ -134,20 +141,17 @@
                            
                            ?>
                            <div style="float:left;margin-right: 8px;">
+                           
                            <a href="{{route('viewdashboardusers',$encrypted)}}">
-                              <!-- <span class="badge text-sm fw-semibold w-32-px h-32-px d-flex justify-content-center align-items-center rounded-circle bg-primary-600  text-white">1</span> -->
-                              <!-- <span class="badge text-sm fw-semibold  justify-content-center align-items-center rounded-circle bg-primary-600  text-white">
-                              
-                              </span> -->
                               <iconify-icon icon="mage:edit" data-toggle="tooltip" title='Edit' width="24" height="24" style="color:#700084;"></iconify-icon>
                            </a>
+                          
                            </div>
                           <div>
+                            
                           <form method="POST" action="{{route('deleteUser',$encrypted)}}">
                             @csrf
                             <input name="_method" type="hidden" value="DELETE">
-                            <!-- <span class="badge text-sm fw-semibold border show_confirm border-danger-600 text-danger-600 bg-transparent px-20 py-9 radius-4 text-white">Delete</span> -->
-                            <!-- <span class="badge text-sm fw-semibold  justify-content-center align-items-center rounded-circle bg-primary-600  text-white">1</span> -->
                             <iconify-icon class="show_confirm" data-toggle="tooltip" title='Delete' icon="mdi-light:delete" width="24" height="24" style="color:red;"></iconify-icon>
                            </form>
                           </div>

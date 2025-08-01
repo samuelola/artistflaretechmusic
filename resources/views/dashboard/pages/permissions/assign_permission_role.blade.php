@@ -36,7 +36,7 @@
 </div>
 
    
-    <div class="card p-0 radius-12" style="
+    <div class="card h-100 radius-12" style="
     height: 400px;
 ">
        <div class="card-body p-24">
@@ -72,7 +72,7 @@
                                       </td>
                                       <td>
                                           <a href="{{route('edit_permission_role',['id'=>$permission->id])}}" class="bg-info-focus text-info-main px-32 py-4 rounded-pill fw-medium text-sm">Edit</a>
-                                          <button data-id ="{{$permission->id}}" data-name="{{$permission->name}}" class="bg-danger-focus text-danger-main px-32 py-4 rounded-pill fw-medium text-sm deletePermissionBtn" data-bs-toggle="modal" data-bs-target="#deletePermissionModal">Delete</button>
+                                          <button data-id ="{{$permission->id}}" data-name="{{$permission->name}}" class="bg-danger-focus text-danger-main px-32 py-4 rounded-pill fw-medium text-sm deletePermissionBtn" data-bs-toggle="modal" data-bs-target="#deletePermissionRoleModal">Delete</button>
                                       </td>
                                    </tr>
                                 @endforeach
@@ -107,7 +107,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                           
+
                             <div class="form-group" style="margin-top:20px;">
                                  <label class="form-label">Role:</label>
                                 <select id="role_id" class="form-select" aria-label="Default select example" required>
@@ -117,8 +117,9 @@
                                     @endforeach
                                 </select>
                             </div>
+
                            
-                            
+                           
                         </div>
 
                         <div class="modal-footer">
@@ -132,7 +133,30 @@
     </div>
   <!--end modal-->
 
- 
+<!-- delete permissionrole Modal -->
+<div class="modal fade" id="deletePermissionRoleModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <form>
+            @csrf
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Delete</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" value="" name="permission_id" id="deletePermissionId"/>
+                <p>Are you sure you want to delete the roles from the permission ?</p>
+    
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button id="deleteFormPermissionRoles" type="button" class="btn btn-primary">Delete</button>
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
+  <!--end modal-->
 
 
 @endsection
@@ -178,6 +202,40 @@
                        location.reload();
                     }else{
                        alert(response.msg)
+                    }
+                }
+            })
+        })
+
+
+        $('.deletePermissionBtn').click(function(){
+          var permissionId = $(this).data("id");
+          var permissionName = $(this).data("name");
+
+          //$('.delete-permission').text(permissionName);
+          $('#deletePermissionId').val(permissionId);
+
+        });
+
+        $("#deleteFormPermissionRoles").click(function(e){
+            e.preventDefault();
+            //$("#deleteFormPermissionRoles").prop('disabled',true)
+            var deletepermission = $("#deletePermissionId").val();
+            $.ajax({
+                headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                url: "{{route('delete_permission_role')}}",
+                type: "POST",
+                data : {permission_id:deletepermission},
+                success:function(response){
+                    //$("#deleteFormPermissionRoles").prop('disabled',false)
+                    if(response.success){
+                       alert(response.msg)
+                       $('#deletePermissionModal').modal('hide');
+                       location.reload();
+                    }else{
+                       alert(response.msg);
                     }
                 }
             })

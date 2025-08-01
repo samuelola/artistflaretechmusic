@@ -25,7 +25,7 @@ class DashboardController extends Controller
     {
        
         
-        $users = User::distinct('first_name')->count();
+        $users = User::where('role_id','!=',1)->distinct('first_name')->count();
         $users_count_last_30days = User::where('created_at', '>', now()->subDays(30)->endOfDay())->count();
         $total_subscription = DB::table("subscription_payment_details")->count();
         $total_subscription_last_30days = DB::table("subscription_payment_details")->where('paymentdate', '>', now()->subDays(30)->endOfDay())->count();
@@ -36,7 +36,7 @@ class DashboardController extends Controller
         $total_trackss = (int)$total_tracks;
         $total_labels = DB::table("labeldetails")->count();
         $total_labelss = (int)$total_labels;
-        $get_all_users = User::orderBy('id','desc')->paginate(10);
+        $get_all_users = User::where('role_id','!=',1)->orderBy('id','desc')->paginate(10);
         $subscribers = DB::table("subscription_payment_details")->distinct('email')->orderBy('id','desc')->paginate(10);
         $plans = DB::table('subscription_plan')->orderBy('id','asc')->paginate(10);
 
@@ -68,6 +68,7 @@ class DashboardController extends Controller
                      ->orderBy('year', 'ASC')
                      ->groupBy('year')
                      ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->where('active','Yes')
                      ->get();
                       
                      
@@ -84,6 +85,7 @@ class DashboardController extends Controller
                      ->orderBy('year', 'ASC')
                      ->groupBy('year')
                      ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->where('active','Yes')
                      ->get(); 
                      
         $albumvalue = [];              
@@ -101,6 +103,7 @@ class DashboardController extends Controller
         ->orderBy('year', 'ASC')           
         ->groupBy('year')
         ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+        ->where('active','Yes')
         ->get();
         
          $thelang = DB::table('languages')
@@ -156,6 +159,7 @@ class DashboardController extends Controller
                      ->orderBy('month', 'ASC')
                      ->groupBy('month')
                      ->where(DB::raw('YEAR(join_date)'), '=', $request->date_filter_data )
+                     ->where('active','Yes')
                      ->get();
             if($year_data){
                  return response()->json(['data' => $year_data,'theyyear'=>$request->date_filter_data]);                
@@ -174,6 +178,7 @@ class DashboardController extends Controller
                      ->groupBy('year')
                      ->where('language',$request->filter_language_data)
                      ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->where('active','Yes')
                      ->get();
             if($lang_data){
                  return response()->json(['langdata' => $lang_data]);                
@@ -191,6 +196,7 @@ class DashboardController extends Controller
                      ->groupBy('year')
                      ->where('country',$request->filter_country_data)
                      ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
+                     ->where('active','Yes')
                      ->get();
             if($country_data){
                  return response()->json(['countrydata' => $country_data]);                
@@ -247,6 +253,9 @@ class DashboardController extends Controller
         
         if (Session::has('success')){
             Alert::Success('Success', Session::get('success'));
+        }
+        if(empty($permissionedituserPermission)){
+           abort(403);
         }
         $decrypted = decrypt($id);
         $user_info = DB::table('users')->where('id',$decrypted)->first();

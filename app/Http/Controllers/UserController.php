@@ -18,7 +18,7 @@ class UserController extends Controller
     public function allUser(Request $request){
 
         // $get_all_users = DB::table("users")->orderBy('id','desc')->paginate(10);
-        $gget_all_users = User::orderBy('id','desc')->lazy();
+        $gget_all_users = User::where('role_id','!=',1)->orderBy('id','desc')->lazy();
         $users = User::distinct('first_name')->count();
         return view("dashboard.pages.users.allusers",compact('gget_all_users','users'));
     }

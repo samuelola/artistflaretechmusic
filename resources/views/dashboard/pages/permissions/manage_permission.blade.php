@@ -36,7 +36,7 @@
 </div>
 
    
-    <div class="card p-0 radius-12" style="
+    <div class="card h-100 radius-12" style="
     height: 400px;
 ">
        <div class="card-body p-24">
@@ -112,8 +112,7 @@
           </div>
     </div>
   <!--end modal-->
-
-  <!--start modal-->
+  
      <!-- delete role Modal -->
 <div class="modal fade" id="deletePermissionModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">

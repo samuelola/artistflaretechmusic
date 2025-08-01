@@ -18,4 +18,13 @@ class PermissionRole extends Model
     {
         return $this->belongsTo(Permission::class);
     }
+
+    static public function getPermission($slug, $role_id)
+    {
+         return PermissionRole::select('permission_role.id')
+                          ->join('permissions','permissions.id','=','permission_role.permission_id')
+                          ->where('permission_role.role_id','=',$role_id)
+                          ->where('permissions.slug','=',$slug)
+                          ->count();
+    }
 }
