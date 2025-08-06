@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'check.user' => \App\Http\Middleware\CheckUser::class,
-            'superadmincheck' => \App\Http\Middleware\SuperadminCheck::class,
+            'artistusercheck' => \App\Http\Middleware\ArtistUserCheck::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

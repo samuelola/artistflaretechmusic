@@ -26,11 +26,10 @@ class CheckUser
         $decrypted = Crypt::decryptString($token);
 
        if ($decrypted) {
-        $response = Http::withToken($decrypted)->get('http://superadmin.test/api/user');
+        $response = Http::withToken($decrypted)->get('http:/artistuser.test/api/user');
         $loggedUserInfo = $response->body();
         $rel = json_decode($loggedUserInfo);
         $user = User::where('id',$rel->user_details->id)->first();
-        Auth::setUser($user);
         return $next($request);
 
        }

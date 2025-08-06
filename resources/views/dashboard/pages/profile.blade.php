@@ -116,7 +116,7 @@
                                 <!-- Upload Image Start -->
                                  <form method="post" action="{{route('change.password',['id'=>auth()->user()->id])}}">
                                     @csrf
-                                        <div class="mb-20">
+                                        <!-- <div class="mb-20">
                                             <label for="your-password" class="form-label fw-semibold text-primary-light text-sm mb-8">Current Password <span class="text-danger-600">*</span></label>
                                             <div class="position-relative">
                                                 <input type="password" name="current_password" class="form-control radius-8" id="your-password" placeholder="Enter New Password*" required>
@@ -125,7 +125,7 @@
                                             @error('current_password')
                                             <span class="invalid-feedback d-block" role="alert"><strong>{{ $message }}</strong></span>
                                             @enderror
-                                        </div>
+                                        </div> -->
                                         <div class="mb-20">
                                             <label for="your-password" class="form-label fw-semibold text-primary-light text-sm mb-8">New Password <span class="text-danger-600">*</span></label>
                                             <div class="position-relative">

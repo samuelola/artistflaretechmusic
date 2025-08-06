@@ -17,6 +17,7 @@ class NewwAuthController extends Controller
             'email'    => $request->email,
             'password' => $request->password
         ];
+
         if (Auth::attempt($credentials)) 
         {
             $token = Auth::user()->createToken('auth_token')->plainTextToken;
@@ -24,11 +25,11 @@ class NewwAuthController extends Controller
                 'user' => Auth::user(), 
                 'token' => $token
             ], 200);
-            // return redirect()->route('dashboard')->with('token', $token);
+           
         }
   
         return response()->json([
-            'error_message' => 'Unauthorised, Wrong Email or Password'
+            'error_message' => 'Unauthorisedd, Wrong Email or Password'
         ], 401);
     }
 

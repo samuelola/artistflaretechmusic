@@ -14,7 +14,7 @@ Route::middleware('check.user')->group(function () {
     Route::get('/dashboardd', [DashboardController::class,'showDashboardd'])->name('dashboardd');
 });
 
-Route::middleware('superadmincheck')->group(function () {
+Route::middleware('artistusercheck')->group(function () {
     Route::get('/dashboard', [DashboardController::class,'showDashboard'])->name('dashboard');
     Route::post('/logout',[DashboardController::class,'logout'])->name('dashboard.logout');
     Route::get('/analytics', [DashboardController::class,'analytics'])->name('analytics');
@@ -44,6 +44,9 @@ Route::middleware('superadmincheck')->group(function () {
     Route::get('/filter_artist',[AnalyticsController::class,'filterArtistInfo'])->name('filter_artist');
     Route::get('/filter_artist_track',[AnalyticsController::class,'filterArtistTrackInfo'])->name('filter_artist_track');
     Route::get('/filter_artist_album',[AnalyticsController::class,'filterArtistAlbum'])->name('filter_artist_album');
+
+    
+    
     
     Route::get('/manage_role', [RoleController::class,'manageRole'])->name('manage_role');
     Route::post('/create_role', [RoleController::class,'createRole'])->name('create_role');

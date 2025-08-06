@@ -17,9 +17,7 @@
       <img src="{{asset('flare_main.png')}}" alt="site logo" class="light-logo" style="width:200px;">
       <img src="{{asset('flare_main.png')}}" alt="site logo" class="dark-logo" style="width:50px;">
       <img src="{{asset('flare_logo2.png')}}" alt="site logo" class="logo-icon" style="width:50px;">
-      <!-- <img src="assets/images/logo.png" alt="site logo" class="light-logo">
-      <img src="assets/images/logo-light.png" alt="site logo" class="dark-logo">
-      <img src="assets/images/logo-icon.png" alt="site logo" class="logo-icon"> -->
+      
     </a>
   </div>
   <div class="sidebar-menu-area">
@@ -31,14 +29,6 @@
           <span>Dashboard</span>
         </a>
       </li>
-
-      <!-- <li>
-        <a href="{{route('allUser')}}">
-        <iconify-icon icon="raphael:users" width="16" height="16"  class="menu-icon"></iconify-icon>
-           <span>Users</span> 
-        </a>
-       
-      </li> -->
 
       @if(!empty($permissionUser))
       <li class="dropdown">
@@ -87,12 +77,7 @@
             <a href="{{route('allsubscription')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>All Subscriptions</a>
           </li>
           @endif  
-          <!-- <li>
-            <a href="invoice-add.html"><i class="ri-circle-fill circle-icon text-info-main w-auto"></i> Add new</a>
-          </li>
-          <li>
-            <a href="invoice-edit.html"><i class="ri-circle-fill circle-icon text-danger-main w-auto"></i> Edit</a>
-          </li> -->
+         
         </ul>
       </li>
       @endif
@@ -107,7 +92,6 @@
 
       <li>
         <a href="{{route('admin_analytics')}}">
-        <!-- <iconify-icon icon="material-symbols-light:track-changes" width="16" height="16"></iconify-icon> -->
         <iconify-icon icon="pixel:analytics" width="16" height="16" class="menu-icon"></iconify-icon>
            <span>Analytics</span> 
         </a>
@@ -127,79 +111,6 @@
     @endif
       
    
-    @if(!empty($permissionPermissions)) 
-       <li class="dropdown">
-        <a href="javascript:void(0)">
-        <iconify-icon icon="icon-park:permissions" width="16" height="16" class="menu-icon"></iconify-icon>
-          <span>Permissions</span> 
-        </a>
-        <ul class="sidebar-submenu">
-          <li>
-            <a href="{{route('manage_permission')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>Manage Permissions</a>
-          </li>
-          <li>
-            <a href="{{route('assign_permission_role')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>Assign Permission Role</a>
-          </li>
-          
-        </ul>
-      </li>
-    @endif
-      
-
-      <!-- <li>
-        <a href="{{route('assign_permission_route')}}">
-        <iconify-icon icon="icon-park:permissions" width="16" height="16" class="menu-icon"></iconify-icon>
-           <span>Assign Permission Route</span> 
-        </a>
-      </li> -->
-
-
-      <!-- <li>
-        <a href="#">
-        <iconify-icon icon="material-symbols-light:track-changes" width="16" height="16"></iconify-icon>
-           <span>Labels</span> 
-        </a>
-       
-      </li> -->
-
-
-      <!-- <li class="dropdown">
-        <a href="javascript:void(0)">
-        <iconify-icon icon="mdi-light:music" width="16" height="16" style="margin-inline-end: 0.4rem;"></iconify-icon>
-          <span>Catalog\Releases</span> 
-        </a>
-        <ul class="sidebar-submenu">
-          <li>
-            <a href="#"><iconify-icon icon="streamline-freehand:products-shopping-bags" width="24" height="24"></iconify-icon>Products</a>
-          </li>
-          <li>
-            <a href="#"><iconify-icon icon="material-symbols-light:approval-delegation-outline" width="24" height="24"></iconify-icon>Pending Approval</a>
-          </li>
-          <li>
-            <a href="#"><iconify-icon icon="material-symbols-light:track-changes" width="24" height="24"></iconify-icon>Tracks</a>
-          </li>
-          <li>
-            <a href="#"><iconify-icon icon="iconoir:label" width="24" height="24"></iconify-icon>Label</a>
-          </li>
-        </ul>
-      </li> -->
-      
-      
-      <!-- <li class="dropdown">
-        <a href="javascript:void(0)" class="menu-icon">
-        <iconify-icon icon="arcticons:permissionchecker" width="16" height="16" style="margin-inline-end: 0.4rem;"></iconify-icon>
-          <span>Roles/Permissions</span> 
-        </a>
-        <ul class="sidebar-submenu">
-          <li>
-            <a href="#">
-              <iconify-icon icon="oui:app-users-roles" width="16" height="16"></iconify-icon>
-              Create Roles</a>
-          </li>
-          
-        </ul>
-      </li> -->
-
       
       <li>
         <a href="{{ route('dashboard.logout') }}" onclick="event.preventDefault(); document.getElementById('frm-logout').submit();">

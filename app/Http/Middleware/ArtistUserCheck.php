@@ -13,7 +13,7 @@ use Session;
 use Illuminate\Support\Facades\Crypt;
 use App\Enum\UserStatus;
 
-class SuperadminCheck
+class ArtistUserCheck
 {
     /**
      * Handle an incoming request.
@@ -25,12 +25,12 @@ class SuperadminCheck
 
         $rri = Session::get('tokken');
         $decrypted = $rri;
-        $response = Http::withToken($decrypted)->get('http://superadmin.test/api/user');
+        $response = Http::withToken($decrypted)->get('http://artistuser.test/api/user');
         $loggedUserInfo = $response->body();
         if($response->successful() == true){
             $rel = json_decode($loggedUserInfo);
             $user = User::where('id',$rel->user_details->id)->first();
-            if($user->role_id == UserStatus::SuperAdmin || $user->role_id == UserStatus::Admin ){
+            if($user->role_id == UserStatus::Artist || $user->role_id == UserStatus::User ){
                 Auth::setUser($user);
                 if (Auth::check()) {
                     return $next($request);

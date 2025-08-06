@@ -227,20 +227,20 @@ class DashboardController extends Controller
         Session::put('tokken',$decrypted);
 
        if ($decrypted) {
-        $response = Http::withToken($decrypted)->get('http://superadmin.test/api/user');
+        $response = Http::withToken($decrypted)->get('http://artistuser.test/api/user');
         $loggedUserInfo = $response->body();
         $rel = json_decode($loggedUserInfo);
         $user = User::where('id',$rel->user_details->id)->first();
         Auth::setUser($user);
-        return Redirect::to('http://superadmin.test/dashboard');
+        return Redirect::to('http://artistuser.test/dashboard');
        }
-
         return Redirect::to('http://auth.test');
     }
+    
     public function logout(Request $request) {
         $rri = Session::get('tokken');
         $decrypted = $rri;
-        $response = Http::withToken($decrypted)->post('http://superadmin.test/api/logout');
+        $response = Http::withToken($decrypted)->post('http://artistuser.test/api/logout');
         if($response->successful() == true){
             return Redirect::to('http://auth.test');
             $request->session()->forget('tokken');
