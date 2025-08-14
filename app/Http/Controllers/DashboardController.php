@@ -29,16 +29,30 @@ class DashboardController extends Controller
         $users_count_last_30days = User::where('created_at', '>', now()->subDays(30)->endOfDay())->count();
         $total_subscription = DB::table("subscription_payment_details")->count();
         $total_subscription_last_30days = DB::table("subscription_payment_details")->where('paymentdate', '>', now()->subDays(30)->endOfDay())->count();
-        //$total_albums = DB::table("users")->sum('albums');
-        $total_albums = User::sum('albums');
-        $total_albumss = (int)$total_albums;
-        $total_tracks = DB::table("trackdetails")->where(['ReleaseCount'=>0,'ReleaseCount'=>1])->distinct('UserName')->count();
-        $total_trackss = (int)$total_tracks;
-        $total_labels = DB::table("labeldetails")->count();
-        $total_labelss = (int)$total_labels;
+        $total_albums_user = DB::table("users")->where('id',auth()->user()->id)->sum('albums');
         $get_all_users = User::where('role_id','!=',1)->orderBy('id','desc')->paginate(10);
         $subscribers = DB::table("subscription_payment_details")->distinct('email')->orderBy('id','desc')->paginate(10);
         $plans = DB::table('subscription_plan')->orderBy('id','asc')->paginate(10);
+        $getwall_bal = DB::table('user_wallet')->where('user_id',auth()->user()->id)->first();
+        $min_bal = $getwall_bal->minimium_balance;
+        $main_bal = $getwall_bal->balance;
+        $total_balance = $min_bal + $main_bal;
+        $resultsub_count = DB::table('users')
+        ->join('subscription_payment_details', 'subscription_payment_details.Email', '=', 'users.email')
+        ->where('users.email', auth()->user()->email)
+        ->count();
+
+        $resulttrack_count = DB::table('users')
+        ->join('trackdetails', 'trackdetails.Email', '=', 'users.email')
+        ->where('users.email', auth()->user()->email)
+        ->count();
+
+        $usser = DB::table("users")->where('id',auth()->user()->id)->first();
+        $g1 = $usser->first_name;
+        $g2 = $usser->last_name;
+        $rrg = $g1.' '.$g2;
+        $total_labelUser = DB::table("product_details")->distinct('Label_Name')->where('Sound_Recording_Performing_Artist_s',$rrg)->count();
+
 
         
         if ($request->ajax()) {
@@ -47,18 +61,6 @@ class DashboardController extends Controller
             $viewplan = view('dashboard.pages.dataaplan', compact('plans'))->render();
             return response()->json(['html' => $view,'newhtml'=>$vieww,'newhtmlplan'=>$viewplan]);
         }
-
-
-        // $deposit = DB::table('users')
-        //              ->select([
-        //                DB::raw('YEAR(join_date)as year'),
-        //                DB::raw('SUM(albums) as albums'),
-        //                DB::raw('SUM(tracks) as tracks')
-        //              ])
-        //              ->orderBy('year', 'ASC')
-        //              ->groupBy('year')
-        //              ->where(DB::raw('YEAR(join_date)'), '!=', 'null' )
-        //              ->get();
 
         $thealbums = DB::table('users')
                      ->select([
@@ -112,16 +114,20 @@ class DashboardController extends Controller
         $thecountry = DB::table('countries')
         ->get();
 
-        
+        $login_count = DB::table('user_statistics')->where('user_id',auth()->user()->id)->first();
    
         return view('dashboard.pages.home',compact(
+            'login_count',
+            'resulttrack_count',
+            'total_labelUser',
+            'total_albums_user',
+            'resultsub_count',
+            'total_balance',
+            'getwall_bal',
             'users',
             'users_count_last_30days',
             'total_subscription',
             'total_subscription_last_30days',
-            'total_albumss',
-            'total_trackss',
-            'total_labelss',
             'get_all_users',
             'subscribers',
             'plans',
@@ -263,7 +269,12 @@ class DashboardController extends Controller
     }
 
     public function allTracks(Request $request){
-         $all_th_tracks = DB::table('trackdetails')->orderBy('id','desc')->paginate(10);
+
+        $all_th_tracks = DB::table('users')
+        ->join('trackdetails', 'trackdetails.Email', '=', 'users.email')
+        ->where('users.email', auth()->user()->email)
+        ->orderBy('id','desc')
+        ->paginate(10);
          if ($request->ajax()) {
             $viewttracks = view('dashboard.pages.trackspage', compact('all_th_tracks'))->render();
             return response()->json(['htmltracks' => $viewttracks]);

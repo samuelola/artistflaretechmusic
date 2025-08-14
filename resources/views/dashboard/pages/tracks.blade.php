@@ -90,7 +90,7 @@
             })
             .done(function (response) {
                 if (response.htmltracks == '') {
-                    $('.auto-loadtrack').html("We don't have more data to display :(");
+                    $('.auto-loadtrack').html("We don't have any data to display :(");
                     return;
                 }
                 $('.auto-loadtrack').hide();

@@ -113,5 +113,12 @@ class SubscriptionController extends Controller
 
         return redirect()->route('allsubscription')->with('success','Sucription updated Successfully');        
     }
+
+    public function choosesubscription(Request $request)
+    {
+        $currencyExchangeRate = DB::table('currency')->where('code','NGN')->first();
+        $allsubs = DB::table('subscription_plan')->get();
+        return view('dashboard.pages.choose_subscription',compact('allsubs','currencyExchangeRate'));
+    }
     
 }

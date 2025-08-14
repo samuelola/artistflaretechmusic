@@ -195,7 +195,12 @@
         <div class="dropdown">
           <button class="d-flex justify-content-center align-items-center rounded-circle" type="button" data-bs-toggle="dropdown">
             @if(!is_null(auth()->user()))
-            <img src="/profile_uploads/{{auth()->user()->profile_image}}" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle">
+              @if(empty(auth()->user()->profile_image))
+                 <img src="assets/images/user.png" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle">
+              @else
+                 <img src="/profile_uploads/{{auth()->user()->profile_image}}" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle">
+              @endif
+              
             @else
             <img src="assets/images/user.png" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle">
             @endif

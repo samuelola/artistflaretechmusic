@@ -8,6 +8,12 @@
   $permissionPermissions = App\Models\PermissionRole::getPermission('Permissions',Auth::user()->role_id);
   $permissionedituserPermission = App\Models\PermissionRole::getPermission('delete-users',Auth::user()->role_id);
   $permissiondeleteuserPermission = App\Models\PermissionRole::getPermission('edit-users',Auth::user()->role_id);
+  $permissionchooseSubscriptionPermission = App\Models\PermissionRole::getPermission('choose_subscription',Auth::user()->role_id);
+  $user_role_artist = App\Enum\UserStatus::Artist;
+  $user_role_admin = App\Enum\UserStatus::Admin;
+  $user_role_superadmin = App\Enum\UserStatus::SuperAdmin;
+  $user_role_guest = App\Enum\UserStatus::Guest;
+
   @endphp
   <button type="button" class="sidebar-close-btn">
     <iconify-icon icon="radix-icons:cross-2"></iconify-icon>
@@ -30,7 +36,7 @@
         </a>
       </li>
 
-      @if(!empty($permissionUser))
+      @if(!empty($permissionUser) && Auth::user()->role_id != $user_role_artist)
       <li class="dropdown">
         <a href="javascript:void(0)" class="menu-icon">
         <iconify-icon icon="raphael:users" width="16" height="16" style="margin-inline-end: 0.4rem;"></iconify-icon>
@@ -76,10 +82,30 @@
           
             <a href="{{route('allsubscription')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>All Subscriptions</a>
           </li>
-          @endif  
-         
+          @endif 
+          
+          @if(!empty($permissionchooseSubscriptionPermission))
+          <li>
+            <a href="{{route('choosesubscription')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>Choose Subscriptions</a>
+          </li>
+          @endif
+
         </ul>
       </li>
+      @endif
+
+      @if(Auth::user()->role_id == $user_role_guest)
+          <li class="dropdown">
+            <a href="javascript:void(0)">
+            <iconify-icon icon="streamline:subscription-cashflow" width="16" height="16"  class="menu-icon"></iconify-icon>
+              <span>Subscription</span> 
+            </a>
+            <ul class="sidebar-submenu">
+             <li>
+              <a href="{{route('choosesubscription')}}"><iconify-icon icon="bi:dash" width="16" height="16"></iconify-icon>Choose Subscriptions</a>
+            </li>
+            </ul>
+         </li>  
       @endif
 
       <li>
@@ -90,6 +116,8 @@
        
       </li>
 
+     
+     @if(Auth::user()->role_id == $user_role_artist)
       <li>
         <a href="{{route('admin_analytics')}}">
         <iconify-icon icon="pixel:analytics" width="16" height="16" class="menu-icon"></iconify-icon>
@@ -97,6 +125,8 @@
         </a>
        
       </li>
+    @endif
+      
 
       
     @if(!empty($permissionroles))  

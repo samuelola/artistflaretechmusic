@@ -10,31 +10,18 @@
                     <!-- <span class="fw-medium text-md text-secondary-light">With Revenue Sharing</span> -->
                     <h6 class="mb-0" style="color:#f6f6f7;">{{$allsub->subscription_name ?? ''}}</h6>
                 </div>
-                <div>
-                    <!-- <a>
-                      <iconify-icon style="color:#fff;" icon="weui:setting-outlined" width="24" height="24"></iconify-icon>
-                    </a> -->
-                    <div class="dropdown">
-                            <button style="position: relative;
-    left: 0px;" class="btn px-18 py-11 text-primary-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <iconify-icon style="color:#fff;" icon="weui:setting-outlined" width="24" height="24"></iconify-icon>
-                            </button>
-                            <ul class="dropdown-menu" style="">
-                              <li><a style="color:#000;" class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900" href="{{route('edit_subscription',['id'=>$allsub->id])}}">Edit</a></li>
-                              <!-- <li><a style="color:#000;" class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900" href="#">Activate</a></li>
-                              <li><a style="color:#000;" class="dropdown-item px-16 py-8 rounded text-secondary-light bg-hover-neutral-200 text-hover-neutral-900" href="#">Deactive</a></li> -->
-                            </ul>
-                        </div>
-                </div>
+               
             </div>
             <p class="mt-16 mb-0 text-secondary-light mb-28">{{$allsub->plan_info_text ?? ''}}</p>
             <!-- <h3 class="mb-24" style="color:#f6f6f7;">$99 <span class="fw-medium text-md text-secondary-light">/monthly</span> </h3> -->
-            <h3 class="mb-24" style="color:#f6f6f7;font-size: 33px !important;">
+            <h3 class="mb-24" style="color:#f6f6f7;font-size: 22px !important;">
                 <?php
                    $curr = DB::table('currency')->where('code',$allsub->currency)->first();
-                   echo $curr->symbol;
+                   $basecurrSymbol = DB::table('currency')->where('code',$currencyExchangeRate->rate_symbol)->first();
+                   $amount = $allsub->subscription_amount/$currencyExchangeRate->rate;
                  ?>
-                {{$allsub->subscription_amount ?? ''}}
+                 <!-- currencyExchangeRate -->
+                {{$curr->symbol}}{{number_format($allsub->subscription_amount ?? '', 2, '.', ',')}} / {{$basecurrSymbol->symbol ?? ''}}{{number_format($amount ?? '', 2, '.', ',')}}
             </h3>
             <span class="mb-20 fw-medium" style="color:#f6f6f7;">What’s included</span>
             <ul>
@@ -59,7 +46,18 @@
                     <span class="text-secondary-light text-lg">Duration &nbsp; {{$allsub->subscription_duration ?? ''}}</span>
                 </li>
             </ul>
-            <!-- <button type="button" class="bg-lilac-600 bg-hover-lilac-700 text-white text-center border border-lilac-600 text-sm btn-sm px-12 py-10 w-100 radius-8 mt-28" data-bs-toggle="modal" data-bs-target="#exampleModal">Get started</button> -->
+            
+            <div style="display:flex;
+  justify-content:center;
+  align-items:center;">
+              <form action="{{route('checkout_subscription')}}" method="post">
+                 @csrf
+                   <input type="hidden" name="sub_id" value="{{$allsub->id}}"/>
+                   <button type="submit" id="start_subscription" class="btn btn-success-600 radius-8 px-16 py-9">Get Started</button>
+              </form>
+             
+            </div>
+            
         </div>
     </div>
 @endforeach  

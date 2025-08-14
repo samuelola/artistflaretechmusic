@@ -7,5 +7,5 @@ class UserStatus
     const SuperAdmin = 1;
     const Admin = 2;
     const Artist = 3;
-    const User = 4;
+    const Guest = 4;
 }

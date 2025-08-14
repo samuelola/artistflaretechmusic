@@ -1,17 +1,16 @@
 @extends('dashboard.index')
 @section('title')
-   Dashboard
+  Dashboard
 @endsection
 @section('content')
 
+@include('sweetalert::alert')
 
-<!-- @include('sweetalert::alert')  -->
-
-
+ 
 
 <main class="dashboard-main">
   <div class="navbar-header">
-  <div class="row align-items-center justify-content-between">
+    <div class="row align-items-center justify-content-between">
     <div class="col-auto">
       <div class="d-flex flex-wrap align-items-center gap-4">
         <button type="button" class="sidebar-toggle">
@@ -28,37 +27,34 @@
       </div>
     </div>
     @include('dashboard.subheader')
-  </div>
-</div> 
+    </div>
+  </div> 
   
   <div class="dashboard-main-body">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-  <h6 class="fw-semibold mb-0">All Subscription</h6>
-  
+  <h6 class="fw-semibold mb-0">All Subscriptions</h6>
+
 </div>
 
+        <div class="row">
+                <div class="col-md-12">
+                        @if(session('error'))
+                            
+                            <div class="alert alert-danger bg-danger-100 text-danger-600 border-danger-100 px-24 py-11 mb-0 fw-semibold text-lg radius-8 d-flex align-items-center justify-content-between" role="alert">
+                                    <div class="d-flex align-items-center gap-2">
+                                        
+                                        {!! session('error') !!} 
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+                </div>
+        </div>
+
    
-
-    <div class="row gy-4 mt-1" style="margin-bottom: 87px;">
-      <div class="col-xxl-6 col-xl-12">
-        <div class="card h-100" style="
-    padding-bottom: 40px;
-">
-          <div class="card-body">
-            <div class="d-flex flex-wrap align-items-center justify-content-between">
-              <h6 class="text-lg mb-0">Add Subscription</h6>
-              
-            </div>
-             <!--start-->
-             <div class="row gy-4 mt-3" id="data-wrapperallsub">
+            <!--new row -->
                
-                 <!-- @include('dashboard.pages.dataallsub') -->
-                  
-            </div>
-           
-
-       </div>
-             <!--end start-->
+            <!--end new row-->
           
           </div>
       </div>

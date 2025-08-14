@@ -28,6 +28,21 @@
     @include('dashboard.subheader')
   </div>
 </div> 
+
+@if(session('success'))
+                
+                <!-- <div class="fade show alert alert-dismissible alert-danger bg-danger-600 text-white border-danger-600 px-24 py-11 mb-0 fw-semibold text-lg radius-8 d-flex align-items-center justify-content-between" role="alert">
+                    {!! session('error') !!}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div> -->
+                <div class="alert alert-danger bg-danger-100 text-danger-600 border-danger-100 px-24 py-11 mb-0 fw-semibold text-lg radius-8 d-flex align-items-center justify-content-between" role="alert">
+                        <div class="d-flex align-items-center gap-2">
+                            
+                            {!! session('success') !!} 
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
   
   <div class="dashboard-main-body">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
@@ -36,52 +51,136 @@
     @php
       $role = \App\Models\Role::where('id',Auth::user()->role_id)->first();
       echo $role->name;
+      $currencyExchangeRateNgn = DB::table('currency')->where('code','NGN')->first();
+      $currencyExchangeRateUsd = DB::table('currency')->where('code','USD')->first();
+      $exchange_bal = $getwall_bal->balance/$currencyExchangeRateNgn->rate;
+      $exchange_minbal = $getwall_bal->minimium_balance/$currencyExchangeRateNgn->rate;
+      $exchange_tolbal = $total_balance/$currencyExchangeRateNgn->rate;
     @endphp
     Dashboard</h6>
-  <!-- <ul class="d-flex align-items-center gap-2">
-    <li class="fw-medium">
-      <a href="index.html" class="d-flex align-items-center gap-1 hover-text-primary">
-        <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
-        Dashboard
-      </a>
-    </li>
-    <li>-</li>
-    <li class="fw-medium">AI</li>
-  </ul> -->
+  
 </div>
 
-    <div class="row row-cols-xxxl-5 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-4">
-      <div class="col">
-        <div class="card shadow-none border bg-gradient-start-1 h-100">
-          <div class="card-body p-20">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-              <div>
-                <p class="fw-medium text-primary-light mb-1">Total Users</p>
-                <h6 class="mb-0">{{number_format($users , 0 , '.' , ',')}}</h6>
-              </div>
-              <div class="w-50-px h-50-px bg-cyan rounded-circle d-flex justify-content-center align-items-center">
-                <iconify-icon icon="gridicons:multiple-users" class="text-white text-2xl mb-0"></iconify-icon>
-              </div>
-            </div>
-            <p class="fw-medium text-sm text-primary-light mt-12 mb-0 d-flex align-items-center gap-2">
-              @if($users_count_last_30days > 10)
-              <span class="d-inline-flex align-items-center gap-1 text-success-main"><iconify-icon icon="bxs:up-arrow" class="text-xs"></iconify-icon> +{{$users_count_last_30days}}</span> 
-              @else
-              <span class="d-inline-flex align-items-center gap-1 text-danger-main"><iconify-icon icon="bxs:down-arrow" class="text-xs"></iconify-icon> {{$users_count_last_30days}}</span> 
-              @endif
+    <!--new -->
+    
+    <div class="row gy-4" style="margin-bottom:20px;">
+
+            <!-- Card Start -->
+            <div class="col-xxl-4 col-md-6">
               
-              Last 30 days users
-            </p>
-          </div>
-        </div><!-- card end -->
-      </div>
+                <div class="shadow-7 p-16 radius-12 bg-base">
+                   <!-- <h6 class="mb-0 fw-bold text-lg">Wallet</h6> -->
+                    <div class="row g-3">
+                        <div class="col-sm-6 col-xs-6">
+                            <div class="py-20 px-24 radius-8 position-relative z-1 h-100 bg-warning-light">
+                                <img src="assets/images/home-twelve/icons/booking-card-big-icon4.png" alt="Big Icon" class="position-absolute end-0 bottom-0 me-8 z-n1">
+                                <span class="d-block mt-12 text-neutral-800">Total Balance</span>
+                                <span style="color:#111827;font-weight:600;font-size:17px;" class="d-block mt-12 text-neutral-800">{{$currencyExchangeRateNgn->symbol}}{{number_format($total_balance ?? 0,2,'.',',')}} / {{$currencyExchangeRateUsd->symbol}}{{number_format($exchange_tolbal ?? '', 2, '.', ',')}}</span>
+                            </div>
+                            
+                        </div>
+                        <div class="col-sm-6 col-xs-6">
+                            <div class="py-20 px-24 radius-8 position-relative z-1 h-100 bg-green-light">
+                               <img src="assets/images/home-twelve/icons/booking-card-big-icon4.png" alt="Big Icon" class="position-absolute end-0 bottom-0 me-8 z-n1">
+                                <span class="d-block mt-12 text-neutral-800">Available Balance</span>
+                                               
+                                <span style="color:#111827;font-weight:600;font-size:17px;" class="d-block mt-12 text-neutral-800">{{$currencyExchangeRateNgn->symbol}}{{number_format($getwall_bal->balance ?? 0,2,'.',',')}} / {{$currencyExchangeRateUsd->symbol}}{{number_format($exchange_bal ?? '', 2, '.', ',')}}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xs-6">
+                            <div class="py-20 px-24 radius-8 position-relative z-1 h-100 bg-blue-light">
+                                <!-- <img src="assets/images/home-twelve/icons/booking-card-big-icon1.png" alt="Big Icon" class="position-absolute end-0 bottom-0 me-8 z-n1"> -->
+                                 <img src="assets/images/home-twelve/icons/booking-card-big-icon4.png" alt="Big Icon" class="position-absolute end-0 bottom-0 me-8 z-n1">
+                                <!-- <span class="w-44-px h-44-px radius-8 bg-white d-flex justify-content-center align-items-center">
+                                    <img src="assets/images/home-twelve/icons/booking-card-icon1.png" alt="Icon">
+                                </span> -->
+                                <span class="d-block mt-12 text-neutral-800">Minimum Balance</span>
+                                <span style="color:#111827;font-weight:600;font-size:17px;" class="d-block mt-12 text-neutral-800">{{$currencyExchangeRateNgn->symbol}}{{number_format($getwall_bal->minimium_balance ?? 0,2,'.',',')}} / {{$currencyExchangeRateUsd->symbol}}{{number_format($exchange_minbal ?? '', 2, '.', ',')}}</span>
+                            </div>
+                            <!-- <div class="py-20 px-24 radius-8 position-relative z-1 h-100 bg-warning-light">
+                                <img src="assets/images/home-twelve/icons/booking-card-big-icon4.png" alt="Big Icon" class="position-absolute end-0 bottom-0 me-8 z-n1">
+                                <span class="d-block mt-12 text-neutral-800">Minimium Balance</span>
+                                <span style="color:#111827;font-weight:600;font-size:18px;" class="d-block mt-12 text-neutral-800">#14,000.00 / $75</span>
+                            </div> -->
+                        </div>
+                        <div class="col-sm-6 col-xs-6">
+                            <div class="py-20 px-24 radius-8 position-relative z-1 h-100">
+                              <div class="d-flex gap-16" style="position: relative;left: -17px;top: 30px;">
+                                        <a href="{{route('topup')}}" style="font-size: 13px;" class="btn btn-primary-600 flex-shrink-0 d-flex align-items-center gap-2 " type="submit">
+                                            Top UP <iconify-icon icon="lsicon:top-outline" width="20" height="20"></iconify-icon>
+                                        </a>
+                                        <!-- <button style="font-size: 13px;" class="btn btn-primary-600 flex-shrink-0 d-flex align-items-center gap-2 " type="submit">Top UP <iconify-icon icon="lsicon:top-outline" width="20" height="20"></iconify-icon> </button> -->
+                                        <button style="font-size: 13px;" class="btn btn-primary-600 flex-shrink-0 d-flex align-items-center gap-2" type="submit">Transfer <i class="ri-send-plane-fill"></i> </button>
+                                    </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <!-- Card End -->
+
+            <!-- Semi Circle Gauge start -->
+              <div class="col-xxl-4 col-md-6">
+                
+                <div class="shadow-7 p-16 radius-12 bg-base">
+                 
+                    <div class="row g-3">
+                        <div class="col-sm-6 col-xs-6">
+                            <div class="py-20 px-24 radius-8 position-relative z-1 h-100 bg-blue-light">
+                                <img src="assets/images/home-twelve/icons/booking-card-big-icon1.png" alt="Big Icon" class="position-absolute end-0 bottom-0 me-8 z-n1">
+                                <span class="d-block mt-12 text-neutral-800">Login Daily</span>
+                                <span style="color:#111827;font-weight:600;font-size:17px;" class="d-block mt-12 text-neutral-800">+{{$login_count->login_count ?? 0}} coins</span>
+                            </div>
+                            
+                        </div>
+                        <div class="col-sm-6 col-xs-6">
+                            <div class="py-20 px-24 radius-8 position-relative z-1 h-100 bg-red-light">
+                               <img src="assets/images/home-twelve/icons/booking-card-big-icon4.png" alt="Big Icon" class="position-absolute end-0 bottom-0 me-8 z-n1">
+                                <span class="d-block mt-12 text-neutral-800">Invite New Members</span>
+                                               
+                                <span style="color:#111827;font-weight:600;font-size:17px;" class="d-block mt-12 text-neutral-800">+0 coins</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xs-6">
+                            <div class="py-20 px-24 radius-8 position-relative z-1 h-100 bg-warning-light">
+                                <img src="assets/images/home-twelve/icons/booking-card-big-icon4.png" alt="Big Icon" class="position-absolute end-0 bottom-0 me-8 z-n1">
+                                <span class="d-block mt-12 text-neutral-800">Upload a Release</span>
+                                <span style="color:#111827;font-weight:600;font-size:17px;" class="d-block mt-12 text-neutral-800">+0 coins</span>
+                            </div>
+                           
+                        </div>
+                        <div class="col-sm-6 col-xs-6">
+                              <div class="py-20 px-24 radius-8 position-relative z-1 h-100 bg-green-light">
+                                <img src="assets/images/home-twelve/icons/booking-card-big-icon4.png" alt="Big Icon" class="position-absolute end-0 bottom-0 me-8 z-n1">
+                                <span class="d-block mt-12 text-neutral-800">Add funds to wallet</span>
+                                <span style="color:#111827;font-weight:600;font-size:17px;" class="d-block mt-12 text-neutral-800">+0 coins</span>
+                              </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <!-- Semi Circle Gauge End -->
+
+            
+
+        </div>
+
+    
+
+    <!--end of new-->
+
+
+    <div class="row row-cols-xxxl-5 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-4">
+      
       <div class="col">
         <div class="card shadow-none border bg-gradient-start-2 h-100">
           <div class="card-body p-20">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
               <div>
                 <p class="fw-medium text-primary-light mb-1">Total Subscription</p>
-                <h6 class="mb-0">{{number_format($total_subscription , 0 , '.' , ',')}}</h6>
+                <h6 class="mb-0">{{number_format($resultsub_count , 0 , '.' , ',')}}</h6>
               </div>
               <div class="w-50-px h-50-px bg-purple rounded-circle d-flex justify-content-center align-items-center">
                 <!-- <iconify-icon icon="fa-solid:award" class="text-white text-2xl mb-0"></iconify-icon> -->
@@ -100,13 +199,19 @@
           </div>
         </div><!-- card end -->
       </div>
+      @php 
+        $user_role_artist = App\Enum\UserStatus::Artist;
+        $user_role_admin = App\Enum\UserStatus::Admin;
+        $user_role_superadmin = App\Enum\UserStatus::SuperAdmin;
+      @endphp
+      @if(Auth::user()->role_id == $user_role_artist)
       <div class="col">
         <div class="card shadow-none border bg-gradient-start-3 h-100">
           <div class="card-body p-20">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
               <div>
                 <p class="fw-medium text-primary-light mb-1">Albums</p>
-                <h6 class="mb-0">{{number_format($total_albumss , 0 , '.' , ',')}}</h6>
+                <h6 class="mb-0">{{number_format($total_albums_user , 0 , '.' , ',')}}</h6>
               </div>
               <div class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
               
@@ -114,19 +219,20 @@
               </div>
             </div>
             <p class="fw-medium text-sm text-primary-light mt-12 mb-0 d-flex align-items-center gap-2">
-              <!-- <span class="d-inline-flex align-items-center gap-1 text-success-main"><iconify-icon icon="bxs:up-arrow" class="text-xs"></iconify-icon> +200</span> 
-              Last 30 days users -->
+              
             </p>
           </div>
         </div><!-- card end -->
       </div>
+      @endif
+      @if(Auth::user()->role_id == $user_role_artist)
       <div class="col">
         <div class="card shadow-none border bg-gradient-start-4 h-100">
           <div class="card-body p-20">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
               <div>
                 <p class="fw-medium text-primary-light mb-1">Singles</p>
-                <h6 class="mb-0">{{number_format($total_labelss , 0 , '.' , ',')}}</h6>
+                <h6 class="mb-0">{{number_format($total_labelUser , 0 , '.' , ',')}}</h6>
               </div>
               <div class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
                 
@@ -140,13 +246,14 @@
           </div>
         </div><!-- card end -->
       </div>
+      @endif
       <div class="col">
         <div class="card shadow-none border bg-gradient-start-5 h-100">
           <div class="card-body p-20">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
               <div>
                 <p class="fw-medium text-primary-light mb-1">Tracks</p>
-                <h6 class="mb-0">{{number_format($total_trackss , 0 , '.' , ',')}}</h6>
+                <h6 class="mb-0">{{number_format($resulttrack_count , 0 , '.' , ',')}}</h6>
               </div>
               <div class="w-50-px h-50-px bg-red rounded-circle d-flex justify-content-center align-items-center">
                 
@@ -160,27 +267,7 @@
           </div>
         </div><!-- card end -->
       </div>
-      <div class="col">
-      <div class="card shadow-none border bg-gradient-start-1 h-100">
-          <div class="card-body p-20">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-              <div>
-                <p class="fw-medium text-primary-light mb-1">Rewards</p>
-                <h6 class="mb-0">0</h6>
-              </div>
-              <div class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
-                
-                <!-- <iconify-icon icon="octicon:issue-tracks-24" width="1em" height="1em" class="text-white text-2xl mb-0"></iconify-icon> -->
-                <iconify-icon icon="fluent:reward-12-regular" width="1em" height="1em" class="text-white text-2xl mb-0"></iconify-icon>
-              </div>
-            </div>
-            <p class="fw-medium text-sm text-primary-light mt-12 mb-0 d-flex align-items-center gap-2">
-              <!-- <span class="d-inline-flex align-items-center gap-1 text-success-main"><iconify-icon icon="bxs:up-arrow" class="text-xs"></iconify-icon> +$5,000</span> 
-              Last 30 days expense -->
-            </p>
-          </div>
-        </div><!-- card end -->
-      </div>
+      
       
     </div>
 
@@ -235,26 +322,18 @@
           </div>
         </div>
       </div>
+      @if(Auth::user()->role_id == $user_role_artist)
       <div class="col-xxl-3 col-xl-6">
         <div class="card h-100 radius-8 border">
           <div class="card-body p-24">
               <h6 class="mb-12 fw-semibold text-lg mb-16">Users</h6>
-              <!-- <div class="d-flex align-items-center gap-2 mb-20">
-                  <h6 class="fw-semibold mb-0">5,000</h6>
-                  <p class="text-sm mb-0">
-                      <span class="bg-danger-focus border br-danger px-8 py-2 rounded-pill fw-semibold text-danger-main text-sm d-inline-flex align-items-center gap-1">
-                          10%
-                          <iconify-icon icon="iconamoon:arrow-down-2-fill" class="icon"></iconify-icon>  
-                      </span> 
-                    - 20 Per Day 
-                  </p>
-              </div> -->
-
               <div id="barChart" class="barChart"></div>
             
           </div>
         </div>
       </div>
+      @endif
+
       <div class="col-xxl-3 col-xl-6">
         <div class="card h-100 radius-8 border-0 overflow-hidden">
           <div class="card-body p-24">
@@ -271,6 +350,8 @@
           </div>
         </div>
       </div>
+
+      @if(Auth::user()->role_id == $user_role_superadmin && Auth::user()->role_id == $user_role_admin)
       <div class="col-xxl-9 col-xl-12">
         <div class="card h-100">
             <div class="card-body p-24">
@@ -391,68 +472,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xxl-3 col-xl-12">
-        <div class="card h-100">
-          <div class="card-body">
-            <div class="d-flex align-items-center flex-wrap gap-2 justify-content-between">
-              <h6 class="mb-2 fw-bold text-lg mb-0">Subscription Plans</h6>
-              
-            </div>
-
-            <div class="mt-32">
-
-            <div class="table-responsive scroll-sm">
-                    <table class="table bordered-table sm-table mb-0">
-                      <thead>
-                        <tr>
-                          <th scope="col">Subscription Name</th>
-                          <th scope="col">Artist No</th>
-                          <th scope="col">Stock keeping Unit</th>
-                          <th scope="col">Subscription Duration</th>
-                          <th scope="col">No of Tracks</th>
-                          <th scope="col">No of Product</th>
-                          <th scope="col">subscription_for</th>
-                          <th scope="col">Track File Quality</th>
-                          <th scope="col">Currency Symbol</th>
-                          <th scope="col">Currency Country</th>
-                          <th scope="col">Subscription Amount</th>
-                          <th scope="col">Include Tax</th>
-                          <th scope="col">Plan Info Text</th>
-                          <th scope="col">Subscription Limit Per Year</th>
-                          <th scope="col">Is This Free Subscription</th>
-                          <th scope="col">Is Cancellation Enable</th>
-                          <th scope="col">Is One Time Subscription</th>
-                          
-                        </tr>
-                      </thead>
-                      <tbody id="data-wrapperrplan">
-                      
-                           @include('dashboard.pages.dataaplan')
-                        
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div class="text-center mt-8">
-                    <button class="btn btn-primary-600 load-more-dataaplan"><i class="fa fa-refresh" id="myIcon"></i> Load More Data...</button>
-                  </div>
-                <div class="auto-loaddplan text-center" style="display: none;">
-                        <svg version="1.1" id="L9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            x="0px" y="0px" height="60" viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
-                            <path fill="#000"
-                                d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
-                                <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s"
-                                    from="0 50 50" to="360 50 50" repeatCount="indefinite" />
-                            </path>
-                        </svg>
-                    </div>
-                </div>
-
-            </div>
-            
-          </div>
-        </div>
-      </div>
+      @endif
       
 
       

@@ -30,7 +30,7 @@ class ArtistUserCheck
         if($response->successful() == true){
             $rel = json_decode($loggedUserInfo);
             $user = User::where('id',$rel->user_details->id)->first();
-            if($user->role_id == UserStatus::Artist || $user->role_id == UserStatus::User ){
+            if($user->role_id == UserStatus::Artist || $user->role_id == UserStatus::Guest ){
                 Auth::setUser($user);
                 if (Auth::check()) {
                     return $next($request);

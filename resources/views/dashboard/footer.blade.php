@@ -655,8 +655,6 @@ function infinteLoadMoreallSub(page) {
 </script>
 
 
-
-
 @yield('script')
 
 </body>
