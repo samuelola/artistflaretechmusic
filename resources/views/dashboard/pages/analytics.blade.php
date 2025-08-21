@@ -28,7 +28,7 @@
   
   <div class="dashboard-main-body">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-  <h6 class="fw-semibold mb-0">Dashboard</h6>
+  <h6 class="fw-semibold mb-0">Analytics</h6>
   
 </div>
 

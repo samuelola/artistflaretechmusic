@@ -1,6 +1,6 @@
 @extends('dashboard.index')
 @section('title')
-  SuperAdmin
+  Dashboard
 @endsection
 @section('content')
 
@@ -58,7 +58,18 @@
       $exchange_tolbal = $total_balance/$currencyExchangeRateNgn->rate;
     @endphp
     Dashboard</h6>
-  
+    <!-- <ul class="d-flex align-items-center gap-2">
+    <li class="fw-medium">
+      <a href="index.html" class="d-flex align-items-center gap-1 hover-text-primary">
+        <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+        Dashboard
+      </a>
+    </li>
+    <li>-</li>
+    <li class="fw-medium">AI</li>
+  </ul> -->
+
+   @include('dashboard.dash_title')
 </div>
 
     <!--new -->
@@ -154,7 +165,7 @@
                               <div class="py-20 px-24 radius-8 position-relative z-1 h-100 bg-green-light">
                                 <img src="assets/images/home-twelve/icons/booking-card-big-icon4.png" alt="Big Icon" class="position-absolute end-0 bottom-0 me-8 z-n1">
                                 <span class="d-block mt-12 text-neutral-800">Add funds to wallet</span>
-                                <span style="color:#111827;font-weight:600;font-size:17px;" class="d-block mt-12 text-neutral-800">+0 coins</span>
+                                <span style="color:#111827;font-weight:600;font-size:17px;" class="d-block mt-12 text-neutral-800">+{{$fund_count->funds_added_count ?? 0}} coins</span>
                               </div>
                         </div>
                         

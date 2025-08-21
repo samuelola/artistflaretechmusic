@@ -1,6 +1,6 @@
 @extends('dashboard.index')
 @section('title')
-  SuperAdmin
+  Dashboard
 @endsection
 @section('content')
 

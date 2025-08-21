@@ -13,6 +13,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Crypt;
+use Carbon\Carbon;
+use App\Enum\UserStatus;
 
 
 class DashboardController extends Controller
@@ -23,8 +25,31 @@ class DashboardController extends Controller
     
     public function showDashboard(Request $request)
     {
-       
+
+        //check for expiration
+        $dateAfter = DB::table('sub_count')->where('user_id',auth()->user()->id)->first();
+        if(!is_null($dateAfter)){
+            $d_date = $dateAfter->expires_at;
+            if (now()->greaterThan($d_date)){
+                DB::table('users')->where('id',auth()->user()->id)->update([
+                    'role_id'=> UserStatus::Guest
+                ]);
+                DB::table('sub_count')->where('id',auth()->user()->id)->update([
+                    'status'=> 'notactive'
+                ]);
+
+            }
+
+            // $reminderDate = Carbon::parse($d_date)->subDays(3);
+            // if (Carbon::now()->toDateString() === $reminderDate->toDateString()) {
+            //     //send reminder email
+            //     $send_email_sub = (new SubscriptionMailService())->sendExpireReminderMail($user);
+            // }
+           
+            
+        }
         
+       
         $users = User::where('role_id','!=',1)->distinct('first_name')->count();
         $users_count_last_30days = User::where('created_at', '>', now()->subDays(30)->endOfDay())->count();
         $total_subscription = DB::table("subscription_payment_details")->count();
@@ -115,8 +140,11 @@ class DashboardController extends Controller
         ->get();
 
         $login_count = DB::table('user_statistics')->where('user_id',auth()->user()->id)->first();
+        $fund_count = DB::table('user_statistics')->where('user_id',auth()->user()->id)->first();
+
    
         return view('dashboard.pages.home',compact(
+            'fund_count',
             'login_count',
             'resulttrack_count',
             'total_labelUser',

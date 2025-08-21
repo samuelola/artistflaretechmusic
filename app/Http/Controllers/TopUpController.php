@@ -39,7 +39,6 @@ class TopUpController extends Controller
         if($result){
             session()->flash('success', "Topup is successful");
             return redirect()->route('dashboard');
-        }
-        
+        } 
     }
 }

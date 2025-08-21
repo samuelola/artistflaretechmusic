@@ -11,6 +11,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\TopUpController;
+use App\Http\Controllers\PaystackFlareTechWebhookController;
 
 Route::middleware('check.user')->group(function () {
     Route::get('/dashboardd', [DashboardController::class,'showDashboardd'])->name('dashboardd');
@@ -81,6 +82,13 @@ Route::middleware('artistusercheck')->group(function () {
 
     Route::get('/checkout_details/{id}', [CheckoutController::class,'checkoutDetails'])->name('checkout_details');
     Route::post('/checkout_payment', [CheckoutController::class,'checkoutPayment'])->name('checkout_payment');
+
+    //autorenuwal
+
+     
+    //webhook
+    Route::post('/paystack_flaretech/webhook', [PaystackFlareTechWebhookController::class, 'handle']);
+    
 });
 
 

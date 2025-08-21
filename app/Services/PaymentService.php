@@ -5,6 +5,8 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use App\Interfaces\PaymentInterface;
 use DB;
+use App\Models\UserStatistics;
+use App\Enum\MinimumBalance;
 
 class PaymentService implements PaymentInterface
 {
@@ -124,24 +126,43 @@ class PaymentService implements PaymentInterface
         //check for minimium bal 
 
         $get_bal = DB::table('user_wallet')->where('user_id',auth()->user()->id)->first();
-        $min = 2000.00;
-        if($get_bal->minimium_balance == 0.00){
-          
-           $new_amount_bal = $amount - $min;
-           DB::table('user_wallet')->where('user_id',auth()->user()->id)->update([
-            'balance' => $new_amount_bal,
-            'minimium_balance' => $min
-           ]);
-           
-        }elseif($get_bal->minimium_balance == $min){
-             
-             DB::table('user_wallet')->where('user_id',auth()->user()->id)->update([
-             'balance' => $get_bal->balance + $amount,
-             'minimium_balance' => $min
+        $min = MinimumBalance::Min;
+
+        if($get_bal->balance == 0.00){
+        DB::table('user_wallet')->where('user_id',auth()->user()->id)->update([
+             'balance' => $amount,
+             'minimium_balance' => 0.00
              ]);
         }
+        elseif ($get_bal->balance > 0.00) {
+            $newbal = $get_bal->balance + $amount;
+            if($newbal < $min){
+                 DB::table('user_wallet')->where('user_id',auth()->user()->id)->update([
+                 'balance' => $newbal,
+                 'minimium_balance' => 0.00
+                 ]);
+
+            }elseif($newbal > $min){
+                 $newminbal = $newbal - $min;
+                 DB::table('user_wallet')->where('user_id',auth()->user()->id)->update([
+                 'balance' => $newminbal,
+                 'minimium_balance' => $min
+                 ]);
+            }
+           
+        }
         
-       
+        $exist_user_count = DB::table('user_statistics')->where('user_id',auth()->user()->id)->first();
+
+        if(is_null($exist_user_count)){
+        $r = new UserStatistics ();
+        $r->user_id = $res->user->id;
+        $r->funds_added_count = 1;
+        $r->save();
+
+        }else{
+        $rfind = DB::table('user_statistics')->where('user_id',$exist_user_count->user_id)->increment('funds_added_count',1);
+        }
 
         return $status;
     }
