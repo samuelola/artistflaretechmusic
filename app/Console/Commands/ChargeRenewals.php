@@ -144,13 +144,13 @@ class ChargeRenewals extends Command
                         }
                       
                         
-                        
                     }
                 }
 
             }
 
         }
+
         }
         
 
