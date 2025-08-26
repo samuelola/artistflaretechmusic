@@ -10,10 +10,29 @@ use App\Enum\MinimumBalance;
 
 class PaymentService implements PaymentInterface
 {
+
+    protected $secretKey;
+
+    public function __construct()
+    {
+        $this->baseUrl = config('services.paystack.url', 'https://api.paystack.co');
+        $this->secretKey = config('services.paystack_secret_test_key');
+    }
+
+    protected function headers()
+    {
+        return [
+            'Authorization' => 'Bearer ' . $this->secretKey,
+            'Accept'        => 'application/json',
+        ];
+    }
+
     public function initalizePayment($amount,$email,$user_id){
         
+        $config = config('services.paystack_secret_test_key');
         $newamount = (int)$amount;
-        $key = "Bearer sk_test_bd26d3bef795b1b0896128cc607ce244af635f69";
+        //$key = "Bearer sk_test_bd26d3bef795b1b0896128cc607ce244af635f69";
+        $key = "Bearer ".$config;
         $callback_url = route('paystack.payment_callback',$user_id);
         $url = "https://api.paystack.co/transaction/initialize";
         $fields = [
@@ -50,7 +69,8 @@ class PaymentService implements PaymentInterface
 
     public function verifyPayment($reference,$user_id)
     {
-        $key = "Bearer sk_test_bd26d3bef795b1b0896128cc607ce244af635f69";
+        $config = config('services.paystack_secret_test_key');
+        $key = "Bearer ".$config;
          // verify transaction 
         $curl = curl_init(); 
         curl_setopt_array($curl, array(

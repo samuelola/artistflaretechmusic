@@ -8,6 +8,10 @@ class UserWallet extends Model
 {
     protected $guarded = [];
     protected $table = 'user_wallet';
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }
 
 

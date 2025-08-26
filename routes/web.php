@@ -12,6 +12,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\TopUpController;
 use App\Http\Controllers\PaystackFlareTechWebhookController;
+use App\Http\Controllers\TransferController;
 
 Route::middleware('check.user')->group(function () {
     Route::get('/dashboardd', [DashboardController::class,'showDashboardd'])->name('dashboardd');
@@ -79,13 +80,19 @@ Route::middleware('artistusercheck')->group(function () {
     Route::get('/topup', [TopUpController::class,'topup'])->name('topup');
     Route::post('/savetopup', [TopUpController::class,'saveTopup'])->name('savetopup');
     Route::get('/payment_callback', [TopUpController::class,'paymentCallback'])->name('paystack.payment_callback');
-
     Route::get('/checkout_details/{id}', [CheckoutController::class,'checkoutDetails'])->name('checkout_details');
     Route::post('/checkout_payment', [CheckoutController::class,'checkoutPayment'])->name('checkout_payment');
 
-    //autorenuwal
+    // transfer
 
-     
+    Route::get('/transfer', [TransferController::class,'transfer'])->name('transfer');
+    Route::post('/transfer_payment', [TransferController::class,'transferPayment'])->name('transfer_payment');
+    Route::get('/resolve_account', [TransferController::class,'resolveAccount'])->name('resolve_account');
+
+    Route::get('/user_wallet_transfer', [TransferController::class,'userWalletTransfer'])->name('user_wallet_transfer');
+    
+    // Route::post('/get_bank_list', [TransferController::class,'getBankList'])->name('get_bank_list');
+    
     //webhook
     Route::post('/paystack_flaretech/webhook', [PaystackFlareTechWebhookController::class, 'handle']);
     

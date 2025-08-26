@@ -15,38 +15,50 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Crypt;
 use Carbon\Carbon;
 use App\Enum\UserStatus;
+use App\Models\Transaction;
 
 
 class DashboardController extends Controller
 {
 
-    //Alert::success('Success','Welcome '.auth()->user()->first_name );
-    
-    
     public function showDashboard(Request $request)
     {
-
+        
         //check for expiration
         $dateAfter = DB::table('sub_count')->where('user_id',auth()->user()->id)->first();
+        
+        // if(!is_null($dateAfter)){
+        //     $d_date = $dateAfter->expires_at;
+        //     if (now()->greaterThan($d_date)){
+        //         DB::table('users')->where('id',auth()->user()->id)->update([
+        //             'role_id'=> UserStatus::Guest
+        //         ]);
+
+        //         DB::table('sub_count')->where('user_id',auth()->user()->id)->update([
+        //             'status'=> 'notactive'
+        //         ]);
+
+        //     }else{
+                
+        //     }
+
+           
+            
+        // }
+
         if(!is_null($dateAfter)){
-            $d_date = $dateAfter->expires_at;
-            if (now()->greaterThan($d_date)){
+            $d_date = Carbon::parse($dateAfter->expires_at)->format("Y-m-d");
+            if(now()->toDateString() == $d_date){
                 DB::table('users')->where('id',auth()->user()->id)->update([
                     'role_id'=> UserStatus::Guest
                 ]);
-                DB::table('sub_count')->where('id',auth()->user()->id)->update([
+
+                DB::table('sub_count')->where('user_id',auth()->user()->id)->update([
                     'status'=> 'notactive'
                 ]);
-
+            }else{
+                
             }
-
-            // $reminderDate = Carbon::parse($d_date)->subDays(3);
-            // if (Carbon::now()->toDateString() === $reminderDate->toDateString()) {
-            //     //send reminder email
-            //     $send_email_sub = (new SubscriptionMailService())->sendExpireReminderMail($user);
-            // }
-           
-            
         }
         
        
@@ -141,9 +153,14 @@ class DashboardController extends Controller
 
         $login_count = DB::table('user_statistics')->where('user_id',auth()->user()->id)->first();
         $fund_count = DB::table('user_statistics')->where('user_id',auth()->user()->id)->first();
+        
+        $get_transactions = Transaction::with(['user','subscription'])
+                                         ->where('user_id',auth()->user()->id)
+                                         ->orderBy('id','desc')
+                                         ->get();
 
-   
         return view('dashboard.pages.home',compact(
+            'get_transactions',
             'fund_count',
             'login_count',
             'resulttrack_count',

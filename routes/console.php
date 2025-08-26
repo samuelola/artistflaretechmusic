@@ -14,3 +14,6 @@ if($get_not_active > 0){
    Schedule::command('charge:renewals')->everyMinute();
 }
 
+Schedule::command('subscription:reminder')->everyMinute();
+
+Schedule::command('queue:work --stop-when-empty')->everyMinute();

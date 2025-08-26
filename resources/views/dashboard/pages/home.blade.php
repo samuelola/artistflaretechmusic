@@ -117,19 +117,80 @@
                         <div class="col-sm-6 col-xs-6">
                             <div class="py-20 px-24 radius-8 position-relative z-1 h-100">
                               <div class="d-flex gap-16" style="position: relative;left: -17px;top: 30px;">
-                                        <a href="{{route('topup')}}" style="font-size: 13px;" class="btn btn-primary-600 flex-shrink-0 d-flex align-items-center gap-2 " type="submit">
+                                        <!-- <a href="{{route('topup')}}" style="font-size: 13px;" class="btn btn-primary-600 flex-shrink-0 d-flex align-items-center gap-2 " type="submit">
                                             Top UP <iconify-icon icon="lsicon:top-outline" width="20" height="20"></iconify-icon>
-                                        </a>
+                                        </a> -->
+
+                                        <!-- <button type="button" class="btn btn-primary-600" data-bs-toggle="modal" data-bs-target="#topModal">
+                                              Topup <iconify-icon icon="lsicon:top-outline" width="20" height="20"></iconify-icon>
+                                        </button> -->
+
+                                        <ul class="list-decimal ps-20">
+                                            <li class="text-secondary-light">
+                                                
+                                                <a href="{{route('topup')}}" type="submit" style="font-size: 13px;" class="tooltip-button btn btn-primary-600 flex-shrink-0 d-flex" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-primary" data-bs-placement="right">
+                                                  Topup <iconify-icon icon="lsicon:top-outline" width="20" height="20"></iconify-icon>
+                                                </a> 
+                                                <div class="my-tooltip tip-content hidden shadow">
+                                                    <!-- <h6 class="text-white">This is title</h6> -->
+                                                    
+                                                    <p class="text-white">
+                                                      Your Total Balance is a combination of your available balance and minimum balance.<br>
+                                                      Your available balance can be withdrawn,but your minimum balance cannot be withdrawn but can be use to buy a subscription
+                                                      and must have a minimum amount of {{$currencyExchangeRateNgn->symbol}}2000.00
+
+                                                    </p>
+                                                </div>
+                                            </li>
+                                        </ul>
                                         <!-- <button style="font-size: 13px;" class="btn btn-primary-600 flex-shrink-0 d-flex align-items-center gap-2 " type="submit">Top UP <iconify-icon icon="lsicon:top-outline" width="20" height="20"></iconify-icon> </button> -->
-                                        <button style="font-size: 13px;" class="btn btn-primary-600 flex-shrink-0 d-flex align-items-center gap-2" type="submit">Transfer <i class="ri-send-plane-fill"></i> </button>
+                                         
+                                         <a href="{{route('transfer')}}" style="font-size: 13px;" class="btn btn-primary-600 flex-shrink-0 d-flex align-items-center gap-2 " type="submit">
+                                            Transfer <i class="ri-send-plane-fill"></i>
+                                        </a>
+
                                     </div>
                             </div>
                         </div>
+
+                            
                         
                     </div>
                 </div>
             </div>
             <!-- Card End -->
+
+            <!--start topup modal-->
+                  <div class="modal fade" id="topModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <form method="post" action="{{route('savetopup')}}">
+                                @csrf
+                                <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Topup</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                       <div class="col-12">
+                                          <label class="form-label">Enter Amount:</label>
+                                          <input type="number" name="amount" class="form-control" required>
+                                       </div>
+                                       <div class="col-12 mt-3">
+                                          <label class="form-label">Email</label>
+                                          <input type="email" name="email" value="{{auth()->user()->email}}" class="form-control">
+                                       </div> 
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-success">Topup</button>
+                                    </div>
+                                    
+                            </form>
+                        </div>
+                      </div>
+                </div>
+            <!--end topup modal-->
 
             <!-- Semi Circle Gauge start -->
               <div class="col-xxl-4 col-md-6">
@@ -485,8 +546,55 @@
       </div>
       @endif
       
-
-      
+      <!-- begining of table -->
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Transactions</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table bordered-table mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col">Gateway</th>
+                    <th scope="col">Remarks</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Subscription</th>
+                    <th scope="col">Reference</th>
+                    <th scope="col" class="text-center">Status</th>
+                    <th scope="col">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach($get_transactions as $value)
+                      <tr>
+                        <td>{{$value->gateway ?? ''}}</td>
+                        <td>{{$value->remarks ?? ''}}</td>
+                        <td>&#8358;{{$value->amount ?? ''}}</td>
+                        <td>
+                          {{$value->subscription->subscription_name ?? 'Not Available'}}
+                        </td>
+                         <td>{{$value->reference ?? 'Not Available'}}</td>
+                        <td class="text-center"> 
+                          @if($value->status == 'success')
+                          <span class="bg-success-focus text-success-main px-24 py-4 rounded-pill fw-medium text-sm">Successful</span>
+                          @endif 
+                        </td>
+                        <td>
+                           {{\Carbon\Carbon::parse($value->created_at)->format('d/m/Y')}}
+                        </td>
+                      </tr>
+                  @endforeach
+                  
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end of table -->
     </div>
   </div>
 

@@ -9,37 +9,24 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class Subscription extends Mailable
+class ReminderSubMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-     
     public $user;
     public $sub;
-    public $amount;
     public $duration;
-    public $artist;
-    public $track;
-    public $product;
-    public $currency;
     public $expires_at;
 
     public function __construct($sub_maile)
     {
         $this->user = $sub_maile['user'];
         $this->sub = $sub_maile['sub_name'];
-        $this->amount = $sub_maile['sub_amount'];
         $this->duration = $sub_maile['sub_duration'];
-        $this->artist = $sub_maile['sub_artist'];
-        $this->track = $sub_maile['sub_track'];
-        $this->product = $sub_maile['product'];
-        $this->currency = $sub_maile['currency'];
         $this->expires_at = $sub_maile['expires_at'];
-        
- 
     }
 
     /**
@@ -48,7 +35,7 @@ class Subscription extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'You have just Subscribe to a new plan',
+            subject: 'Reminder Subscription Mail',
         );
     }
 
@@ -58,7 +45,7 @@ class Subscription extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.subscribe',
+            view: 'emails.sub_reminder',
         );
     }
 

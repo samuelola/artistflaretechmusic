@@ -4,15 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\User;
-use App\Services\PaymentService;
+use App\Services\PaystackService;
 use Session;
+use App\Http\Requests\TopupRequest;
 
 class TopUpController extends Controller
 {
 
     protected $paymentService;
 
-    public function __construct(PaymentService $paymentService)
+    public function __construct(PaystackService $paymentService)
     {
          $this->paymentService = $paymentService;
     }
@@ -22,7 +23,7 @@ class TopUpController extends Controller
         return view('dashboard.pages.topup');
     }
 
-    public function saveTopup(Request $request){
+    public function saveTopup(TopupRequest $request){
         
         $user_id = auth()->user()->id;
         $email = $request->email;

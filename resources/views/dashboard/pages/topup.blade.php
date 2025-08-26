@@ -7,11 +7,6 @@
 @include('sweetalert::alert')
 
  
-
-
-
-
-
 <main class="dashboard-main">
   <div class="navbar-header">
     <div class="row align-items-center justify-content-between">
@@ -61,8 +56,12 @@
                 <div class="col-xxl-12 col-lg-3"></div>
                 <div class="col-xxl-12 col-lg-6">
                     <div class="card">
+                        <!-- <div class="card-header flex-wrap align-items-center  gap-3" style="display:flex">
+                            <h6 class="card-title mb-0">Topup  with</h6>
+                            <img style="width: 150px;" src="{{asset('paystack_button.png')}}"/>
+                        </div> -->
                         <div class="card-header">
-                            <h6 class="card-title mb-0">TopUp</h6>
+                            <h6 class="card-title mb-0">Topup</h6>
                         </div>
                         <div class="card-body">
                             <div class="row gy-3">
@@ -72,12 +71,14 @@
                                     <label class="form-label">Enter Amount</label>
                                     <input type="number" name="amount" class="form-control" required>
                                     </div>
-                                    <div class="col-12">
+                                    <div class="col-12 mt-3">
                                         <label class="form-label">Email</label>
                                         <input type="email" name="email" value="{{auth()->user()->email}}" class="form-control">
                                     </div>
                                     <div class="col-12 mt-3">
-                                        <button type="submit" class="btn btn-primary-600">Submit</button>
+                                        <button type="submit" class="btn btn-primary-600">
+                                          Topup
+                                        </button>
                                     </div>
 
                                 </form>

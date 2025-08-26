@@ -4,8 +4,9 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use DB;
-use App\Services\AutoRenewalPaymentService;
+use App\Services\PaystackService;
 use App\Enum\Plan;
+use Carbon\Carbon;
 
 class ChargeRenewals extends Command
 {
@@ -27,7 +28,7 @@ class ChargeRenewals extends Command
     /**
      * Execute the console command.
      */
-    public function handle(AutoRenewalPaymentService $rewepaymentService)
+    public function handle(PaystackService $rewepaymentService)
     {
         $dateAfters = DB::table('sub_count')->get();
         foreach($dateAfters as $dateAfter){
@@ -72,7 +73,7 @@ class ChargeRenewals extends Command
                         $newamount = (int)$amount;
 
                         DB::table('transactions')->insert([
-                            'reference' => $reference ?? 'NULL',
+                            'reference' => $reference ?? 'Not Available',
                             'amount' => $newamount,
                             'user_id' => $dateAfter->user_id,
                             'subscription_id' => $get_authcode->id,
@@ -100,7 +101,7 @@ class ChargeRenewals extends Command
                         $newamount = (int)$amount;
 
                         DB::table('transactions')->insert([
-                            'reference' => $reference ?? 'NULL',
+                            'reference' => $reference ?? 'Not Available',
                             'amount' => $newamount,
                             'user_id' => $dateAfter->user_id,
                             'subscription_id' => $get_authcode->id,
@@ -128,7 +129,7 @@ class ChargeRenewals extends Command
                         $newamount = (int)$amount;
 
                         DB::table('transactions')->insert([
-                            'reference' => $reference ?? 'NULL',
+                            'reference' => $reference ?? 'Not Available',
                             'amount' => $newamount,
                             'user_id' => $dateAfter->user_id,
                             'subscription_id' => $get_authcode->id,
@@ -154,8 +155,7 @@ class ChargeRenewals extends Command
         }
         
 
-        // $this->info("Processed renew subscription");
-        info("Cron Job running at ". now());
+        $this->info("Processed renew subscription");
         return 0;
     }
 }

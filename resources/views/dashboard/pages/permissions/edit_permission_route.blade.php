@@ -88,13 +88,7 @@
         });
 </script>
 
-<script>
-        $(document).ready(function() {
-            $('.js-example-basic-singleet').select2({
-                width: 'resolve'
-            });
-        });
-</script>
+
 
 
 @endsection

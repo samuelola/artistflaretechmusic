@@ -166,7 +166,7 @@
   --primary-500: #458EFF;
   --primary-600: #700084;
   --primary-700: #486CEA;
-  --primary-800: #4759D6;
+  --primary-800: #700084;
   --primary-900: #4536B6;
   --neutral-50: #F5F6FA;
   --neutral-100: #F3F4F6;
@@ -6859,6 +6859,7 @@ h6, .h6 {
 /* === text-align css start === */
 .text-start {
   text-align: start !important;
+  /* text-align: start !important; */
 }
 
 .text-end {

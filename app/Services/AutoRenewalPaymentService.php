@@ -11,12 +11,14 @@ class AutoRenewalPaymentService implements RenewalInterface
 {
 
     public function renewalPayment($get_authcode){
+
+        $config = config('services.paystack_secret_test_key');
+        $key = "Bearer ".$config;
         $getUser = DB::table('users')->where('id',$get_authcode->user_id)->first();
         $amount = $get_authcode->subscription_amount;
         $newamount = (int)$amount;
         $auth_code = $get_authcode->auth_code;
         $email = $getUser->email;
-        $key = "Bearer sk_test_bd26d3bef795b1b0896128cc607ce244af635f69";
         $url = "https://api.paystack.co/transaction/charge_authorization";
         $fields = [
             'email' => $email,

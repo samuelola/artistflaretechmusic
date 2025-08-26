@@ -59,7 +59,6 @@ class CheckoutController extends Controller
             return redirect()->back();
          }
          $total_balance = $checkwallet->balance + $checkwallet->minimium_balance;
-
          $rel_tot_bal = $checkoutService->checktotalbalance($total_balance,$sub_detail);
          if($rel_tot_bal){
             session()->flash('error', "Your balance is low for this subscription,you need a subscription amount of &#8358;{$sub_detail->subscription_amount}");
@@ -75,199 +74,86 @@ class CheckoutController extends Controller
          ]);
         
          //add subscription with date 
-        if($sub_detail->subscription_name == Plan::Basic){
 
-            DB::table('sub_count')->insert([
-            'user_id' => $user_id,
-            'subscription_id' => $sub_id,
-            'status' => 'active',
-            'start_date' => now(),
-            'expires_at' => now()->addYear()
-          ]);
+        if (in_array($get_authcode->subscription_name, [Plan::Basic, Plan::Freesub, Plan::Premium])) {
 
-          DB::table('transactions')->insert([
+                DB::table('sub_count')->insert([
+                'user_id' => $user_id,
+                'subscription_id' => $sub_id,
+                'status' => 'active',
+                'start_date' => now(),
+                'expires_at' => now()->addYear()
+              ]);
 
-            'reference' => $reference ?? 'NULL',
-            'amount' => $sub_detail->subscription_amount,
-            'user_id' => auth()->user()->id,
-            'subscription_id' => $sub_id,
-            'status' => 'success',
-            'currency' => $currency ?? 'NULL',
-            'paid_at' => now(), 
-            'remarks' => 'Subscription Payment',
-            'gateway' => 'System-Wallet',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+              DB::table('transactions')->insert([
 
-        }elseif($sub_detail->subscription_name == Plan::EasyBuy){
-            DB::table('sub_count')->insert([
-            'user_id' => $user_id,
-            'subscription_id' => $sub_id,
-            'status' => 'active',
-            'start_date' => now(),
-            'expires_at' => now()->addMonth()
-          ]);
-          
-          DB::table('transactions')->insert([
-
-            'reference' => $reference ?? 'NULL',
-            'amount' => $sub_detail->subscription_amount,
-            'user_id' => auth()->user()->id,
-            'subscription_id' => $sub_id,
-            'status' => 'success',
-            'currency' => $currency ?? 'NULL',
-            'paid_at' => now(), 
-            'remarks' => 'Subscription Payment',
-            'gateway' => 'System-Wallet',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
+                'reference' => $reference ?? 'NULL',
+                'amount' => $sub_detail->subscription_amount,
+                'user_id' => auth()->user()->id,
+                'subscription_id' => $sub_id,
+                'status' => 'success',
+                'currency' => $currency ?? 'NULL',
+                'paid_at' => now(), 
+                'remarks' => 'Subscription Payment',
+                'gateway' => 'System-Wallet',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
+        elseif(in_array($get_authcode->subscription_name,[Plan::ForeverBasic,Plan::ForeverStandard,Plan::UnlimitedForever])){
+                  DB::table('sub_count')->insert([
+                'user_id' => $user_id,
+                'subscription_id' => $sub_id,
+                'status' => 'active',
+                'start_date' => now(),
+              ]);
 
-        elseif($sub_detail->subscription_name == Plan::ForeverBasic){
-            DB::table('sub_count')->insert([
-            'user_id' => $user_id,
-            'subscription_id' => $sub_id,
-            'status' => 'active',
-            'start_date' => now(),
-          ]);
+              DB::table('transactions')->insert([
 
-          DB::table('transactions')->insert([
-
-            'reference' => $reference ?? 'NULL',
-            'amount' => $sub_detail->subscription_amount,
-            'user_id' => auth()->user()->id,
-            'subscription_id' => $sub_id,
-            'status' => 'success',
-            'currency' => $currency ?? 'NULL',
-            'paid_at' => now(), 
-            'remarks' => 'Subscription Payment',
-            'gateway' => 'System-Wallet',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        }
-
-        elseif($sub_detail->subscription_name == Plan::ForeverStandard){
-            DB::table('sub_count')->insert([
-            'user_id' => $user_id,
-            'subscription_id' => $sub_id,
-            'status' => 'active',
-            'start_date' => now(),
-          ]);
-        }
-
-        elseif($sub_detail->subscription_name == Plan::Freesub){
-             DB::table('sub_count')->insert([
-            'user_id' => $user_id,
-            'subscription_id' => $sub_id,
-            'status' => 'active',
-            'start_date' => now(),
-            'expires_at' => now()->addYear()
+                'reference' => $reference ?? 'NULL',
+                'amount' => $sub_detail->subscription_amount,
+                'user_id' => auth()->user()->id,
+                'subscription_id' => $sub_id,
+                'status' => 'success',
+                'currency' => $currency ?? 'NULL',
+                'paid_at' => now(), 
+                'remarks' => 'Subscription Payment',
+                'gateway' => 'System-Wallet',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
-            DB::table('transactions')->insert([
-
-            'reference' => $reference ?? 'NULL',
-            'amount' => $sub_detail->subscription_amount,
-            'user_id' => auth()->user()->id,
-            'subscription_id' => $sub_id,
-            'status' => 'success',
-            'currency' => $currency ?? 'NULL',
-            'paid_at' => now(), 
-            'remarks' => 'Subscription Payment',
-            'gateway' => 'System-Wallet',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-
         }
+        elseif($get_authcode->subscription_name == Plan::EasyBuy){
+           
+                DB::table('sub_count')->insert([
+                'user_id' => $user_id,
+                'subscription_id' => $sub_id,
+                'status' => 'active',
+                'start_date' => now(),
+                'expires_at' => now()->addMonth()
+              ]);
+              
+              DB::table('transactions')->insert([
 
-        elseif($sub_detail->subscription_name == Plan::Premium){
-             DB::table('sub_count')->insert([
-            'user_id' => $user_id,
-            'subscription_id' => $sub_id,
-            'status' => 'active',
-            'start_date' => now(),
-            'expires_at' => now()->addYear()
+                'reference' => $reference ?? 'NULL',
+                'amount' => $sub_detail->subscription_amount,
+                'user_id' => auth()->user()->id,
+                'subscription_id' => $sub_id,
+                'status' => 'success',
+                'currency' => $currency ?? 'NULL',
+                'paid_at' => now(), 
+                'remarks' => 'Subscription Payment',
+                'gateway' => 'System-Wallet',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
-             
-            DB::table('transactions')->insert([
-
-            'reference' => $reference ?? 'NULL',
-            'amount' => $sub_detail->subscription_amount,
-            'user_id' => auth()->user()->id,
-            'subscription_id' => $sub_id,
-            'status' => 'success',
-            'currency' => $currency ?? 'NULL',
-            'paid_at' => now(), 
-            'remarks' => 'Subscription Payment',
-            'gateway' => 'System-Wallet',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
         }
 
-        elseif($sub_detail->subscription_name == Plan::Standard){
-             DB::table('sub_count')->insert([
-            'user_id' => $user_id,
-            'subscription_id' => $sub_id,
-            'status' => 'active',
-            'start_date' => now(),
-            'expires_at' => now()->addYear()
-            ]);
-
-            DB::table('transactions')->insert([
-
-            'reference' => $reference ?? 'NULL',
-            'amount' => $sub_detail->subscription_amount,
-            'user_id' => auth()->user()->id,
-            'subscription_id' => $sub_id,
-            'status' => 'success',
-            'currency' => $currency ?? 'NULL',
-            'paid_at' => now(), 
-            'remarks' => 'Subscription Payment',
-            'gateway' => 'System-Wallet',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        }
-
-        elseif($sub_detail->subscription_name == Plan::UnlimitedForever){
-             DB::table('sub_count')->insert([
-            'user_id' => $user_id,
-            'subscription_id' => $sub_id,
-            'status' => 'active',
-            'start_date' => now(),
-            ]);
-
-           DB::table('transactions')->insert([
-
-            'reference' => $reference ?? 'NULL',
-            'amount' => $sub_detail->subscription_amount,
-            'user_id' => auth()->user()->id,
-            'subscription_id' => $sub_id,
-            'status' => 'success',
-            'currency' => $currency ?? 'NULL',
-            'paid_at' => now(), 
-            'remarks' => 'Subscription Payment',
-            'gateway' => 'System-Wallet',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-
-        }
-
+       
          // send email here 
-        //  $user = auth()->user();
-        //  $send_email_sub = (new SubscriptionMailService())->sendSubMail($user);
+            $user = auth()->user();
+            $send_email_sub = (new SubscriptionMailService())->sendSubMail($user);
 
          DB::commit();
          return redirect()->route('dashboard');

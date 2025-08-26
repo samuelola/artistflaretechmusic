@@ -45,14 +45,46 @@
   <!-- main js -->
   <script src="{{asset('assets/js/app.js')}}"></script>
 
+  
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
+  
   
 
 <!-- <script src="assets/js/homeOneChart.js"></script> -->
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> 
+
+<script>
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]'); 
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl)); 
+
+    // Boxed Tooltip
+    $(document).ready(function() {
+        $('.tooltip-button').each(function () {
+            var tooltipButton = $(this);
+            var tooltipContent = $(this).siblings('.my-tooltip').html(); 
+    
+            // Initialize the tooltip
+            tooltipButton.tooltip({
+                title: tooltipContent,
+                trigger: 'hover',
+                html: true
+            });
+    
+            // Optionally, reinitialize the tooltip if the content might change dynamically
+            tooltipButton.on('mouseenter', function() {
+                tooltipButton.tooltip('dispose').tooltip({
+                    title: tooltipContent,
+                    trigger: 'hover',
+                    html: true
+                }).tooltip('show');
+            });
+        });
+    });
+</script>
 
 <script>
    var options = {
