@@ -25,8 +25,10 @@ class DashboardController extends Controller
     {
         
         //check for expiration
-        $dateAfter = DB::table('sub_count')->where('user_id',auth()->user()->id)->first();
-        
+        $dateAfter = DB::table('sub_count')
+                     ->where('user_id',auth()->user()->id)
+                     ->orderBy('id','desc')
+                     ->first();
         // if(!is_null($dateAfter)){
         //     $d_date = $dateAfter->expires_at;
         //     if (now()->greaterThan($d_date)){
@@ -49,11 +51,16 @@ class DashboardController extends Controller
         if(!is_null($dateAfter)){
             $d_date = Carbon::parse($dateAfter->expires_at)->format("Y-m-d");
             if(now()->toDateString() == $d_date){
-                DB::table('users')->where('id',auth()->user()->id)->update([
+                DB::table('users')
+                    ->where('id',auth()->user()->id)
+                    ->update([
                     'role_id'=> UserStatus::Guest
                 ]);
 
-                DB::table('sub_count')->where('user_id',auth()->user()->id)->update([
+                DB::table('sub_count')
+                    ->where('user_id',auth()->user()->id)
+                    ->orderBy('id','desc')
+                    ->update([
                     'status'=> 'notactive'
                 ]);
             }else{

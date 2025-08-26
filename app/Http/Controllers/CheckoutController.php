@@ -42,9 +42,7 @@ class CheckoutController extends Controller
 
     public function checkoutPayment(Request $request, CheckoutService $checkoutService)
     {
-
-        try{
-         DB::beginTransaction();
+    
          $sub_id = $request->subc_id;
          $user_id = $request->user_id;
          $amount = MinimumBalance::Min;
@@ -75,7 +73,7 @@ class CheckoutController extends Controller
         
          //add subscription with date 
 
-        if (in_array($get_authcode->subscription_name, [Plan::Basic, Plan::Freesub, Plan::Premium])) {
+        if (in_array($sub_detail->subscription_name, [Plan::Basic, Plan::Freesub, Plan::Premium])) {
 
                 DB::table('sub_count')->insert([
                 'user_id' => $user_id,
@@ -88,7 +86,7 @@ class CheckoutController extends Controller
               DB::table('transactions')->insert([
 
                 'reference' => $reference ?? 'NULL',
-                'amount' => $sub_detail->subscription_amount,
+                'amount' => (int)$sub_detail->subscription_amount,
                 'user_id' => auth()->user()->id,
                 'subscription_id' => $sub_id,
                 'status' => 'success',
@@ -100,7 +98,7 @@ class CheckoutController extends Controller
                 'updated_at' => now(),
             ]);
         }
-        elseif(in_array($get_authcode->subscription_name,[Plan::ForeverBasic,Plan::ForeverStandard,Plan::UnlimitedForever])){
+        elseif(in_array($sub_detail->subscription_name,[Plan::ForeverBasic,Plan::ForeverStandard,Plan::UnlimitedForever])){
                   DB::table('sub_count')->insert([
                 'user_id' => $user_id,
                 'subscription_id' => $sub_id,
@@ -111,7 +109,7 @@ class CheckoutController extends Controller
               DB::table('transactions')->insert([
 
                 'reference' => $reference ?? 'NULL',
-                'amount' => $sub_detail->subscription_amount,
+                'amount' => (int)$sub_detail->subscription_amount,
                 'user_id' => auth()->user()->id,
                 'subscription_id' => $sub_id,
                 'status' => 'success',
@@ -124,7 +122,7 @@ class CheckoutController extends Controller
             ]);
 
         }
-        elseif($get_authcode->subscription_name == Plan::EasyBuy){
+        elseif($sub_detail->subscription_name == Plan::EasyBuy){
            
                 DB::table('sub_count')->insert([
                 'user_id' => $user_id,
@@ -137,7 +135,7 @@ class CheckoutController extends Controller
               DB::table('transactions')->insert([
 
                 'reference' => $reference ?? 'NULL',
-                'amount' => $sub_detail->subscription_amount,
+                'amount' => (int)$sub_detail->subscription_amount,
                 'user_id' => auth()->user()->id,
                 'subscription_id' => $sub_id,
                 'status' => 'success',
@@ -155,14 +153,9 @@ class CheckoutController extends Controller
             $user = auth()->user();
             $send_email_sub = (new SubscriptionMailService())->sendSubMail($user);
 
-         DB::commit();
          return redirect()->route('dashboard');
 
-        }catch(\Exception $e){
-           DB::rollback();
-           Log::error('Checkout failed: ' . $e->getMessage());
-           throw $e;
-        }
+        
     }
 
     public function chargeTheWallet($total_balance,$sub_detail,$user_id){

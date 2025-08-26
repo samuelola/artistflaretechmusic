@@ -1,10 +1,9 @@
  @php 
    $user_role_artist = App\Enum\UserStatus::Artist;
    $user_role_guest = App\Enum\UserStatus::Guest;
-   $dateAfter = \DB::table('sub_count')->where('user_id',auth()->user()->id)->first();
-   $d_date = $dateAfter->expires_at ?? '';
-   $get_active_sub = \DB::table('sub_count')->where('user_id',auth()->user()->id)->first();
-   $expired_date = \Carbon\Carbon::parse($dateAfter->expires_at)->format("Y-m-d");
+   $get_active_sub = \DB::table('sub_count')->where('user_id',auth()->user()->id)->orderBy('id','desc')->first();
+   $d_date = $get_active_sub->expires_at ?? '';
+   $expired_date = \Carbon\Carbon::parse($get_active_sub->expires_at)->format("Y-m-d");
   @endphp
 
    @if(Auth::user()->role_id == $user_role_artist)
