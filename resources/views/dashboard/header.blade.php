@@ -110,7 +110,68 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
+
+
+/* .input-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .input-wrapper input {
+      padding-right: 35px; 
+      width: 250px;
+      height: 36px;
+    }
+
+    .input-loader {
+      position: absolute;
+      right: 285px;
+      top: 68%;
+      transform: translateY(-50%);
+      display: none;
+      color: #333;
+    } */
+
+   .input-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 100%; /* makes it scale */
+      max-width: 400px; /* optional: limit width on big screens */
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      /* padding-right: 2.5rem; */
+      height: 40px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .input-loader {
+      position: absolute;
+      right: 285px;
+      top: 68%;
+      transform: translateY(-50%);
+      display: none;
+      color: #333;
+      font-size: 1.2rem; /* adjusts with rem for responsiveness */
+      pointer-events: none; /* avoids blocking clicks in input */
+    }
+
+    /* 📱 Smaller screens: adjust size */
+    @media (max-width: 480px) {
+      .input-wrapper input {
+        height: 36px;
+        font-size: 0.9rem;
+      }
+      .input-loader {
+        font-size: 1rem;
+        right: 1.9rem;
+      }
+    }
 </style>
+
+
     
   </head>
   <body></body>

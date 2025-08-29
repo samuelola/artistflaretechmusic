@@ -121,6 +121,7 @@
                                                 <div class="col-12 mt-3" id="account_parent">
                                                     <label class="form-label">Account Name</label>
                                                     <input id="account_name" type="text" name="account_name" class="form-control" readonly>
+                                                    <i class="fa fa-spinner fa-spin input-loader" id="inputLoader"></i>
                                                 </div>
                                                 <div class="col-12 mt-3">
                                                     <label class="form-label">Reason (optional)</label>
@@ -145,12 +146,16 @@
 
                                           <div class="col-md-3"></div>
                                           <div class="col-md-6">
-                                                <form method="post" action="">
+                                                <form method="post" action="{{route('user_wallet_transfer')}}">
                                                     @csrf
                                                     <div class="col-12">
                                                     <label class="form-label">Enter Amount</label>
-                                                    <input type="number" name="amount" class="form-control">
-                                                    @error('amount')
+                                                    <input type="number" name="amount_b" class="form-control" value="{{ old('amount_b') }}">
+
+                                                    <!-- @if ($errors->formB->has('amount_b'))
+                                                    <span class="text-danger" style="color:#d22f2f">{{ $errors->formA->first('amount_b') }}</span>
+                                                    @endif -->
+                                                    @error('amount_b')
                                                             <p class="text-red-500 text-sm" style="color:#d22f2f">{{ $message }}</p>
                                                     @enderror
                                                     </div>
@@ -223,6 +228,7 @@
       $('#bank').change(function() {
          var bank_code = $(this).val();
          var account_number = $("#account_number").val();
+         $("#inputLoader").show();
          $.ajax({
                 headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -233,6 +239,9 @@
                 success: function (response) {
                     const verified_data = response.data;
                     $('#account_name').val(verified_data.data.account_name); 
+                },
+                complete: function(){
+                  $("#inputLoader").hide();
                 },
                 error: function (error) {
                     console.error('AJAX Error:', error);

@@ -3,7 +3,7 @@
    $user_role_guest = App\Enum\UserStatus::Guest;
    $get_active_sub = \DB::table('sub_count')->where('user_id',auth()->user()->id)->orderBy('id','desc')->first();
    $d_date = $get_active_sub->expires_at ?? '';
-   $expired_date = \Carbon\Carbon::parse($get_active_sub->expires_at)->format("Y-m-d");
+   $expired_date = \Carbon\Carbon::parse($get_active_sub->expires_at ?? '')->format("Y-m-d");
   @endphp
 
    @if(Auth::user()->role_id == $user_role_artist)

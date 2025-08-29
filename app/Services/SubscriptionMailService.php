@@ -6,6 +6,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\Subscription;
 use App\Mail\ReminderSubMail;
+use App\Mail\RenewalSubMail;
 use DB;
 use Carbon\Carbon;
 
@@ -91,5 +92,46 @@ class SubscriptionMailService
         return $u;
     }
 
+    // sendRenewalMail($dateAfter->user_id)
+
+    public function sendRenewalMail($user_id){
+          
+        $sub_mail = DB::table('sub_count')
+                ->selectRaw(
+                    'subscription_plan.subscription_name,
+                     subscription_plan.subscription_duration,
+                     subscription_plan.subscription_amount,
+                     subscription_plan.currency,
+                     subscription_plan.artist_no,
+                     subscription_plan.no_of_tracks,
+                     subscription_plan.no_of_products,
+                     currency.symbol,
+                     currency.code,
+                     sub_count.expires_at
+                    '
+                )
+                ->join('subscription_plan', 'subscription_plan.id', '=', 'sub_count.subscription_id')
+                ->join('currency','currency.code', '=', 'subscription_plan.currency')
+                ->where('sub_count.user_id',$user_id)
+                ->where('sub_count.status', '=','active')
+                ->first();
+        $d_date = $sub_mail->expires_at;  
+        $getUserInfo = DB::table('users')->where('id',$user_id)->first();      
+        $sub_maile  = [
+        'user' => $getUserInfo->first_name,
+        'sub_name' => $sub_mail->subscription_name,
+        'sub_amount' => $sub_mail->subscription_amount,
+        'sub_duration' => $sub_mail->subscription_duration,
+        'sub_artist' => $sub_mail->artist_no,
+        'sub_track' => $sub_mail->no_of_tracks,
+        'product' => $sub_mail->no_of_products,
+        'currency' => $sub_mail->symbol,
+        'expires_at' => Carbon::parse($d_date)->format('d,M Y')
+        ];
+
+        $u = Mail::to($getUserInfo->email)->queue(new RenewalSubMail($sub_maile));
+
+        return $u;
+    }
     
 }

@@ -7,7 +7,6 @@ use App\Interfaces\PaymentInterface;
 use DB;
 use App\Models\UserStatistics;
 use App\Enum\MinimumBalance;
-use App\Models\Userwallet;
 
 
 class PaystackService implements PaymentInterface
@@ -322,20 +321,66 @@ class PaystackService implements PaymentInterface
         $err = curl_error($curl);
         $ress_new = json_decode($new_response);
 
-        DB::table('transactions')->insert([
-            'reference' => $ress_new->data->reference,
-            'amount' => $amount,
-            'user_id' => auth()->user()->id,
-            'status' => 'pending',
-            'currency' => $ress_new->data->currency,
-            'remarks' => $ress_new->data->reason,
-            'gateway' => 'Paystack',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        //wallet cal here
+
+
+
+        // add to transaction table
         
+         DB::table('transactions')->insert([
+                'reference' => $ress_new->data->reference,
+                'amount' => $ress_new->data->amount,
+                'user_id' => auth()->user()->id,
+                'status' => 'pending',
+                'currency' => $ress_new->data->currency,
+                'remarks' => $ress_new->data->reason,
+                'gateway' => 'Paystack',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+
+        // if otp paystack code is disabled 
         return $ress_new;
-       
+        // if otp paystack code is disabled 
+
+        //Db transact
+         $u = DB::transaction(function () use ($recipient_code,$source,$amount,$reference,$reason) {
+             $fields = [
+                "source" => $source,
+                "reason" => $reason,
+                "amount" => $amount * 100,
+                "recipient" => $recipient_code,
+                "reference" => $reference
+                ];
+
+               $data_string = http_build_query($fields);
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+                CURLOPT_URL => $this->baseUrl.'/transfer',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $data_string,
+                CURLOPT_HTTPHEADER => array(
+                    "Authorization: Bearer ".$this->secretKey,
+                    "Cache-Control: no-cache",
+                    ),
+                ));
+
+                $new_response = curl_exec($curl);
+                $err = curl_error($curl);
+                $ress_new = json_decode($new_response); 
+                });
+                return $u;    
+
+        //end db transact
      }
 
      public function verifytransferMoney($verifyTransferRef){
@@ -360,19 +405,11 @@ class PaystackService implements PaymentInterface
         $new_response = curl_exec($curl);
         $err = curl_error($curl);
         $ress_new = json_decode($new_response);
-        if($ress_new->data->status == 'success'){
-
-            $res_amount = $ress_new->data->amount/100;
-            $user_id = auth()->user()->id;
-            $st_amount = $res_amount;
-            $from = Userwallet::with('user')->where('user_id',$user_id)->first();
-            $from->update(['balance' => $from->balance - $st_amount]);
-
-             DB::table('transactions')
-            ->where(['user_id'=>auth()->user()->id,'reference'=>$ress_new->data->reference])
+        DB::table('transactions')
+            ->where('user_id',auth()->user()->id)
             ->update([
                 'reference' => $ress_new->data->reference,
-                'amount' => $res_amount,
+                'amount' => $ress_new->data->amount,
                 'user_id' => auth()->user()->id,
                 'status' => $ress_new->data->status,
                 'currency' => $ress_new->data->currency,
@@ -381,10 +418,6 @@ class PaystackService implements PaymentInterface
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-        }elseif($resultt->data->status == 'failed'){
-
-        }
-        
         return $ress_new;
 
      }
@@ -478,13 +511,13 @@ class PaystackService implements PaymentInterface
             $err = curl_error($curl);
             $ress_new = json_decode($response);
 
-            // DB::table('transfer_recipient')
-            // ->insert([
-            //     'recipient_code' => $ress_new->data->recipient_code,
-            //     'user_id' => auth()->user()->id,
-            //     'created_at' => now(),
-            //     'updated_at' => now(),
-            // ]);
+            DB::table('transfer_recipient')
+            ->insert([
+                'recipient_code' => $ress_new->data->recipient_code,
+                'user_id' => auth()->user()->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
             return $ress_new;
      }
 

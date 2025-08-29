@@ -29,24 +29,6 @@ class DashboardController extends Controller
                      ->where('user_id',auth()->user()->id)
                      ->orderBy('id','desc')
                      ->first();
-        // if(!is_null($dateAfter)){
-        //     $d_date = $dateAfter->expires_at;
-        //     if (now()->greaterThan($d_date)){
-        //         DB::table('users')->where('id',auth()->user()->id)->update([
-        //             'role_id'=> UserStatus::Guest
-        //         ]);
-
-        //         DB::table('sub_count')->where('user_id',auth()->user()->id)->update([
-        //             'status'=> 'notactive'
-        //         ]);
-
-        //     }else{
-                
-        //     }
-
-           
-            
-        // }
 
         if(!is_null($dateAfter)){
             $d_date = Carbon::parse($dateAfter->expires_at)->format("Y-m-d");
@@ -97,13 +79,23 @@ class DashboardController extends Controller
         $rrg = $g1.' '.$g2;
         $total_labelUser = DB::table("product_details")->distinct('Label_Name')->where('Sound_Recording_Performing_Artist_s',$rrg)->count();
 
-
+        $get_transactions = Transaction::with(['user'])
+                                         ->where('user_id',auth()->user()->id)
+                                         ->orderBy('id','desc')
+                                         ->paginate(10);
+                             
         
         if ($request->ajax()) {
+            $viewTransaction = view('dashboard.pages.tranxdata', compact('get_transactions'))->render();
             $view = view('dashboard.pages.data', compact('subscribers'))->render();
             $vieww = view('dashboard.pages.dataa', compact('get_all_users'))->render();
             $viewplan = view('dashboard.pages.dataaplan', compact('plans'))->render();
-            return response()->json(['html' => $view,'newhtml'=>$vieww,'newhtmlplan'=>$viewplan]);
+            return response()->json([
+                'html' => $view,
+                'newhtml'=>$vieww,
+                'newhtmlplan'=>$viewplan,
+                'newhtmltransaction' => $viewTransaction
+            ]);
         }
 
         $thealbums = DB::table('users')
@@ -161,10 +153,7 @@ class DashboardController extends Controller
         $login_count = DB::table('user_statistics')->where('user_id',auth()->user()->id)->first();
         $fund_count = DB::table('user_statistics')->where('user_id',auth()->user()->id)->first();
         
-        $get_transactions = Transaction::with(['user','subscription'])
-                                         ->where('user_id',auth()->user()->id)
-                                         ->orderBy('id','desc')
-                                         ->get();
+        
 
         return view('dashboard.pages.home',compact(
             'get_transactions',

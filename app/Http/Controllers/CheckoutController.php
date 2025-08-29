@@ -14,6 +14,7 @@ use App\Enum\Plan;
 use App\Enum\UserStatus;
 use Illuminate\Support\Facades\Log;
 use App\Exceptions\FailedCheckoutException;
+use Illuminate\Support\Str;
 
 
 class CheckoutController extends Controller
@@ -72,7 +73,7 @@ class CheckoutController extends Controller
          ]);
         
          //add subscription with date 
-
+        $reference = 'REF-' . Str::upper(Str::random(10));
         if (in_array($sub_detail->subscription_name, [Plan::Basic, Plan::Freesub, Plan::Premium])) {
 
                 DB::table('sub_count')->insert([

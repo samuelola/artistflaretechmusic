@@ -57,4 +57,9 @@ class User extends Authenticatable
     {
         return $this->role->permissions()->where('name', $permission)->exists();
     }
+
+    public function getFullNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
 }

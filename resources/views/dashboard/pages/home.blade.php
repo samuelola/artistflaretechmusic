@@ -275,6 +275,8 @@
         $user_role_artist = App\Enum\UserStatus::Artist;
         $user_role_admin = App\Enum\UserStatus::Admin;
         $user_role_superadmin = App\Enum\UserStatus::SuperAdmin;
+        $user_role_guest = App\Enum\UserStatus::Guest;
+
       @endphp
       @if(Auth::user()->role_id == $user_role_artist)
       <div class="col">
@@ -404,7 +406,6 @@
           </div>
         </div>
       </div>
-      @endif
 
       <div class="col-xxl-3 col-xl-6">
         <div class="card h-100 radius-8 border-0 overflow-hidden">
@@ -422,6 +423,32 @@
           </div>
         </div>
       </div>
+      @endif
+
+
+     
+      
+   
+   @if(Auth::user()->role_id == $user_role_guest)
+      <div class="col-xxl-12 col-xl-12">
+        <div class="card h-100 radius-8 border-0 overflow-hidden">
+          <div class="card-body p-24">
+            <div class="d-flex align-items-center flex-wrap gap-2 justify-content-between">
+              <h6 class="mb-2 fw-bold text-lg">Subscription</h6>
+              
+            </div>
+
+
+            <div id="userOverviewDonutChart" class="apexcharts-tooltip-z-none"></div>
+
+           
+            
+          </div>
+        </div>
+      </div>
+    @endif 
+
+      
 
       @if(Auth::user()->role_id == $user_role_superadmin && Auth::user()->role_id == $user_role_admin)
       <div class="col-xxl-9 col-xl-12">
@@ -515,7 +542,6 @@
                       </thead>
                       <tbody id="data-wrapper">
                           @include('dashboard.pages.data')
-                        
                       </tbody>
                       
                     </table>
@@ -557,6 +583,7 @@
               <table class="table bordered-table mb-0">
                 <thead>
                   <tr>
+                    <th>Full Name</th>
                     <th scope="col">Gateway</th>
                     <th scope="col">Remarks</th>
                     <th scope="col">Amount</th>
@@ -566,30 +593,24 @@
                     <th scope="col">Date</th>
                   </tr>
                 </thead>
-                <tbody>
-                  @foreach($get_transactions as $value)
-                      <tr>
-                        <td>{{$value->gateway ?? ''}}</td>
-                        <td>{{$value->remarks ?? ''}}</td>
-                        <td>&#8358;{{$value->amount ?? ''}}</td>
-                        <td>
-                          {{$value->subscription->subscription_name ?? 'Not Available'}}
-                        </td>
-                         <td>{{$value->reference ?? 'Not Available'}}</td>
-                        <td class="text-center"> 
-                          @if($value->status == 'success')
-                          <span class="bg-success-focus text-success-main px-24 py-4 rounded-pill fw-medium text-sm">Successful</span>
-                          @endif 
-                        </td>
-                        <td>
-                           {{\Carbon\Carbon::parse($value->created_at)->format('d/m/Y')}}
-                        </td>
-                      </tr>
-                  @endforeach
-                  
-                  
+                <tbody id="data-tranxwrapper">
+                     @include('dashboard.pages.tranxdata')
                 </tbody>
               </table>
+               <div class="text-center mt-8">
+                    <button class="btn btn-primary-600 load-more-tranxdata"><i class="fa fa-refresh" id="myIcon"></i> Load More Data...</button>
+                  </div>
+                <div class="auto-tranxload text-center" style="display: none;">
+                        <svg version="1.1" id="L9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            x="0px" y="0px" height="60" viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
+                            <path fill="#000"
+                                d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
+                                <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s"
+                                    from="0 50 50" to="360 50 50" repeatCount="indefinite" />
+                            </path>
+                        </svg>
+                    </div>
+                </div>
             </div>
           </div>
         </div>
@@ -601,6 +622,48 @@
 @endsection
 
 @section('script')
+
+<script>
+    var ENDPOINT = "{{ route('dashboard') }}";
+    var page = 1;
+  
+    $(".load-more-tranxdata").click(function(){
+        page++;
+        infinteLoadMorertranx(page);
+    });
+    
+  
+    /*------------------------------------------
+    --------------------------------------------
+    call infinteLoadMore()
+    --------------------------------------------
+    --------------------------------------------*/
+    function infinteLoadMorertranx(page) {
+        $.ajax({
+                url: ENDPOINT + "?page=" + page,
+                datatype: "html",
+                type: "get",
+                beforeSend: function () {
+                    $('.auto-tranxload').show();
+                }
+            })
+            .done(function (response) {
+
+                console.log(response.newhtmltransaction);
+                if (response.newhtmltransaction == '') {
+                    $('.auto-tranxload').html("We don't have more data to display :(");
+                    return;
+                }
+
+                $('.auto-tranxload').hide();
+                $("#data-tranxwrapper").append(response.newhtmltransaction);
+            })
+            .fail(function (jqXHR, ajaxOptions, thrownError) {
+                console.log('Server error occured');
+            });
+    }
+</script>
+
 <script>
     var ENDPOINT = "{{ route('dashboard') }}";
     var page = 1;

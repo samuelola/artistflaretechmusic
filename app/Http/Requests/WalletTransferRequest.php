@@ -4,10 +4,10 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class TransferRequest extends FormRequest
+class WalletTransferRequest extends FormRequest
 {
- 
-    
+
+   
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -21,23 +21,21 @@ class TransferRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    
-
     public function rules(): array
     {
         return [
-              'amount' => 'required|integer',
-              'account_number' => 'required|integer'
+              'amount_b' => 'required|integer',
+              'recipient' => 'required'
         ];
     }
 
     public function messages()
     {
         return [
-            'amount.required' => 'Amount is required', 
-            'account_number.required' => 'Account Number is required'
+            'amount_b.required' => 'Amount is required', 
+            'recipient.required' => 'Recipient is required'
         ];
     }
 
-   
+    
 }

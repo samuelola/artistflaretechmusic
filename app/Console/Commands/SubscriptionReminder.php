@@ -28,21 +28,29 @@ class SubscriptionReminder extends Command
      */
     public function handle(SubscriptionMailService $subscriptionMailService)
     {
-
+        
         $subscribes = DB::table('sub_count')->get();
         foreach ($subscribes as $subscribe) {
-             $dateAfter = DB::table('sub_count')->where('user_id',$subscribe->user_id)->first();
+             $dateAfter = DB::table('sub_count')
+                              ->where('user_id',$subscribe->user_id)
+                              ->orderBy('id','desc')
+                              ->first();                 
              if(!is_null($dateAfter)){
                  $d_date = $dateAfter->expires_at;
-                 $reminderDate = Carbon::parse($d_date)->subDays(3);
+                 $reminderDate = Carbon::parse($d_date)->subDays(7);
                  if (Carbon::now()->toDateString() === $reminderDate->toDateString()) {
-                     $getUserInfo = DB::table('users')->where('id',$subscribe->user_id)->first(); 
+                     $getUserInfo = DB::table('users')->where('id',$subscribe->user_id)->first();
+                     $getSubInfo = DB::table('subscription_plan')->where('id',$dateAfter->id)->first(); 
                      $subscriptionMailService->sendExpireReminderMail($getUserInfo);
+
+                     $this->info("Reminder sent to {$getUserInfo->email} for plan {$getSubInfo->subscription_name}");
                  }
              }
         }
 
-        $this->info('Expiration reminder emails sent successfully.');
+        return Command::SUCCESS;
+
+        
         
     }
 }
