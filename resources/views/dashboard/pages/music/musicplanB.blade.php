@@ -1,0 +1,243 @@
+<ul class="nav nav-tabs custom-tabs" id="releaseTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="step1-tab" data-bs-toggle="tab" data-bs-target="#step1" type="button" role="tab">Release Details</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="step2-tab" data-bs-toggle="tab" data-bs-target="#step2" type="button" role="tab">Artwork</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="step3-tab" data-bs-toggle="tab" data-bs-target="#step3" type="button" role="tab">Stereo (Audio)</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="step4-tab" data-bs-toggle="tab" data-bs-target="#step4" type="button" role="tab">Track Details</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="step5-tab" data-bs-toggle="tab" data-bs-target="#step5" type="button" role="tab">Outlets</button>
+                                    </li>
+                                </ul>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="tab-content border p-3" id="releaseTabsContent">
+                        <!-- Step 1: Release Details -->
+                        
+                                <div class="tab-pane fade show active" id="step1">
+                                    <div style="margin-top:20px;" class="alert alert-warning bg-transparent text-warning-600 border-warning-600 px-24 py-11 mb-0 fw-semibold text-lg radius-8 d-flex" role="alert">
+                                    💡<p style="color:#4B5563;" class="mb-0  text-sm">
+                                        To avoid release rejection, please ensure your Release Name (Album, EP, or Single) does not include “Limited Edition”, “Full Version”, “Edited”, “Cover from”, “Remix”, “Instrumental”, “Atmos”, “Spatial Audio” or Track numbers in the title.
+                                    </p>
+                                        
+                                    </div>
+                                    <form id="formStep1" style="margin-top:20px">
+                                        <input type="hidden" id="music_release_id" name="music_release_id" />
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                                                        
+                                                    <label>Select Plan</label>
+                                                    <input type="text" name="plan" id="plan" class="form-control" value="{{$subcount->subscription->subscription_name}}" readonly>
+                                                    
+                                                        
+                                            </div>
+                                                <div class="col-md-6">
+                                                        
+                                                    <label>Release Type</label>
+                                                    <input type="text" name="release_type" id="release_type" class="form-control" value="{{$subcount->subscription->track_file_quality}}" readonly>
+                                                    
+                                                </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                                                        
+                                                    <label>Title</label>
+                                                    <input class="form-control" name="title" id="title">
+                                                  
+                                            </div>
+                                            <div class="col-md-6">
+                                                    
+                                                <label>Stereo Type</label>
+                                                <input type="text" name="stereo_type" class="form-control" id="stereo_type">
+                                                
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                                                        
+                                                    <label>Stereo EAN Code</label>
+                                                    <input type="number" 
+                                                    class="form-control" 
+                                                    name="stereo_code" 
+                                                    id="stereo_code" 
+                                                    value="{{ $release->stereo_code ?? '' }}" 
+                                                    readonly>   
+                                            </div>
+                                                <div class="col-md-6">
+                                                        
+                                                    <label>Label Name</label>
+                                                    <input type="text" name="label_name" class="form-control" id="label_name">
+                                                    
+                                                </div>
+                                        </div>
+                                        
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                        <label>Release Date</label>
+                                                        <input type="date" name="release_date" id="release_date" class="form-control">
+                                            </div>  
+                                        </div>
+                                         
+                                        <span id="saveStep1Status" class="mt-3"></span>
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-primary-600" id="saveStep1">Save Details</button>
+                                            <button type="button" class="btn btn-secondary" id="goto2">Next: Artwork →</button>
+                                        </div>
+                                    </form>
+                                    </div>
+
+                                    <!-- Step 2: Artwork -->
+                                    <div class="tab-pane fade" id="step2">
+                                    <form id="formStep2" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                        <label>Upload Artwork</label>
+                                        <input type="file" class="form-control" id="artwork" name="artwork" accept="image/*">
+                                        </div>
+                                        
+                                        <span id="artworkStatus"></span>
+                                          <div class="d-flex align-items-center gap-3">
+                                            <div id="artworkPreview" class="mt-3"></div>
+                                            <div class="alert alert-warning bg-transparent border-warning-600  py-11 mb-0 radius-8" role="alert">
+                                                
+                                                <p class="card-text text-neutral-600" >We recommend square images ranging from 1400x1400 to 4000x4000 pixels</p>
+                                                <p class="card-text text-neutral-600" >We accept JPG, JPEG, PNG, BMP, TIF, TIFF or GIF formats</p> 
+                                                <p class="card-text text-neutral-600" >Minimum image size is 100KB and maximum is 10MB</p> 
+                                                <p class="card-text text-neutral-600" >Stores will reject images that contain URLs, logos or branding,
+                                                blurry or pixelated images without permission, images with prices or references to physical packaging, and pornographic imagery.</p> 
+                                            </div>    
+                                          </div>
+                                        <div class="mt-3 d-flex align-items-center gap-2">
+                                        <button type="button" class="btn btn-primary-600" id="uploadArtworkBtn">Save Artwork</button>    
+                                         <button type="button" class="btn btn-secondary" id="goto3">Next: Stereo →</button>
+                                         <button type="button" class="btn btn-outline-secondary ms-auto" id="backToStep1">← Back</button>
+                                        </div>
+                                    </form>
+                                    </div>
+
+                                    <!-- Step 3: Stereo (upload audios) -->
+                                    <div class="tab-pane fade" id="step3">
+                                    <form id="formStep3" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                        <label>Upload Audio Files (multiple)</label>
+                                        <!-- Drag & Drop Zone -->
+                                            <div id="audioDropZone" 
+                                                class="border border-primary border-2 rounded-3 p-4 text-center bg-light position-relative"
+                                                style="cursor:pointer; transition: all 0.3s ease;">
+                                                
+                                              <i class="bi bi-music-note-beamed fs-1 text-primary"></i>
+                                              <p class="mt-2 mb-0 text-secondary">Drag & drop audio files here, or click to browse</p>
+                                              <small class="text-muted d-block">Supported formats: MP3, WAV, AAC, etc.</small>
+
+                                              <!-- Hidden file input -->
+                                              <input type="file" id="audios" name="audios[]" accept="audio/*" multiple 
+                                                    class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor:pointer;">
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="audioList" class="mt-3"></div>
+                                        <span id="audioUploadStatus"></span>    
+                                        
+                                        <div class="mt-3 d-flex align-items-center gap-2">
+                                        <button type="button" class="btn btn-primary-600" id="uploadAudiosBtn"><i class="bi bi-cloud-upload"></i>Save Audio(s)</button>    
+                                        <button type="button" class="btn btn-secondary" id="goto4">Next: Track Details →</button>
+                                        <button type="button" class="btn btn-outline-secondary ms-auto" id="backToStep2">← Back</button>
+                                        </div>
+
+                                        
+                                    </form>
+                                    </div>
+
+                                    <!-- Step 4: Track Details -->
+                                    <div class="tab-pane fade" id="step4">
+                                    <div id="tracksContainer"></div>
+                                    <span id="tracksSaveStatus"></span>    
+                                    <div class="mt-3 d-flex align-items-center gap-2">
+                                        <button class="btn btn-primary-600" id="saveTracksBtn">Save Tracks</button>
+                                        <button class="btn btn-secondary" id="goto5">Next: Outlets →</button>
+                                        <button type="button" class="btn btn-outline-secondary ms-auto" id="backToStep3">← Back</button>
+                                    </div>
+                                    </div>
+
+                                    <!-- Step 5: Outlets -->
+                                    <!--Updated Step 5: Outlets -->
+                                    <div class="tab-pane fade" id="step5">
+                                        <form id="outletsForm">
+                                        <table class="table bordered-table mb-0">
+                                            <thead>
+                                            <tr>
+                                                <th>
+                                                <div class="form-check style-check d-flex align-items-center">
+                                                    <input class="form-check-input" type="checkbox" id="checkAll">
+                                                    <label class="form-check-label" for="checkAll">Outlets</label>
+                                                </div>
+                                                </th>
+                                                <th>Release Date</th>
+                                                {{--<th>Release Status</th>--}}
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            @foreach($stores as $store)
+                                                <tr>
+                                                <td>
+                                                    <div class="form-check style-check d-flex align-items-center">
+                                                    <input
+                                                        class="form-check-input row-checkbox"
+                                                        type="checkbox"
+                                                        name="stores[]"
+                                                        value="{{ $store->id }}"
+                                                        id="check{{ $store->id }}"
+                                                    >
+                                                    <label class="form-check-label" for="check{{ $store->id }}">
+                                                        {{ $store->name ?? '' }}
+                                                    </label>
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    <input
+                                                    type="date"
+                                                    name="outlet_release_date[{{ $store->id }}]"
+                                                    id="outlet_release_date_{{ $store->id }}"
+                                                    class="form-control outlet-date"
+                                                    
+                                                    >
+                                                </td>
+
+                                                {{--<td>
+                                                    <span class="bg-danger-focus text-danger-main px-24 py-4 rounded-pill fw-medium text-sm">
+                                                    {{ $store->pivot->status ?? 'pending' }}
+                                                    </span>
+                                                </td>--}}
+                                                
+                                                </tr>
+                                            @endforeach
+                                            </tbody>
+                                        </table>
+
+                                        <span class="mt-3" id="outletsSaveStatus"></span>
+
+                                        <div class="mt-3 d-flex align-items-center gap-2">
+                                            <button type="button" class="btn btn-primary-600" id="saveOutletsBtn">Save Outlets</button>
+                                            <button type="button" class="btn btn-success" id="submitReleaseBtn">
+                                            <i class="bi bi-check-circle"></i> Submit Release
+                                            </button>
+                                            <span id="submitStatus"></span>
+                                            <button type="button" class="btn btn-outline-secondary ms-auto" id="backToStep4">← Back</button>
+                                        </div>
+                                        </form>
+
+                                    </div> <!--end of tab plain -->
+
+                                  </div><!-- end of tab content -->
+                              </div><!-- end of card body -->
+                          </div><!-- end of card -->
