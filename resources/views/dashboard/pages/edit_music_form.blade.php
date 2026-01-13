@@ -8,6 +8,30 @@
 
  <style>
 
+     .doc-preview-wrapper {
+    width: 100%;
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+    background: #f8f9fa;
+}
+
+.doc-preview-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    transition: transform 0.3s ease;
+    transform-origin: center center;
+    cursor: zoom-in;
+}
+
+.doc-preview-wrapper img.zoomed {
+    transform: scale(2);
+    cursor: zoom-out;
+}
+
+
      .note-item {
         position: relative;
       }
@@ -264,7 +288,8 @@ function loadEditRelease(releaseId) {
       $('#plan').val(r.plan || '');
       $('#release_type').val(r.release_type || '');
       $('#stereo_type').val(r.stereo_type || '');
-      $('#stereo_code').val(r.stereo_code || '');
+      // $('#stereo_code').val(r.stereo_code || '');
+      $('#stereo_code').val('');
       $('#label_name').val(r.label_name || '');
       $('#release_date').val(r.release_date || '');
       
@@ -470,19 +495,62 @@ function restoreVerification(v) {
     if (v.id_document_url) {
         $('#the_doc').append(`
             <div class="mt-2">
-                <a href="${v.id_document_url}" target="_blank" class="btn btn-outline-secondary btn-sm">
-                  View uploaded ID document
-                </a>
+                <button 
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    onclick="previewDocument('${v.id_document_url}')">
+                    View uploaded ID document
+                </button>
             </div>
             <small class="text-muted">
-              Upload only if you want to replace the existing document
+                Upload only if you want to replace the existing document
             </small>
         `);
     }
 
+    
+
+
     // Status badge
     $('#verificationSaveStatus').html('<span class="badge bg-success">Saved</span>');
 }
+
+
+function previewDocument(url) {
+
+    const container = $('#docPreviewContent');
+    container.empty();
+
+    const extension = url.split('.').pop().toLowerCase();
+
+    if (['jpg', 'jpeg', 'png'].includes(extension)) {
+        container.html(`
+            <img 
+                src="${url}" 
+                id="previewImage"
+                alt="ID Document">
+        `);
+
+        // Toggle zoom on click
+        container.off('click').on('click', '#previewImage', function () {
+            $(this).toggleClass('zoomed');
+        });
+
+    } else if (extension === 'pdf') {
+        container.html(`
+            <iframe 
+                src="${url}" 
+                style="width:100%; height:100%; border:none;">
+            </iframe>
+        `);
+    } else {
+        container.html(`<p class="text-danger">Unsupported file type</p>`);
+    }
+
+    $('#docPreviewModal').modal('show');
+}
+
+
 
 
 /* -------------------------------------------------------------------------- */
@@ -616,7 +684,7 @@ function buildTrackForms(files, append = false) {
             </div>
             <div class="col-md-4">
               <label>ISRC Code</label>
-              <input class="form-control track-isrc" type="text" value="${f.isrc || ''}" readonly>
+              <input class="form-control track-isrc" type="text" value="" readonly>
             </div>
             <div class="col-md-4">
               <button type="button" class="btn btn-sm btn-outline-primary add-note-btn">

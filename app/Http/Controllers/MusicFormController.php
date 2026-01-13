@@ -190,7 +190,8 @@ class MusicFormController extends Controller
             // Create a new release and auto-generate EAN
             $release = MusicRelease::create([
                 'title' => $fields['title'] ?? 'Untitled Release',
-                'stereo_code' => $this->generateEANCode(), //generate EAN here
+                'stereo_code' => 'NULL', //generate EAN here
+                // 'stereo_code' => $this->generateEANCode(),
             ]);
             
         }
@@ -1183,7 +1184,8 @@ class MusicFormController extends Controller
                     'genre' => isset($t['genre']) ? json_encode($t['genre']) : json_encode([]),
                     'track_lyrics' => $t['lyrics'] ?? '',
                     'duration_ms' => $t['duration_ms'] ?? null,
-                    'isrc' => $isrc,
+                    // 'isrc' => $isrc,
+                    'isrc' => NULL,
                     'stream_type' => isset($t['stream_type']) ? json_encode($t['stream_type']) : json_encode([]),
                 ]);
             } else {
@@ -1203,7 +1205,8 @@ class MusicFormController extends Controller
                             ? $t['duration_ms'] 
                             : $this->parseDurationString($t['duration_ms'])) 
                         : $track->duration_ms,
-                    'isrc' => $t['isrc'] ?? $track->isrc,
+                    // 'isrc' => $t['isrc'] ?? $track->isrc,
+                    'isrc' => NULL,
                 ]);
             }
 
@@ -1230,7 +1233,8 @@ class MusicFormController extends Controller
                 'title' => $track->title,
                 'artist' => $track->artist,
                 'feature_artist' => $track->feature_artist,
-                'isrc' => $track->isrc,
+                // 'isrc' => $track->isrc,
+                'isrc' => NULL,
                 'duration_ms' => $track->duration_ms,
                 'lyrics' => $track->track_lyrics,
                 'genre' => json_decode($track->genre ?? '[]', true),

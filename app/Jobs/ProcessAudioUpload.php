@@ -100,7 +100,8 @@ class ProcessAudioUpload implements ShouldQueue
                 'audio_file_id' => $audio->id,
                 'title' => pathinfo($originalName, PATHINFO_FILENAME),
                 'duration_ms' => $audio->duration_ms,
-                'isrc' => $isrc,
+                // 'isrc' => $isrc,
+                'isrc' => NULL,
             ]);
 
             $saved[] = [
@@ -108,7 +109,8 @@ class ProcessAudioUpload implements ShouldQueue
                 'track_id' => $track->id,
                 'filename' => $originalName,
                 'duration_ms' => $audio->duration_ms,
-                'isrc' => $isrc,
+                //'isrc' => $isrc,
+                'isrc' => NULL,
                 //'audio_url' => config('app.website_storage_link').$url ,
                 'audio_url' => config('app.website_storage_link'). '/storage/' . ltrim($track->audioFile->path, '/') ,
             ];

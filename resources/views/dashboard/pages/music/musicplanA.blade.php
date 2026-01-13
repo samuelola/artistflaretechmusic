@@ -74,7 +74,7 @@
                                                     class="form-control" 
                                                     name="stereo_code" 
                                                     id="stereo_code" 
-                                                    value="{{ $release->stereo_code ?? '' }}" 
+                                                    value="" 
                                                     readonly>   
                                             </div>
                                                 <div class="col-md-6">
@@ -335,3 +335,22 @@
                                   </div><!-- end of tab content -->
                               </div><!-- end of card body -->
                           </div><!-- end of card -->
+
+ <div class="modal fade" id="docPreviewModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-xl modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">ID Document Preview</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+
+                                    <div class="modal-body p-0">
+                                        <div id="docPreviewContent" class="doc-preview-wrapper">
+                                            <!-- injected -->
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>      
+                          

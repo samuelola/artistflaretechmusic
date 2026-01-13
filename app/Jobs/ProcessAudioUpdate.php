@@ -104,7 +104,8 @@ class ProcessAudioUpdate implements ShouldQueue
                     $track = $this->release->tracks()->create([
                         'title'        => pathinfo($remoteFile['original_name'], PATHINFO_FILENAME),
                         'duration_ms'  => $duration,
-                        'isrc'         => $this->generateIsrcForTrack($this->release),
+                        // 'isrc'         => $this->generateIsrcForTrack($this->release),
+                        'isrc'         => NULL,
                         'audio_file_id'=> $audio->id,
                     ]);
                 } else {
@@ -120,7 +121,8 @@ class ProcessAudioUpdate implements ShouldQueue
                     'filename'    => $audio->filename,
                     'title'       => $track->title,
                     'duration_ms' => $track->duration_ms,
-                    'isrc'        => $track->isrc,
+                    // 'isrc'        => $track->isrc,
+                    'isrc'        => NULL,
                     'audio_url'   => config('app.website_storage_link').$remoteFile['url'],  // correct ⬅
                 ];
             }
