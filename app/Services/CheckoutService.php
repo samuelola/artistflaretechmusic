@@ -206,7 +206,13 @@ class CheckoutService implements CheckoutInterface
             'updated_at' => now(),
          ]);
 
-         auth()->user()->notify(new NewMessageNotification("Your Subscription of ₦{$sub_detail->subscription_amount} is successful"));
+         
+         auth()->user()->notify(
+         new NewMessageNotification(
+               'Subscription Successful',
+               "Your Subscription of ₦{$sub_detail->subscription_amount} is successful"
+         )
+         );
 
         return $reu;
     }

@@ -25,6 +25,10 @@
                                 Outlets
                                 </button>
                             </li>
+                             <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="step6-tab" data-bs-toggle="tab" data-bs-target="#step6" type="button" role="tab">
+                                            Verification Details</button>
+                            </li>
                             </ul>
 
                         <div class="card">
@@ -213,16 +217,101 @@
 
                                         <span class="mt-3" id="outletsSaveStatus"></span>
 
-                                        <div class="mt-3 d-flex align-items-center gap-2">
+                                       
+                                        </form>
+                                         <div class="mt-3 d-flex align-items-center gap-2">
                                             <button type="button" class="btn btn-primary-600" id="saveOutletsBtn">Save Outlets</button>
-                                            <button type="button" class="btn btn-success" id="updateReleaseBtn">
-                                            <i class="bi bi-check-circle"></i> Submit Release
-                                            </button>
-                                            <span id="submitStatus"></span>
+                                            <button class="btn btn-secondary" id="goto6">Next: Verification →</button>
+                                           
                                             <button type="button" class="btn btn-outline-secondary ms-auto" id="backToStep4">← Back</button>
                                         </div>
-                                        </form>
                                     </div> <!--end of tab plain -->
+
+                                    <div class="tab-pane fade" id="step6">
+                                        <form id="acct_verification">
+                                            <div class="row mt-3">
+                                              <div class="col-md-2"></div>
+                                                <div class="col-md-8">       
+                                                    <div>                          
+                                                        <label>Select Official ID Card</label>
+                                                        <select class="form-control official_id" name="official_id"  class="form-control js-example-basic-single" style="width: 100% !important">
+                                                            <option value="">--Select--</option>
+                                                            <option value="NIN">NIN</option>
+                                                            <option value="voterscard">Voter's Card</option>
+                                                            <option value="Driverslicense">Driver's License</option>
+                                                        </select>    
+                                                     </div><!--end div-->
+                                                     <div class="mt-3" id="the_doc">
+                                                         <label>Upload Id</label>
+                                                         <input type="file" name="upload_doc" id="upload_doc" class="form-control">
+
+                                                     </div>
+                                                     <div class="mt-3">
+                                                         <label>Account Number</label>
+                                                         <input type="text" name="account_number" id="account_number" class="form-control">
+
+                                                     </div><!--end div-->
+                                                      <div class="mt-3" id="the_bank">
+                                                        <label>Bank</label>
+                                                        <select id="bank" name="bank" class="form-control js-example-basic-single" style="width: 100% !important">
+                                                            <option>--Select Bank--</option>
+                                                              @foreach($rels as $val)
+                                                                <option value="{{$val->code}}">{{$val->name}}</option>
+                                                              @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-12 mt-3" id="account_parent">
+                                                        <label>Account Name</label>
+                                                        <input id="account_name" type="text" name="account_name" class="form-control" readonly>
+                                                        <i class="fa fa-spinner fa-spin input-loader" id="inputLoader"></i>
+                                                    </div>
+                                                     <div class="mt-3">
+                                                           <label>Social Handles</label>
+                                                            <div id="socialHandles">
+                                                                <div class="input-group mb-2">
+                                                                    <input 
+                                                                        type="text" 
+                                                                        name="social_media_handles[]" 
+                                                                        class="form-control" 
+                                                                        placeholder="e.g. Instagram: @username">
+
+                                                                    <div class="input-group-append">
+                                                                        <button 
+                                                                            type="button" 
+                                                                            class="btn btn-success" 
+                                                                            onclick="addSocialHandle()">
+                                                                            +
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                     </div><!--end div-->
+                                                     <div class="mt-3">
+                                                            <label>Video Link</label>
+                                                            <input 
+                                                                type="url" 
+                                                                name="video_links" 
+                                                                class="form-control" 
+                                                                placeholder="https://youtube.com/your-video" id="youtube_linkk">
+                                                     </div>
+
+                                                      <span class="mt-3" id="verificationSaveStatus"></span>
+                                                        <div class="mt-3 d-flex align-items-center gap-2">
+                                                            <button type="button" class="btn btn-primary-600" id="saveVerificationBtn">Save Verification</button>
+                                                            <button type="button" class="btn btn-success" id="updateReleaseBtn">
+                                                            <i class="bi bi-check-circle"></i> Update Release    
+                                                            </button>
+                                                            <span id="submitStatus"></span>
+                                                            <button type="button" class="btn btn-outline-secondary ms-auto" id="backToStep5">← Back</button>
+                                                        </div>
+                                                </div>
+                                               
+
+                                              <div class="col-md-2"></div>
+                                            </div>
+                                        </form>
+                                    </div><!--end of tab plain -->
 
                                   </div><!-- end of tab content -->
                               </div><!-- end of card body -->

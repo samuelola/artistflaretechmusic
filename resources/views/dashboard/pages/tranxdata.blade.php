@@ -24,7 +24,7 @@
 
 @else
 
-    <p style="text-align:center">No Data avaliable</p
+    <p style="text-align:center">No Data avaliable</p>
 
 @endif
 

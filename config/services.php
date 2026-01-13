@@ -44,6 +44,11 @@ return [
     'key' => env('RENDI_API_KEY'),
     'url' => env('RENDI_API_URL', 'https://api.rendi.dev/v1'),
    ],
+
+    'youtube' => [
+        'key' => env('YOUTUBE_API_KEY'),
+    ],
+
     
     
 ];

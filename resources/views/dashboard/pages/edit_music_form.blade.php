@@ -163,7 +163,7 @@
                                     <div class="progress" style="height: 18px;">
                                         <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%"></div>
                                     </div>
-                                    <small id="progressLabel" class="text-muted">Step 1 of 5</small>
+                                    <small id="progressLabel" class="text-muted">Step 1 of 6</small>
                                 </div>
                                 <!-- Tabs as steps -->
 
@@ -216,12 +216,14 @@ function showValidationError($container, message) {
     $('#goto3').on('click', function() { goToTab('#step3'); });
     $('#goto4').on('click', function() { goToTab('#step4'); });
     $('#goto5').on('click', function() { goToTab('#step5'); });
+    $('#goto6').on('click', function() { goToTab('#step6'); });
 
     // Back buttons
     $('#backToStep1').on('click', function() { goToTab('#step1'); });
     $('#backToStep2').on('click', function() { goToTab('#step2'); });
     $('#backToStep3').on('click', function() { goToTab('#step3'); });
     $('#backToStep4').on('click', function() { goToTab('#step4'); });
+    $('#backToStep5').on('click', function() { goToTab('#step5'); });
 
     // Optional: Auto-scroll to top on tab change
     $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function () {
@@ -390,12 +392,96 @@ function loadEditRelease(releaseId) {
         
       }
 
+      /* ------------------------------ Verification ----------------------------- */
+      if (r.verification && r.verification.exists) {
+          console.log(r.verification);
+            restoreVerification(r.verification);
+      }
+
       console.log('Edit release loaded:', r);
     },
     error(err) {
       console.log('Error loading edit data:', err.responseText);
     }
   });
+}  //end loadeditRelease here
+
+
+
+ 
+
+
+    /* -------------------------------------------------------------------------- */
+/*                 Verification fill dependant             */
+/* -------------------------------------------------------------------------- */
+
+let isRestoringDraft = false;
+
+function restoreVerification(v) {
+    // Show bank and account sections (they are hidden by default)
+    $('#the_bank').show();
+    $('#account_parent').show();
+
+    // Now proceed with restoring values
+    isRestoringDraft = true;
+
+    // Official ID
+    $('.official_id').val(v.official_id).trigger('change');
+
+    // Account number
+    $('#account_number').val(v.account_number || '');
+
+    // Bank (Select2-safe)
+    if (v.bank_code) {
+        setTimeout(() => {
+            $('#bank').val(v.bank_code).trigger('change.select2');
+        }, 200);
+    }
+
+    // Account name
+    setTimeout(() => {
+        $('#account_name').val(v.account_name || '');
+        isRestoringDraft = false; // allow normal change events
+    }, 200);
+
+    // Video link
+    $('#youtube_linkk').val(v.video_link || '');
+
+    // Social media handles
+    if (Array.isArray(v.social_media_handles) && v.social_media_handles.length > 0) {
+        const container = $('#socialHandles');
+        container.empty();
+        v.social_media_handles.forEach((handle, index) => {
+            container.append(`
+                <div class="input-group mb-2 mt-3">
+                  <input type="text" name="social_media_handles[]" class="form-control" value="${handle}">
+                  <div class="input-group-append">
+                    <button type="button" class="btn ${index === 0 ? 'btn-success' : 'btn-danger'}"
+                      onclick="${index === 0 ? 'addSocialHandle()' : '$(this).closest(\'.input-group\').remove()'}">
+                      ${index === 0 ? '+' : '−'}
+                    </button>
+                  </div>
+                </div>
+            `);
+        });
+    }
+
+    // Uploaded document preview
+    if (v.id_document_url) {
+        $('#the_doc').append(`
+            <div class="mt-2">
+                <a href="${v.id_document_url}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                  View uploaded ID document
+                </a>
+            </div>
+            <small class="text-muted">
+              Upload only if you want to replace the existing document
+            </small>
+        `);
+    }
+
+    // Status badge
+    $('#verificationSaveStatus').html('<span class="badge bg-success">Saved</span>');
 }
 
 
@@ -728,6 +814,12 @@ $.ajaxSetup({
     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
   }
 });
+
+
+
+
+
+
 
 
 
@@ -1568,9 +1660,86 @@ $('#saveOutletsBtn').on('click', function() {
 });
 
 
+// === Step 6: Verification ===
+
+$('#saveVerificationBtn').on('click', function () {
+
+    let btn = $(this);
+    let status = $('#verificationSaveStatus');
+
+    let form = document.getElementById('acct_verification');
+    let formData = new FormData(form);
+
+    const id = $('#music_release_id').val();
+
+    // METHOD SPOOFING (CRITICAL)
+    formData.append('_method', 'PUT');
+
+    // FORCE STANDARD FIELDS
+    formData.set('official_id', $('.official_id').val());
+    formData.set('bank', $('#bank').val());
+    formData.set('account_number', $('#account_number').val());
+    formData.set('account_name', $('#account_name').val());
+    formData.set('video_links', $('#youtube_linkk').val());
+
+    // REBUILD SOCIAL HANDLES
+    formData.delete('social_media_handles[]');
+
+    let handles = [];
+    $('input[name="social_media_handles[]"]').each(function () {
+        let val = $(this).val().trim();
+        if (val !== '') {
+            handles.push(val);
+        }
+    });
+
+    if (handles.length === 0) {
+        status.html(`<span class="badge bg-danger">Add at least one social handle</span>`);
+        return;
+    }
+
+    handles.forEach(h => {
+        formData.append('social_media_handles[]', h);
+    });
+
+    // DEBUG — YOU SHOULD SEE VALUES NOW
+    for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+    }
+
+    btn.prop('disabled', true);
+    status.html(`
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Saving...
+    `);
+
+    $.ajax({
+        url: `/update_verification/${id}`,
+        method: "POST", //  MUST BE POST
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: formData,
+        processData: false,
+        contentType: false,
+
+        success(resp) {
+            status.html(`<span class="badge bg-success">Saved</span>`);
+            btn.prop('disabled', false);
+        },
+
+        error(xhr) {
+            btn.prop('disabled', false);
+            console.log(xhr.responseJSON);
+            status.html(`<span class="badge bg-danger">${xhr.responseJSON?.message}</span>`);
+        }
+    });
+});
 
 
-// === Step 6: Final Submit ===
+
+
+// === Final Submit ===
 $('#updateReleaseBtn').on('click', function() {
   const id = $('#music_release_id').val();
   $.ajax({
@@ -1747,6 +1916,107 @@ $(document).on('change', '.row-checkbox', function() {
 
 
 
+</script>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#account_number').keyup(function() {
+            $('#the_bank').show();
+            $('#account_parent').show();
+        });
+        
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#the_bank').hide();
+        $('#account_parent').hide();
+        
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#the_doc').hide();
+        
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.official_id').change(function() {
+            $('#the_doc').show();
+        });
+        
+    });
+</script>
+
+
+<script>
+  $('#bank').change(function() {
+    if (isRestoringDraft) return; 
+
+    var bank_code = $(this).val();
+    var account_number = $("#account_number").val();
+    $("#inputLoader").show();
+
+    $.ajax({
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+        url: "{{ route('resolve_account') }}",
+        type: "POST",
+        data: { bank_code: bank_code, account_number: account_number },
+        success: function(response) {
+            if (response.success) {
+                $('#account_name').val(response.data.data.account_name);
+            } else {
+                $('#account_name').val('');
+                alert(response.message);
+            }
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText);
+        },
+        complete: function() {
+            $("#inputLoader").hide();
+        }
+    });
+});
+
+
+</script>
+
+
+<script>
+$(document).ready(function() {
+    $('#youtube_linkk').on('blur', function() {
+        var youtube_url = $(this).val().trim();
+        if (youtube_url === '') return; // skip empty
+
+        $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            url: "{{ route('releases.youtube') }}", // define this route
+            type: 'POST',
+            data: { youtube_url: youtube_url },
+            success: function(response) {
+                if (response.valid === false) {
+                    alert(response.message || 'Invalid YouTube URL');
+                    $('#youtube_linkk').val(''); // optional: clear input
+                } else {
+                    console.log('Video is valid:', response);
+                }
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
+                alert('An error occurred while validating the video');
+            }
+        });
+    });
+});
 </script>
 
 

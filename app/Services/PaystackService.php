@@ -173,12 +173,25 @@ class PaystackService implements PaymentInterface
             }
          
             elseif($get_bal->minimium_balance != $min){
-                
-               
+
                DB::table('user_wallet')->where('user_id',auth()->user()->id)->update([
                
-               'minimium_balance' => $get_bal->balance + $amount
-               ]);
+               'minimium_balance' => $get_bal->minimium_balance + $amount
+               ]); 
+               
+               $get_total_min = DB::table('user_wallet')->where('user_id',auth()->user()->id)->first();
+
+               if($get_total_min->minimium_balance > $min){
+                   
+                   $sub_min = $get_total_min->minimium_balance - $min ;
+                   DB::table('user_wallet')->where('user_id',auth()->user()->id)->update([
+               
+                    'minimium_balance' => $min,
+                    'balance' => $sub_min
+                   ]);
+               }
+               
+               
             }
             
         }
@@ -290,7 +303,12 @@ class PaystackService implements PaymentInterface
         }
 
         $user = User::find($exist_user_count->user_id);
-        $user->notify(new NewMessageNotification("Your topup of ₦{$amount} is successful"));
+        $user->notify(
+        new NewMessageNotification(
+            'Top-up Successful',
+            "Your topup of ₦{$amount} is successful"
+        )
+        );
 
         return $status;
     }
@@ -351,7 +369,12 @@ class PaystackService implements PaymentInterface
             ]);
 
              $user = User::find($get_authcode->user_id);
-             $user->notify(new NewMessageNotification("Your Renewal of ₦{$amount} is successful"));
+             $user->notify(
+                new NewMessageNotification(
+                    'Renewal Successful',
+                    "Your Renewal of ₦{$amount} is successful"
+                )
+            );
 
             return $status;
      }

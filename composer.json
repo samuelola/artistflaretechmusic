@@ -25,7 +25,8 @@
         "realrashid/sweet-alert": "^7.3",
         "spatie/array-to-xml": "^3.4",
         "spatie/laravel-permission": "^6.20",
-        "stichoza/google-translate-php": "^5.3"
+        "stichoza/google-translate-php": "^5.3",
+        "stripe/stripe-php": "*"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15",

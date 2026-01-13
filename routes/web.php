@@ -36,6 +36,11 @@ Route::get('/refresh-csrf', function () {
 
 Route::get('/share/{id}', [DashboardController::class, 'share'])->name('share_track');
 
+Route::controller(PaystackFlareTechWebhookController::class)->group(function () {
+            
+        Route::post('/paystack_flaretech/webhook','handle');
+});
+
 Route::middleware('check.user')->group(function () {
     Route::get('/dashboardd', [DashboardController::class,'showDashboardd'])->name('dashboardd');
 });
@@ -150,16 +155,13 @@ Route::middleware('artistusercheck')->group(function () {
             
         Route::get('/transfer','transfer')->name('transfer');
         Route::post('/transfer_payment','transferPayment')->name('transfer_payment');
-        Route::get('/resolve_account','resolveAccount')->name('resolve_account');
+        Route::post('/resolve_account','resolveAccount')->name('resolve_account');
         Route::post('/user_wallet_transfer','userWalletTransfer')->name('user_wallet_transfer');
         Route::post('/user_coin_transfer','userCoinTransfer')->name('user_coin_transfer');
 
     });
 
-    Route::controller(PaystackFlareTechWebhookController::class)->group(function () {
-            
-        Route::post('/paystack_flaretech/webhook','handle');
-    });
+    
 
 
     Route::controller(PaymentController::class)->group(function () {
@@ -199,7 +201,10 @@ Route::middleware('artistusercheck')->group(function () {
     
      Route::controller(MusicFormController::class)->group(function () {
 
-        
+        Route::post('/verification/store','verification')->name('verification.store');
+
+        // Youtube validation
+        Route::post('/release_youtube_valid','youtubeValidation')->name('releases.youtube');
             
         Route::get('/releases/create','showStep')->name('releases.create');
         // Ajax endpoints
@@ -219,6 +224,7 @@ Route::middleware('artistusercheck')->group(function () {
         Route::post('/update_audios/{id}', 'updateAudio')->name('release.update.audio');
         Route::put('/update_tracks/{id}', 'updateTracks')->name('release.update.tracks');
         Route::put('/update_outlets/{id}', 'updateOutlets')->name('release.update.outlets');
+        Route::put('/update_verification/{id}', 'updateVerification')->name('release.update.veri');
         Route::post('update_final/{id}', 'submitFinalUpdate')->name('release.update.final');
         Route::delete('/delete_audio/{track}','deleteAudio')->name('release.delete.audio');
         Route::get('/get_tracks/{id}', 'getTracks');

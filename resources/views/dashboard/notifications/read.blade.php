@@ -38,27 +38,32 @@
 
         <div class="row">
                 
+               <div class="col-md-12">
+                                    <div class="border rounded p-3 mb-2 d-flex justify-content-between align-items-start">
+                                        
+                                        <!-- LEFT: Title + Message -->
+                                        <div class="flex-grow-1 me-3">
+                                            <strong>
+                                                {{ is_array($notification->data['title'] ?? null)
+                                                    ? implode(', ', $notification->data['title'])
+                                                    : ($notification->data['title'] ?? 'Notification') }}
+                                            </strong>
 
-                <div class="col-md-12">
-                       
-                            <div class="border rounded p-3 mb-2 d-flex justify-content-between">
-                                <div>
-                                    <strong>
-                                        {{ is_array($notification->data['title'] ?? null) 
-        ? implode(', ', $notification->data['title']) 
-        : ($notification->data['title'] ?? 'Notification') }}
-                                    </strong>
-                                    <p class="mb-0">
-                                       {!! is_array($notification->data['message'] ?? null) 
-        ? implode(', ', $notification->data['message']) 
-        : ($notification->data['message'] ?? 'Notification') !!}
-                                    </p>
+                                            <p class="mb-0 text-wrap">
+                                                {!! is_array($notification->data['message'] ?? null)
+                                                    ? implode(', ', $notification->data['message'])
+                                                    : ($notification->data['message'] ?? 'Notification') !!}
+                                            </p>
+                                        </div>
+
+                                        <!-- RIGHT: Time -->
+                                        <small class="text-muted text-nowrap">
+                                            {{ $notification->created_at->diffForHumans() }}
+                                        </small>
+
+                                    </div>
                                 </div>
-                              
-                            </div>
-                            <p><small class="text-muted" style="margin-left: 20px;">{{ $notification->created_at->diffForHumans() }}</small></p>
-                        
-                </div>
+               
         </div>
 
    

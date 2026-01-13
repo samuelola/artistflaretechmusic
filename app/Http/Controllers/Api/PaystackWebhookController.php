@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\Log;
 
-
-class PaystackFlareTechWebhookController extends Controller
+class PaystackWebhookController extends Controller
 {
-   public function handle(Request $request)
+    
+    public function handle(Request $request)
    {
-      dd("ok");
       $signature = $request->header('x-paystack-signature');
       if (!$signature || $signature !== hash_hmac('sha512', $request->getContent(), config('paystack.secretKey'))) {
         abort(403, 'Invalid signature');
@@ -40,6 +40,4 @@ class PaystackFlareTechWebhookController extends Controller
 
       return response()->json(['status' => 'ok']);
    }
-
-   
 }

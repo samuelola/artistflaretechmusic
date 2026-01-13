@@ -22,10 +22,44 @@ use App\Jobs\ProcessAudioUpdateMetadata;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
+use App\Services\YouTubeService;
+use App\Models\Verification;
+
 
 
 class MusicFormController extends Controller
 {
+
+    function getYoutubeVideoId($url){
+    preg_match(
+        '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i',
+        $url,
+        $matches
+        );
+
+        return $matches[1] ?? null;
+    }
+
+    public function youtubeValidation (Request $request,YouTubeService $youtube){
+        
+         $videoId = $this->getYoutubeVideoId($request->youtube_url);
+         if (!$videoId) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Invalid YouTube URL',
+            ]);
+        }
+
+        $result = $youtube->validateVideo($videoId);     
+        if (!isset($result['valid'])) {
+            $result['valid'] = true; // fallback if $youtube->validateVideo returns just details
+        }
+
+
+        return response()->json($result);
+    }
+
+
     // Show create form (stepper)
     public function showStep()
     {
@@ -37,7 +71,9 @@ class MusicFormController extends Controller
                     ->first();
         $r_outlets = DB::table('outlets')->select('status')->first(); 
         $languages = DB::table('languages')->select('name')->get();
-        $genres = DB::table('genres')->get();  
+        $genres = DB::table('genres')->get(); 
+        $getBanks = DB::table('banks')->get();
+        $rels = json_decode($getBanks); 
                  
         return view('dashboard.pages.music_form', compact(
             'musical_roles',
@@ -46,9 +82,101 @@ class MusicFormController extends Controller
             'subcount',
             'r_outlets',
             'languages',
-            'genres'
+            'genres',
+            'rels'
         ));
     }
+
+
+    // start verification 
+
+   public function verification(Request $request)
+    {
+        $request->validate([
+            'music_release_id' => 'required|integer',
+            'official_id' => 'required',
+            'account_number' => 'required',
+            'bank' => 'required',
+            'account_name' => 'required',
+            'social_media_handles' => 'required|array',
+            'video_links' => 'required|url'
+        ]);
+
+        $release = MusicRelease::findOrFail($request->music_release_id);
+
+        $verification = Verification::where('music_release_id', $release->id)->first();
+
+        // Conditional validation for upload_doc
+        if (!$verification || !$verification->id_document) {
+            $request->validate([
+                'upload_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240'
+            ]);
+        } else {
+            $request->validate([
+                'upload_doc' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240'
+            ]);
+        }
+
+        //Keep old document by default
+        $docPath = $verification?->id_document;
+
+        // Handle new upload
+        if ($request->hasFile('upload_doc')) {
+
+            // Delete old document remotely
+            if ($verification && $verification->id_document) {
+                Http::withHeaders([
+                    'X-APP-A-KEY' => env('APP_A_API_KEY'),
+                ])->delete(
+                    config('app.website_storage_link') . "/api/delete_verification",
+                    ['upload_doc' => $verification->id_document]
+                );
+            }
+
+            $imageFile = $request->file('upload_doc');
+
+            $response = Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+            ])->attach(
+                'upload_doc',
+                file_get_contents($imageFile->getRealPath()),
+                $imageFile->getClientOriginalName()
+            )->post(config('app.website_storage_link') . "/api/upload_verification");
+
+            if ($response->failed()) {
+                return response()->json(['status' => 'error', 'message' => 'Upload failed'], 500);
+            }
+
+            $data = $response->json();
+            $docPath = $data['path']; //overwrite only when new upload exists
+        }
+
+        $get_bank = DB::table('banks')->where('code', $request->bank)->first();
+
+        //UPDATE OR CREATE (single verification per release)
+        $verification = Verification::updateOrCreate(
+            ['music_release_id' => $release->id],
+            [
+                'official_id' => $request->official_id,
+                'id_document' => $docPath,
+                'account_number' => $request->account_number,
+                'bank_code' => $request->bank,
+                'bank_name' => $get_bank->name ?? null,
+                'account_name' => $request->account_name,
+                'social_media_handles' => json_encode($request->social_media_handles),
+                'video_link' => $request->video_links,
+            ]
+        );
+
+        return response()->json([
+            'status' => 'ok',
+            'music_release_id' => $release->id,
+        ]);
+    }
+
+
+    // end verification
+    
 
     // AJAX save step
     public function ajaxSaveStep(Request $request)
@@ -96,6 +224,9 @@ class MusicFormController extends Controller
         ]);
     }
 
+
+    
+
     // Upload audio files
     public function uploadAudio(Request $request){
     $request->validate([
@@ -107,7 +238,7 @@ class MusicFormController extends Controller
 
     $release = $request->music_release_id
         ? MusicRelease::find($request->music_release_id)
-        : MusicRelease::create(['title' => 'Untitled Release']);
+        : MusicRelease::create(['title' => 'Untitled Release']);    
 
     if (!$request->hasFile('audios')) {
         return response()->json(['status' => 'error', 'message' => 'No audio files uploaded'], 422);
@@ -403,7 +534,11 @@ class MusicFormController extends Controller
             ]);
         }
 
-        return response()->json(['status' => 'ok']);
+        return response()->json([
+            'status' => 'ok',
+            'music_release_id' => $release->id,
+            ]
+        );
     }
 
     // Final submission: validates all steps are complete
@@ -514,7 +649,7 @@ class MusicFormController extends Controller
 
     $draft = MusicRelease::where('user_id', auth()->id())
         ->where('status', '!=', 'submitted')
-        ->with(['artworks', 'tracks.participants', 'outlets', 'tracks.audioFile'])
+        ->with(['artworks', 'tracks.participants', 'outlets', 'tracks.audioFile','verification'])
         ->latest()
         ->first();
 
@@ -532,6 +667,34 @@ class MusicFormController extends Controller
         'stereo_code' => $draft->stereo_code,
         'label_name' => $draft->label_name,
         'release_date' => $draft->release_date,
+
+        
+
+        // === Verification ===
+        'verification' => $draft->verification
+            ? [
+                'exists' => true,
+                'official_id' => $draft->verification->official_id,
+                'id_document_url' => $draft->verification->id_document
+                    ? config('app.website_storage_url') . '/' . ltrim($draft->verification->id_document, '/')
+                    : null,
+                'account_number' => $draft->verification->account_number,
+                'bank_code' => $draft->verification->bank_code,
+                'account_name' => $draft->verification->account_name,
+                'social_media_handles' => json_decode($draft->verification->social_media_handles ?? '[]', true),
+                'video_link' => $draft->verification->video_link,
+            ]
+            : [
+                'exists' => false,
+                'official_id' => null,
+                'id_document_url' => null,
+                'account_number' => null,
+                'bank_code' => null,
+                'account_name' => null,
+                'social_media_handles' => [],
+                'video_link' => null,
+            ],
+
 
         // === Artworks ===
         'artworks' => $draft->artworks->map(function ($art) {
@@ -609,7 +772,7 @@ class MusicFormController extends Controller
             'artworks', 
             'tracks.participants', 
             'outlets',
-            'audioFiles'
+            'audioFiles',
         ])->findOrFail($id);
 
           $genres = DB::table('genres')->get();
@@ -620,6 +783,8 @@ class MusicFormController extends Controller
           $subscription_limit = DB::table('subscription_limit')->select('the_number')->get();
           $musical_roles = DB::table('musical_roles')->select('name')->get();
           $stores = DB::table('music_stores')->select('id','name','release_date')->get();
+          $getBanks = DB::table('banks')->get();
+          $rels = json_decode($getBanks); 
         
         return view('dashboard.pages.edit_music_form', compact(
             'release', 
@@ -629,7 +794,8 @@ class MusicFormController extends Controller
             'languages',
             'subscription_limit',
             'musical_roles',
-            
+            'getBanks',
+            'rels'
         ));
     }
 
@@ -640,7 +806,8 @@ class MusicFormController extends Controller
             $release = MusicRelease::with([
                 'artworks',
                 'tracks.audioFile',
-                'outlets'
+                'outlets',
+                'verification'
             ])->findOrFail($id);
 
             // Format response
@@ -653,7 +820,34 @@ class MusicFormController extends Controller
                 'stereo_code' => $release->stereo_code,
                 'label_name' => $release->label_name,
                 'release_date' => $release->release_date,
+                // === Verification ===
+        'verification' => $release->verification
+            ? [
+                'exists' => true,
+                'official_id' => $release->verification->official_id,
+                'id_document_url' => $release->verification->id_document
+                    ? config('app.website_storage_url') . '/' . ltrim($release->verification->id_document, '/')
+                    : null,
+                'account_number' => $release->verification->account_number,
+                'bank_code' => $release->verification->bank_code,
+                'account_name' => $release->verification->account_name,
+                'social_media_handles' => json_decode($release->verification->social_media_handles ?? '[]', true),
+                'video_link' => $release->verification->video_link,
+            ]
+            : [
+                'exists' => false,
+                'official_id' => null,
+                'id_document_url' => null,
+                'account_number' => null,
+                'bank_code' => null,
+                'account_name' => null,
+                'social_media_handles' => [],
+                'video_link' => null,
+            ],
+
             ];
+
+            
 
             /* --------------------------- Artwork section --------------------------- */
             $formatted['artworks'] = $release->artworks->map(function ($art) {
@@ -1085,6 +1279,96 @@ class MusicFormController extends Controller
         
     ]);
 }
+
+
+    
+
+    public function updateVerification(Request $request, $id)
+ {
+
+    $request->validate([
+        'official_id' => 'required',
+        'account_number' => 'required',
+        'bank' => 'required',
+        'account_name' => 'required',
+        'social_media_handles' => 'required|array',
+        'video_links' => 'required|url'
+    ]);
+
+     $release = MusicRelease::findOrFail($id);
+
+    // Get existing verification if any
+    $verification = Verification::where('music_release_id', $release->id)->first();
+
+    // Conditional validation for file upload
+    if (!$verification || !$verification->id_document) {
+        $request->validate([
+            'upload_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240'
+        ]);
+    } else {
+        $request->validate([
+            'upload_doc' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240'
+        ]);
+    }
+
+    // Keep old document path by default
+    $docPath = $verification?->id_document;
+
+    // Handle new upload
+    if ($request->hasFile('upload_doc')) {
+
+        // Delete old document remotely (do NOT delete row)
+        if ($verification && $verification->id_document) {
+            Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+            ])->delete(
+                config('app.website_storage_link') . "/api/delete_verification",
+                ['upload_doc' => $verification->id_document]
+            );
+        }
+
+        $imageFile = $request->file('upload_doc');
+
+        $response = Http::withHeaders([
+            'X-APP-A-KEY' => env('APP_A_API_KEY'),
+        ])->attach(
+            'upload_doc',
+            file_get_contents($imageFile->getRealPath()),
+            $imageFile->getClientOriginalName()
+        )->post(config('app.website_storage_link') . "/api/upload_verification");
+
+        if ($response->failed()) {
+            return response()->json(['status' => 'error', 'message' => 'Upload failed'], 500);
+        }
+
+        $data = $response->json();
+        $docPath = $data['path']; // overwrite only if new file exists
+    }
+
+    // Bank info
+    $get_bank = DB::table('banks')->where('code', $request->bank)->first();
+
+    //Update existing or create new
+    $verification = Verification::updateOrCreate(
+        ['music_release_id' => $release->id],
+        [
+            'official_id' => $request->official_id,
+            'id_document' => $docPath,
+            'account_number' => $request->account_number,
+            'bank_code' => $request->bank,
+            'bank_name' => $get_bank->name ?? null,
+            'account_name' => $request->account_name,
+            'social_media_handles' => json_encode($request->social_media_handles),
+            'video_link' => $request->video_links,
+        ]
+    );
+
+    return response()->json([
+        'status' => 'ok',
+        'music_release_id' => $release->id,
+    ]);
+}
+
 
 
    

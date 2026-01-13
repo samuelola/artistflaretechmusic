@@ -163,7 +163,7 @@
                                     <div class="progress" style="height: 18px;">
                                         <div id="progressBar" class="progress-bar" role="progressbar" style="width:0%"></div>
                                     </div>
-                                    <small id="progressLabel" class="text-muted">Step 1 of 5</small>
+                                    <small id="progressLabel" class="text-muted">Step 1 of 6</small>
                                 </div>
                                 <!-- Tabs as steps -->
 
@@ -190,7 +190,7 @@
 
 @section('script')
 
-<script>
+<!-- <script>
    // Continuous queue worker trigger
    async function triggerQueue() {
     try {
@@ -209,14 +209,14 @@
         console.log('queue started')
     } catch (err) {
         console.error('Error triggering queue:', err);
-        setTimeout(triggerQueue, 10000); // retry after 10s on error
+        setTimeout(triggerQueue, 10000); 
     }
     
   }
 
-// Start the loop
+
 triggerQueue();
-</script>
+</script> -->
 
 <script>
   let releaseId = null;
@@ -226,7 +226,7 @@ $(function(){
   let uploadedFilesMeta = []; // {audio_id, track_id, filename, path, duration_ms}
 
   function setProgress(step){
-    const total = 5;
+    const total = 6;
     const percent = Math.round((step/total) * 100);
     $('#progressBar').css('width', percent+'%');
     $('#progressLabel').text('Step '+step+' of '+total);
@@ -249,6 +249,10 @@ document.getElementById('backToStep3')?.addEventListener('click', () => {
 document.getElementById('backToStep4')?.addEventListener('click', () => {
   new bootstrap.Tab(document.querySelector('#step4-tab')).show();
 });
+document.getElementById('backToStep5')?.addEventListener('click', () => {
+  new bootstrap.Tab(document.querySelector('#step5-tab')).show();
+});
+
 
 
   // General save step (Step 1)
@@ -717,12 +721,6 @@ $('#uploadAudiosBtn').on('click', function () {
   }
 
 });
-
-
-
-
-
-
 
 
 
@@ -1219,6 +1217,8 @@ $('#saveOutletsBtn').on('click', function() {
     },
     success() {
       $('#outletsSaveStatus').html('<span class="badge bg-success saved-badge">Saved</span>');
+      // setProgress(6);
+
     },
     error(xhr) {
       console.error(xhr);
@@ -1244,6 +1244,77 @@ $(document).on('change', '.row-checkbox', function() {
   const dateInput = $(this).closest('tr').find('input[name="outlet_release_date"]');
   dateInput.prop('disabled', !$(this).is(':checked'));
 });
+
+
+$('#goto6').on('click', function() {
+  const step6Tab = new bootstrap.Tab(document.querySelector('#step6-tab'));
+  step6Tab.show();
+  setProgress(6);
+});
+
+
+
+
+// Add step 6
+
+$('#saveVerificationBtn').on('click', function () {
+
+        let btn = $(this);
+        let status = $('#verificationSaveStatus');
+
+        let form = document.getElementById('acct_verification');
+        let formData = new FormData(form);
+        formData.append('music_release_id', releaseId);
+
+        btn.prop('disabled', true);
+        status.html(`
+            <span class="spinner-border spinner-border-sm me-2"></span>
+            Saving...
+        `);
+
+        $.ajax({
+            url: "{{ route('verification.store') }}",
+            method: "POST",
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (resp) {
+
+                status.html(`
+                    <span class="badge bg-success">
+                        <i class="bi bi-check-circle"></i> Saved
+                    </span>
+                `);
+
+                btn.prop('disabled', false);
+                
+
+            },
+            error: function (xhr) {
+
+                btn.prop('disabled', false);
+
+                let msg = 'Something went wrong';
+
+                if (xhr.responseJSON?.message) {
+                    msg = xhr.responseJSON.message;
+                }
+
+                status.html(`
+                    <span class="badge bg-danger">
+                        ${msg}
+                    </span>
+                `);
+            }
+        });
+    });
+
+
+
+// End step 6
 
   
   // Final submit logic
@@ -1457,6 +1528,15 @@ function loadDraft() {
         });
       }
 
+      
+
+        // === Verification ===
+    if (r.verification && r.verification.exists) {
+          restoreVerification(r.verification);
+    }
+
+      // end Verification //
+
       // === Progress ===
       setProgress(5);
       $('#progressLabel').append(' (Draft loaded)');
@@ -1472,6 +1552,79 @@ function loadDraft() {
 
 
 }); // end ready
+</script>
+
+<script>
+let isRestoringDraft = false;
+
+function restoreVerification(v) {
+    // Show bank and account sections (they are hidden by default)
+    $('#the_bank').show();
+    $('#account_parent').show();
+
+    // Now proceed with restoring values
+    isRestoringDraft = true;
+
+    // Official ID
+    $('.official_id').val(v.official_id).trigger('change');
+
+    // Account number
+    $('#account_number').val(v.account_number || '');
+
+    // Bank (Select2-safe)
+    if (v.bank_code) {
+        setTimeout(() => {
+            $('#bank').val(v.bank_code).trigger('change.select2');
+        }, 200);
+    }
+
+    // Account name
+    setTimeout(() => {
+        $('#account_name').val(v.account_name || '');
+        isRestoringDraft = false; // allow normal change events
+    }, 200);
+
+    // Video link
+    $('#youtube_linkk').val(v.video_link || '');
+
+    // Social media handles
+    if (Array.isArray(v.social_media_handles) && v.social_media_handles.length > 0) {
+        const container = $('#socialHandles');
+        container.empty();
+        v.social_media_handles.forEach((handle, index) => {
+            container.append(`
+                <div class="input-group mb-2 mt-3">
+                  <input type="text" name="social_media_handles[]" class="form-control" value="${handle}">
+                  <div class="input-group-append">
+                    <button type="button" class="btn ${index === 0 ? 'btn-success' : 'btn-danger'}"
+                      onclick="${index === 0 ? 'addSocialHandle()' : '$(this).closest(\'.input-group\').remove()'}">
+                      ${index === 0 ? '+' : '−'}
+                    </button>
+                  </div>
+                </div>
+            `);
+        });
+    }
+
+    // Uploaded document preview
+    if (v.id_document_url) {
+        $('#the_doc').append(`
+            <div class="mt-2">
+                <a href="${v.id_document_url}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                  View uploaded ID document
+                </a>
+            </div>
+            <small class="text-muted">
+              Upload only if you want to replace the existing document
+            </small>
+        `);
+    }
+
+    // Status badge
+    $('#verificationSaveStatus').html('<span class="badge bg-success">Saved</span>');
+}
+
+
 </script>
 
 <script>
@@ -1569,6 +1722,129 @@ $('button[data-bs-target="#step5"]').on('shown.bs.tab', function () {
 </script>
 
 
+<script>
+function addSocialHandle() {
+    const container = document.getElementById("socialHandles");
 
+    const div = document.createElement("div");
+    div.className = "input-group mb-2 mt-3";
+
+    div.innerHTML = `
+        <input 
+            type="text" 
+            name="social_media_handles[]" 
+            class="form-control" 
+            placeholder="e.g. Twitter: @username">
+
+        <div class="input-group-append">
+            <button 
+                type="button" 
+                class="btn btn-danger" 
+                onclick="this.parentElement.parentElement.remove()">
+                −
+            </button>
+        </div>
+    `;
+
+    container.appendChild(div);
+}
+</script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#account_number').keyup(function() {
+            $('#the_bank').show();
+            $('#account_parent').show();
+        });
+        
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#the_bank').hide();
+        $('#account_parent').hide();
+        
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#the_doc').hide();
+        
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.official_id').change(function() {
+            $('#the_doc').show();
+        });
+        
+    });
+</script>
+
+<script>
+  $('#bank').change(function() {
+    if (isRestoringDraft) return; // skip during draft restore
+
+    var bank_code = $(this).val();
+    var account_number = $("#account_number").val();
+    $("#inputLoader").show();
+
+    $.ajax({
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+        url: "{{ route('resolve_account') }}",
+        type: "POST",
+        data: { bank_code: bank_code, account_number: account_number },
+        success: function(response) {
+            if (response.success) {
+                $('#account_name').val(response.data.data.account_name);
+            } else {
+                $('#account_name').val('');
+                alert(response.message);
+            }
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText);
+        },
+        complete: function() {
+            $("#inputLoader").hide();
+        }
+    });
+});
+
+
+</script>
+
+
+<script>
+$(document).ready(function() {
+    $('#youtube_linkk').on('blur', function() {
+        var youtube_url = $(this).val().trim();
+        if (youtube_url === '') return; // skip empty
+
+        $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            url: "{{ route('releases.youtube') }}", // define this route
+            type: 'POST',
+            data: { youtube_url: youtube_url },
+            success: function(response) {
+                if (response.valid === false) {
+                    alert(response.message || 'Invalid YouTube URL');
+                    $('#youtube_linkk').val(''); // optional: clear input
+                } else {
+                    console.log('Video is valid:', response);
+                }
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
+                alert('An error occurred while validating the video');
+            }
+        });
+    });
+});
+</script>
 
 @endsection    

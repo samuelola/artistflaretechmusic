@@ -296,23 +296,31 @@
          var account_number = $("#account_number").val();
          $("#inputLoader").show();
          $.ajax({
-                headers: {
+            headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                url: "{{ route('resolve_account') }}",
-                data: {bank_code:bank_code,account_number:account_number},
-                type: "GET",
-                success: function (response) {
-                    const verified_data = response.data;
-                    $('#account_name').val(verified_data.data.account_name); 
-                },
-                complete: function(){
-                  $("#inputLoader").hide();
-                },
-                error: function (error) {
-                    console.error('AJAX Error:', error);
+            },
+            url: "{{ route('resolve_account') }}",
+            type: "POST",
+            data: {
+                bank_code: bank_code,
+                account_number: account_number
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#account_name').val(response.data.data.account_name);
+                } else {
+                    $('#account_name').val('');
+                    alert(response.message);
                 }
-            });
+            },
+            error: function (xhr) {
+                console.error(xhr.responseText);
+            },
+            complete: function () {
+                $("#inputLoader").hide();
+            }
+        });
+
       });
    });
 </script>

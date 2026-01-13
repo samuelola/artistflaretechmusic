@@ -13,13 +13,15 @@ class NewMessageNotification extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
+    public $title;
     public $message;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($message)
+    public function __construct($title, $message)
     {
+        $this->title   = $title;
         $this->message = $message;
     }
 
@@ -68,7 +70,7 @@ class NewMessageNotification extends Notification implements ShouldBroadcast
     {
         return [
             
-            'title'   => '🔔 Message Alert',
+            'title'   => $this->title,
             'message' => $this->message,
             'icon'    => 'bitcoin-icons:verify-outline',
             'time'    => now()->diffForHumans(),

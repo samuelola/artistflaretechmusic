@@ -65,7 +65,13 @@ class WalletService implements  WalletTransferInterface{
                 'updated_at' => now(),
             ]);
 
-            auth()->user()->notify(new NewMessageNotification("Transfer of ₦{$st_amount} to {$to->user->first_name} Wallet is successful"));
+            
+            auth()->user()->notify(
+            new NewMessageNotification(
+                'Transfer Successful',
+                "Transfer of ₦{$st_amount} to {$to->user->first_name} Wallet is successful"
+            )
+            );
             
               
             return true;
@@ -121,7 +127,13 @@ class WalletService implements  WalletTransferInterface{
                 'updated_at' => now(),
             ]);
 
-            auth()->user()->notify(new NewMessageNotification("Transfer of {$st_amount} FlareProCoins to {$to->user->first_name} Coin Wallet is successful"));
+            
+            auth()->user()->notify(
+            new NewMessageNotification(
+                'Transfer FlareCoins Successful',
+                "Transfer of {$st_amount} FlareProCoins to {$to->user->first_name} Coin Wallet is successful"
+            )
+            );
               
             return true;
          });
