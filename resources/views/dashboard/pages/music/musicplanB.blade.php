@@ -336,8 +336,7 @@
                               </div><!-- end of card body -->
                           </div><!-- end of card -->
 
-
-  <div class="modal fade" id="docPreviewModal" tabindex="-1" aria-hidden="true">
+ <div class="modal fade" id="docPreviewModal" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-xl modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header">
@@ -353,4 +352,5 @@
 
                                 </div>
                             </div>
-                        </div>                              
+                        </div>      
+                          

@@ -336,7 +336,6 @@
                               </div><!-- end of card body -->
                           </div><!-- end of card -->
 
-
  <div class="modal fade" id="docPreviewModal" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-xl modal-dialog-centered">
                                 <div class="modal-content">
@@ -345,7 +344,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
 
-                                   <div class="modal-body p-0">
+                                    <div class="modal-body p-0">
                                         <div id="docPreviewContent" class="doc-preview-wrapper">
                                             <!-- injected -->
                                         </div>
@@ -353,4 +352,5 @@
 
                                 </div>
                             </div>
-                        </div>                               
+                        </div>      
+                          
