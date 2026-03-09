@@ -13,15 +13,14 @@ class ChangepasswordService implements SuperadminInterface{
     public function updatePass($storeSub,$id){
         $rel = (array)$storeSub;
         $userChange =  User::find($id)->update(['password'=> Hash::make($rel['new_password'])]);
+
+        if(!$userChange){
+            throw new \Exception ("Change Password failed!");
+        }
         return $userChange;    
     }
 
-    public function storeSub($data){
-        
-    }
-    public function storeUser($data){
-
-    }
+    
 
     
 }

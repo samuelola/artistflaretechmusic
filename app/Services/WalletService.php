@@ -65,14 +65,23 @@ class WalletService implements  WalletTransferInterface{
                 'updated_at' => now(),
             ]);
 
-            
-            auth()->user()->notify(
+            //sender
+            $sender = auth()->user();
+            $sender->notify(
             new NewMessageNotification(
                 'Transfer Successful',
                 "Transfer of ₦{$st_amount} to {$to->user->first_name} Wallet is successful"
             )
             );
             
+            // recepient
+            $recipient = $to->user;
+            $recipient->notify(
+                new NewMessageNotification(
+                    'Wallet Credit Alert',
+                    "{$sender->first_name} has sent you ₦{$st_amount}"
+                )
+            );
               
             return true;
          });

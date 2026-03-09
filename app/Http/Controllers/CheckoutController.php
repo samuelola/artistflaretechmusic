@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use App\Enum\SubscriptionPurchase;
 use Illuminate\Support\Facades\Cache;
 use App\Notifications\NewMessageNotification;
+use App\Models\SubCount;
 
 
 class CheckoutController extends Controller
@@ -33,17 +34,21 @@ class CheckoutController extends Controller
 
     public function checkoutSubscription(Request $request)
     {
+
         $sub_id = $request->sub_id;
+        // if subscription is active return users
+        $activeSubscription = SubCount::where('user_id', auth()->id())
+        ->where('status', 'active')
+        ->first();
+        
+        if ($activeSubscription) {
+
+            return redirect()->back()->with('error',"You already have an active subscription.");
+         
+        }
+
         return redirect()->route('checkout_details',['id'=>$sub_id]);
-        // $rel = (new CheckoutService)->checkforwallet();
-        // if($rel){
-        //     $amount = MinimumBalance::Min;
-        //     session()->flash('error', "Your balance is too low for this subscription,need a minimium of &#8358;{$amount} topup");
-            
-        //     return redirect()->back();
-        // }else{
-        //     return redirect()->route('checkout_details',['id'=>$sub_id]);
-        // }
+       
         
     }
 
@@ -187,7 +192,11 @@ class CheckoutController extends Controller
             return redirect()->back();
          }
 
-         $this->checkoutService->chargeCoin($sub_id,$user_id);
+         $result = $this->checkoutService->chargeCoin($sub_id,$user_id);
+
+         if(!$result){
+            return back()->with('error', 'Insufficient coin balance.');
+         }
 
          // send email here 
          $user = auth()->user();

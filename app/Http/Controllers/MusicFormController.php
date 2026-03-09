@@ -579,7 +579,7 @@ class MusicFormController extends Controller
         foreach ($release->tracks as $track) {
             if (empty($track->title))       $missing[] = "Track {$track->title} title";
             if (empty($track->duration_ms)) $missing[] = "Track {$track->title} duration";
-            if (empty($track->isrc))        $missing[] = "Track {$track->title} ISRC";
+            // if (empty($track->isrc))        $missing[] = "Track {$track->title} ISRC";
 
             //Check for missing audio file
             if (!$track->audioFile) {

@@ -25,7 +25,14 @@ class PaymentController extends Controller
             'distributed' => 'yes'
         ])
         ->count();
-        $payments = Payment::get();
+        $payments = Payment::with('user')
+        ->where([
+            'user_id' => auth()->user()->id,
+        ])
+        ->latest()->paginate(5);
+        if ($request->ajax()) {
+         return view('dashboard.pages.payments.payment_rows', compact('payments'))->render();
+        }
         return view('dashboard.pages.payments.payment',
         compact('payments','release_products','product_count')
        );

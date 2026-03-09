@@ -7,7 +7,7 @@ use App\User;
 use App\Services\PaystackService;
 use App\Services\CheckoutService;
 use Session;
-use Illuminate\Support\Facades\DB;
+use DB;
 use App\Http\Requests\TransferRequest;
 use Illuminate\Support\Str;
 use App\Enum\MinimumBalance;
@@ -38,27 +38,60 @@ class TransferController extends Controller
     
     public function transferPayment(TransferRequest $request,CheckoutService $checkoutService){
         
+        
+        $rell = $checkoutService->checkformainbalance();
+        if($rell){
+            session()->flash('error', "You have &#8358;0.00 in your available wallet,topup your wallet");
+            return redirect()->back();
+        }
 
-         try{
-
-             $checkoutService->walletTransferWithLock(
-               $request,
-               $paystackService
-             );
-
-             return redirect()
-            ->route('dashboard')
-            ->with('success', 'Your transfer is successful');
-
-         }catch(\Exception $e){
-             return redirect()
-            ->back()
-            ->with('error', $e->getMessage());
+        
+         $account_number = $request->account_number;
+         $account_name = $request->account_name;
+         $bank_code = $request->bank;
+         $the_amount = $request->amount;
+         $currency = 'NGN';
+         $reason = $request->reason ?? 'for transfer';
+         $getcheckfor = $checkoutService->checkforTransfer($the_amount);
+         if($getcheckfor){
+            session()->flash('error', "Amount is too low for transfer");
+            return redirect()->back();
          }
-  
+         $amount = (int)$the_amount;
+         $result = $this->paystackService->transferrecipient($account_number,$account_name,$bank_code,$currency);
+         //get recipient code
+        //  $get_recipient_code = DB::table('transfer_recipient')->where('user_id',auth()->user()->id)->orderBy('id','desc')->first();
+        //  $recipient_code = $get_recipient_code->recipient_code;
+         $recipient_code = $result->data->recipient_code;
+         $source = 'balance';
+         $reference = 'REF-' . Str::upper(Str::random(10));
+         $rel = $this->transferMoney($recipient_code,$source,$amount,$reference,$reason);
+
+         if($rel->data->status == 'success'){
+           // verify transaction
+           $verifyTransferRef = $rel->data->reference;
+           $resultt = $this->paystackService->verifytransferMoney($verifyTransferRef);
+           if($resultt->data->status == 'success'){
+              session()->flash('success', "Transfer is successful");
+              return redirect()->back();
+           }elseif($resultt->data->status == 'failed'){
+             // if transfer failed check for failed
+              
+              session()->flash('error', "Transfer failed");
+              return redirect()->back();
+           }
+
+         }elseif($rel->data->status == 'otp'){
+              session()->flash('error', "Transfer failed because otp is required");
+              return redirect()->back();
+         }
+         
     }
 
-    
+    public function transferMoney($recipient_code,$source,$amount,$reference,$reason){
+        
+       return  $this->paystackService->transfernewPayment($recipient_code,$source,$amount,$reference,$reason);
+    }
 
     public function resolveAccount(Request $request){
 
@@ -100,7 +133,6 @@ class TransferController extends Controller
 
     public function userWalletTransfer(WalletTransferRequest $request,CheckoutService $checkoutService,WalletService $walletService){
 
-    
         // check if account balance
         $rell = $checkoutService->checkformainbalance();
         if($rell){

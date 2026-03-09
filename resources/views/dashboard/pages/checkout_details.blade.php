@@ -402,15 +402,20 @@ $amount = $sub_details->subscription_amount/$currencyExchangeRate->rate;
               @php 
                  $wallet_bal = \DB::table('user_wallet')->where('user_id',auth()->user()->id)->first();
                  $available_bal = $wallet_bal->balance;
-                 $coins = \DB::table('user_statistics')->where('user_id',auth()->user()->id)->first();
-                 $total_coinss = $coins->coin_balance + 
-                 $coins->upload_release + 
-                 $coins->funds_added_count + 
-                 $coins->invite_points + 
-                 $coins->wallet_topup  +
-                 $coins->account_creation +
-                 $coins->sub_purchase
-                 ;
+                 
+                 $coins = \DB::table('user_statistics')->where('user_id',auth()->user()->id)
+                    ->select(
+                        'coin_balance',
+                        'invite_members',
+                        'upload_release',
+                        'funds_added_count',
+                        'invite_points',
+                        'wallet_topup',
+                        'account_creation',
+                        // 'sub_purchase'
+                        )
+                    ->first();
+                 $total_coinss = (int) array_sum((array) $coins);
                  $coins = \DB::table('settings')->where('setting_name','FlareProCoin')->first();
                  $equivalent_amount = $total_coinss * $coins->ngn;
               @endphp

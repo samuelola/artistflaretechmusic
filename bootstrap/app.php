@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.user' => \App\Http\Middleware\CheckUser::class,
             'artistusercheck' => \App\Http\Middleware\ArtistUserCheck::class,
              'refresh_token'  =>   \App\Http\Middleware\RefreshCsrfToken::class,
+            'check.subscription' => \App\Http\Middleware\CheckSubscription::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

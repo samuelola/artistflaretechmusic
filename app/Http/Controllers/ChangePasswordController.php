@@ -11,20 +11,37 @@ use App\Services\ChangepasswordService;
 
 class ChangePasswordController extends Controller
 {
-    public function store(ChangepasswordRequest $request, ChangepasswordService $changepassword,$id){
-        $data = $request->validated();
-        $changepasswordService = $changepassword->updatePass($data,$id);
-        if($changepasswordService){
-            return redirect()->back()->with('success','Password changed successfully');
+
+    public $changepassword;
+
+    public function __construct(ChangepasswordService $changePassword){
+
+        $this->changepassword = $changePassword;
+    }
+    public function store(ChangepasswordRequest $request,$id){
+        
+        try{
+           $data = $request->validated();
+           $changepasswordService = $this->changepassword->updatePass($data,$id);
+           return redirect()->back()->with('success','Password changed successfully');
+        }catch(\Exception $e){
+            return redirect()->back()->with('error',$e->getMessage());
         }
+       
        
     }
 
-    public function storeUserPassword(ChangepasswordRequest $request, ChangepasswordService $changepassword,$id){
-        $data = $request->validated();
-        $changepasswordService = $changepassword->updatePass($data,$id);
-        if($changepasswordService){
-            return redirect()->back()->with('success','Password changed successfully');
+    public function storeUserPassword(ChangepasswordRequest $request,$id){
+        
+        
+        try{
+
+           $data = $request->validated();
+           $changepasswordService = $changepassword->updatePass($data,$id);
+           return redirect()->back()->with('success','Password changed successfully');
+
+        }catch(\Exception $e){
+           return redirect()->back()->with('error',$e->getMessage());
         }
        
     }

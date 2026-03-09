@@ -138,9 +138,9 @@
                                             @enderror
                                         </div>
                                         <div class="mb-20">
-                                            <label for="confirm-password" name="confirm_password" class="form-label fw-semibold text-primary-light text-sm mb-8">Confirmed Password <span class="text-danger-600">*</span></label>
+                                            <label for="confirm-password" class="form-label fw-semibold text-primary-light text-sm mb-8">Confirmed Password <span class="text-danger-600">*</span></label>
                                             <div class="position-relative">
-                                                <input type="password" class="form-control radius-8" id="confirm-passwordd" placeholder="Confirm Password*" required>
+                                                <input type="password" name="new_password_confirmation" class="form-control radius-8" id="confirm-passwordd" placeholder="Confirm Password*" required>
                                                 <span class="toggle-password ri-eye-line cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light" data-toggle="#confirm-passwordd"></span>
                                             </div>
                                             @error('confirm_password')

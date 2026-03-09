@@ -308,7 +308,7 @@
               
             </div>
 
-             <div class="col-xxl-3 col-xl-3 col-sm-6">
+             <!-- <div class="col-xxl-3 col-xl-3 col-sm-6">
 
                 <ul class="list-decimal ps-20" style="margin-left: -15px;">
                     <li class="text-secondary-light" style="list-style-type: none;">
@@ -343,7 +343,7 @@
                     </li>
                 </ul>
               
-            </div>
+            </div> -->
 
             <div class="col-xxl-3 col-xl-3 col-sm-6">
                 <ul class="list-decimal ps-20" style="margin-left: -15px;">

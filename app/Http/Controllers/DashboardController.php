@@ -29,44 +29,13 @@ class DashboardController extends Controller
     public function testnoti(){
 
     //   $user = auth()->user(); 
-    // $user->notify(new TestNotification("This is a real-time test 🚀"));
+    // $user->notify(new TestNotification("This is a real-time test"));
     // return "Test notification sent to user {$user->id}";
     }
 
     public function showDashboard(Request $request)
     {
-
-        // $user = User::find(auth()->id());
-        // $user->notify(new NewMessageNotification("Hello with user!"));
-        //check for expiration
-        $dateAfter = DB::table('sub_count')
-                     ->where('user_id',auth()->user()->id)
-                     ->orderBy('id','desc')
-                     ->first();
-
-        if(!is_null($dateAfter)){
-
-             
-            $d_date = Carbon::parse($dateAfter->expires_at)->format("Y-m-d");
-            // assume now()->toDateString() = 2025-09-30
-            // $d_data = 2025-10-30
-            if(now()->toDateString() >= $d_date){
-                DB::table('users')
-                    ->where('id',auth()->user()->id)
-                    ->update([
-                    'role_id'=> UserStatus::Guest
-                ]);
-
-                DB::table('sub_count')
-                    ->where('user_id',auth()->user()->id)
-                    ->orderBy('id','desc')
-                    ->update([
-                    'status'=> 'notactive'
-                ]);
-            }
-        }
-        
-        
+    
         $baseQueryUserStatistics = DB::table('user_statistics')
         ->where('user_id', auth()->id());
         $baseQuery = DB::table('users');
@@ -93,10 +62,7 @@ class DashboardController extends Controller
         $min_bal = $getwall_bal->minimium_balance;
         $main_bal = $getwall_bal->balance;
         $total_balance = $min_bal + $main_bal;
-        // $resultsub_count = (clone $baseQuery)
-        // ->join('subscription_payment_details', 'subscription_payment_details.Email', '=', 'users.email')
-        // ->where('users.email', auth()->user()->email)
-        // ->count();
+       
         
         $resultsub_count = Transaction::where(['user_id'=>auth()->user()->id,'remarks'=>'Subscription Payment'])->count();
         
@@ -126,7 +92,7 @@ class DashboardController extends Controller
             'invite_points',
             'wallet_topup',
             'account_creation',
-            'sub_purchase'
+            // 'sub_purchase'
             )
         ->first();
         

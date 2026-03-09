@@ -13,29 +13,40 @@ use App\Imports\UsersImport;
 use Maatwebsite\Excel\Facades\Excel;
 
 
+
 class UserController extends Controller
 {
+    public $userService;
+
+    public function __construct(UserService $userService){
+
+        $this->userService = $userService;
+    }
+
     public function allUser(Request $request){
 
         // $get_all_users = DB::table("users")->orderBy('id','desc')->paginate(10);
-        $gget_all_users = User::where('role_id','!=',1)->orderBy('id','desc')->lazy();
-        $users = User::distinct('first_name')->count();
+        $allusers = $this->userService->Users();
+        $gget_all_users = $allusers['allusers'];
+        $users = $allusers['users'];
         return view("dashboard.pages.users.allusers",compact('gget_all_users','users'));
     }
 
     public function allActiveUser(Request $request){
 
         // $get_all_users = DB::table("users")->orderBy('id','desc')->paginate(10);
-        $gget_all_users = User::where('active','Yes')->orderBy('id','desc')->get();
-        $activeusers = User::distinct('first_name')->where('active','Yes')->count();
+        $allusers = $this->userService->activeUsers();
+        $gget_all_users = $allusers['allusers_active'];
+        $activeusers = $allusers['users_count'];
         return view("dashboard.pages.users.allactiveusers",compact('gget_all_users','activeusers'));
     }
 
     public function allInactiveUser(Request $request){
 
         // $get_all_users = DB::table("users")->orderBy('id','desc')->paginate(10);
-        $gget_all_users = User::where('active','No')->orderBy('id','desc')->get();
-        $noactiveusers = User::distinct('first_name')->where('active','No')->count();
+        $allusers = $this->userService->inActiveUsers();
+        $gget_all_users = $allusers['allusers_inactive'];
+        $noactiveusers = $allusers['usersinactive_count'];
         return view("dashboard.pages.users.allinactiveusers",compact('gget_all_users','noactiveusers'));
     }
 
@@ -47,8 +58,10 @@ class UserController extends Controller
     }
 
     public function addNewUser(Request $request){
-        $all_countries = DB::table('countries')->get();
-        $languages = DB::table('languages')->get();
+        
+        $all = $this->userService->userGeo();
+        $all_countries = $all['countries'];
+        $languages = $all['alllang'];
         return view("dashboard.pages.users.addnew_user",compact('all_countries','languages'));
     }
 
@@ -63,26 +76,29 @@ class UserController extends Controller
         
     }
 
-    public function createUser(CreateUserRequest $request,UserService $userservice){
+    public function createUser(CreateUserRequest $request){
          
-        $data = $request->validated();
-        $data['active'] = 'Yes';
-        $data['deleted'] = 'No';
-        $data['albums'] = 0;
-        $data['tracks'] = 0;
-        $data['role_id'] = UserStatus::User;
-        $creatUserService = $userservice->storeUser($data);
-        if($creatUserService){
-           return redirect()->route('allUser')->with('Success','User Created Successfully');
-        }else{
-           return redirect()->back()->with('Error','User Created not Successfully'); 
+       
+        try{
+            $data = $request->validated();
+            $data['active'] = 'Yes';
+            $data['deleted'] = 'No';
+            $data['albums'] = 0;
+            $data['tracks'] = 0;
+            $data['role_id'] = UserStatus::User;
+            $creatUserService =  $this->userService->storeUser($data);
+            return redirect()->route('allUser')->with('Success','User Created Successfully');
+
+        }catch(\Exception $e){
+            return redirect()->back()->with('Error',$e->getMessage());
         }
+       
     }
 
 
     public function export() 
     {
-        return Excel::download(new UsersExport, 'users.xlsx');
+        $this->userService->ExportUsers();
     }
 
 

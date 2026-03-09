@@ -7,11 +7,6 @@
 @include('sweetalert::alert')
 
  
-
-
-
-
-
 <main class="dashboard-main">
   <div class="navbar-header">
   <div class="row align-items-center justify-content-between">

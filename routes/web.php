@@ -45,7 +45,7 @@ Route::middleware('check.user')->group(function () {
     Route::get('/dashboardd', [DashboardController::class,'showDashboardd'])->name('dashboardd');
 });
 
-Route::middleware('artistusercheck')->group(function () {
+Route::middleware(['artistusercheck','check.subscription'])->group(function () {
 
     
     Route::controller(QueueController::class)->group(function () {

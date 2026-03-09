@@ -169,47 +169,27 @@
                             <thead>
                             <tr>
                                 <th>Sn </th>
-                                <th>Payment To</th>
-                                <th>Paid Amount</th>
-                                <th>Currency</th>
+                                <th>Full Name</th>
+                                <th>Paid Amount (&#8358;)</th>
                                 <th>Payment Method</th>
-                                <th>Deduction</th>
                                 <th>status</th>
                                 <th>Payout Date</th>
 
                             </tr>
                             </thead>
-                            <tbody>
-                                @php
-                                $sn = 1;
-                                @endphp
-                                @foreach($payments as $payment)
-                                   <tr>
-                                      <td>{{$sn++}}</td>
-                                      <td>{{$payment->user->first_name ?? ''}}</td>
-                                      <td>
-                                         {{$payment->amount ?? ''}}
-                                      </td>
-                                      <td>
-                                         {{$payment->currency ?? ''}}
-                                      </td>
-                                      <td>
-                                         {{$payment->payment_method ?? ''}}
-                                      </td>
-                                      <td>
-                                         {{$payment->deduction ?? ''}}
-                                      </td>
-                                      <td>
-                                         {{$payment->status ?? ''}}
-                                      </td>
-                                      <td>
-                                         {{$payment->payout_date ?? ''}}
-                                      </td>
-                                     
-                                   </tr>
-                                @endforeach
+                            <tbody id="payment-data">
+                                @include('dashboard.pages.payments.payment_rows')
                             </tbody>
                         </table>
+                        @if ($payments->hasMorePages())
+                            <div class="text-center mt-3">
+                                <button id="load-more" 
+                                        data-page="2" 
+                                        class="btn btn-primary">
+                                    Load More
+                                </button>
+                            </div>
+                        @endif
                         </div>
                </div>
                @else
@@ -438,6 +418,33 @@ $(document).on('click', '#loadMoreProducts', function () {
     });
 });
 </script>
+
+<script>
+    document.getElementById('load-more')?.addEventListener('click', function() {
+        let button = this;
+        let page = button.getAttribute('data-page');
+
+        fetch('?page=' + page, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('payment-data')
+                .insertAdjacentHTML('beforeend', data);
+
+            button.setAttribute('data-page', parseInt(page) + 1);
+
+            // Remove button if no more pages
+            if (!data.trim()) {
+                button.remove();
+            }
+        })
+        .catch(error => console.log(error));
+    });
+</script>
+
 
 
 @endsection
