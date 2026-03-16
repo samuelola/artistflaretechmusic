@@ -315,7 +315,7 @@ class DashboardController extends Controller
         $rel = json_decode($loggedUserInfo);
         $user = User::where('id',$rel->user_details->id)->first();
         Auth::setUser($user);
-        return Redirect::to('http://artistdashboard.test/dashboard');
+        return Redirect::to('http://artistdashboard.test/dashboard')->with('showModal', true);
        }
         return Redirect::to('http://adminflaretech.test');
     }
@@ -325,8 +325,11 @@ class DashboardController extends Controller
         $decrypted = $rri;
         $response = Http::withToken($decrypted)->post('http://artistdashboard.test/api/logout');
         if($response->successful() == true){
+            //$request->session()->forget('tokken');
+             $request->session()->flush();
+             $request->session()->regenerateToken();
             return Redirect::to('http://authflaretech.test');
-            $request->session()->forget('tokken');
+            
         }
        
         

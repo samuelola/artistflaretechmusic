@@ -22,6 +22,8 @@ use App\Http\Controllers\MusicFormController;
 use App\Http\Controllers\ProxyController;
 use App\Http\Controllers\CacheController;
 use App\Http\Controllers\QueueController;
+use App\Http\Controllers\CatalogController;
+
 
 
 
@@ -198,6 +200,14 @@ Route::middleware(['artistusercheck','check.subscription'])->group(function () {
 
            Route::get('/proxy/image/{filename}', 'image');
     });
+
+    Route::controller(CatalogController::class)->group(function () {
+
+           Route::get('monetize-songs', 'songUpload')->name('flaretech-monetize-songs');     
+
+    });
+
+    
     
      Route::controller(MusicFormController::class)->group(function () {
 

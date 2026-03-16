@@ -197,6 +197,14 @@
         </a>
        
       </li>
+
+      <li>
+        <a href="{{route('flaretech-monetize-songs')}}">
+        <iconify-icon icon="pixel:analytics" width="16" height="16" class="menu-icon"></iconify-icon>
+           <span>Monetize Songs</span> 
+        </a>
+       
+      </li>
       @if(!empty($permissionPayout))
       <li class="dropdown">
         <a href="javascript:void(0)" class="menu-icon">

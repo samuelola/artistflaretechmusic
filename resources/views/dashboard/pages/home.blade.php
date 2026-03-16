@@ -35,7 +35,7 @@
 
 
 
-@if(session('success'))
+           @if(session('success'))
                 
                 <!-- <div class="fade show alert alert-dismissible alert-danger bg-danger-600 text-white border-danger-600 px-24 py-11 mb-0 fw-semibold text-lg radius-8 d-flex align-items-center justify-content-between" role="alert">
                     {!! session('error') !!}
@@ -49,6 +49,14 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
+            <!-- @if(session('showModal'))
+              <script>
+              document.addEventListener("DOMContentLoaded", function () {
+                  var myModal = new bootstrap.Modal(document.getElementById('monetizeModal'));
+                  myModal.show();
+              });
+              </script>
+            @endif -->
   
   <div class="dashboard-main-body">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
@@ -78,6 +86,8 @@
 
    @include('dashboard.dash_title')
 </div>
+
+ 
 
     <!--new -->
     
@@ -276,7 +286,7 @@
                     <li class="text-secondary-light" style="list-style-type: none;">
                         
                         <div class="card p-3 shadow-2 radius-8 h-100 bg-gradient-end-1 tooltip-button tooltip-button" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-primary" data-bs-placement="top">
-                
+                            
                             <div class="card-body p-0">
                               <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-8">
                                   
@@ -829,9 +839,78 @@
     </div>
   </div>
 
+
+     <!--pop-->
+<!-- FlareTechMusic Monetization Modal -->
+<div class="modal fade" id="monetizeModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+
+            <!-- Header -->
+            <div class="modal-header bg-dark text-white"  style="background-color:#700084 !important">
+                <h3 class="modal-title fw-bold" style="color:#fff;">
+                    🎵 Monetize Your Songs with FlareTechMusic
+                </h3>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body p-5">
+
+                <div class="row align-items-center">
+
+                    <!-- Left Content -->
+                    <div class="col-md-7">
+
+                        <p class="fs-5">
+                            FlareTechMusic is building a structured pipeline that connects 
+                            independent artists with opportunities to <strong>monetize and sell their songs outright.</strong>
+                        </p>
+
+                        <p class="text-muted">
+                            Your old songs still have value — don’t let them sit unused on hard drives.
+                            Artists can submit their songs for review and potential catalog acquisition.
+                        </p>
+
+                        <hr class="my-4">
+
+                        <h5 class="fw-bold">Instructions</h5>
+
+                        <ul class="fs-6">
+                            <li>Upload at least <strong>2 original songs</strong> for review.</li>
+                            <li>Selected songs may qualify for <strong>payout once approved</strong>.</li>
+                        </ul>
+
+                        <a href="{{route('flaretech-monetize-songs')}}" class="btn btn-primary-600 btn-lg mt-3 px-4">
+                            Submit Songs for Review
+                        </a>
+
+                    </div>
+
+                    <!-- Right Illustration -->
+                    <div class="col-md-5 text-center">
+                        <img src="{{asset('music_download.AVIF')}}" class="img-fluid" style="max-height:280px;">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+    <!--endpopup-->
+
 @endsection
 
 @section('script')
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var myModal = new bootstrap.Modal(document.getElementById('monetizeModal'));
+    myModal.show();
+});
+</script>
 
 <script>
    // Continuous queue worker trigger
