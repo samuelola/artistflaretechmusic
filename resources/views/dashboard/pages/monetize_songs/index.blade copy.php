@@ -137,6 +137,9 @@ margin-bottom:15px;
   <!-- <h6 class="fw-semibold mb-0">All Subscriptions</h6> -->
 
 
+
+        
+
    
             <!--new container -->
               <div class="container mt-5">
@@ -187,9 +190,11 @@ margin-bottom:15px;
                           </div>
                        <!-- End Step Indicator-->
 
-                        <div class="form-step active">
+                        <form id="artistWizard" enctype="multipart/form-data">
 
-                           <form id="step1Form" enctype="multipart/form-data">
+                        <!-- STEP 1 -->
+
+                          <div class="form-step active">
                              <div class="step-title mb-3" style="font-weight: 600;">Artist Identity</div>
                               <div class="row">
                                   <div class="col-md-6 mb-3">
@@ -278,85 +283,78 @@ margin-bottom:15px;
 
                               <button type="submit" class="btn btn-primary mt-3" id="step1Submit">Save & Continue</button>
 
-                            </form>
                           </div>
 
+
+                        <!-- STEP 2 -->
 
                         <div class="form-step">
 
-                              <form id="step2Form">
+                            <div class="step-title mb-3" style="font-weight: 600;">Artist Role & Rights Ownership</div>
 
-                                  <div class="step-title mb-3">Artist Role & Rights Ownership</div>
+                            <div class="mb-3">
+                                <label>Your Role</label>
+                                <select class="form-select">
+                                    <option>Artist</option>
+                                    <option>Producer</option>
+                                    <option>Songwriter</option>
+                                    <option>Label Representative</option>
+                                </select>
+                            </div>
 
-                                  <div class="mb-3">
-                                      <label>Your Role</label>
-                                      <select class="form-select" name="role">
-                                          <option>Artist</option>
-                                          <option>Producer</option>
-                                          <option>Songwriter</option>
-                                          <option>Label Representative</option>
-                                      </select>
-                                  </div>
+                            <div class="mb-3">
+                              <label>Rights Ownership</label>
 
-                                  <div class="mb-3">
-                                      <label>Rights Ownership</label>
-                                       <select class="form-select" id="ownershipSelect">
-                                          <option value="100">I own 100% of the master recording</option>
-                                          <option value="co">I co-own the master recording</option>
-                                          <option value="represent">I represent the rights holder</option>
-                                          <option value="authorized">I have written authorization to submit this music</option>
-                                        </select>
-                                  </div>
+                                <select class="form-select" id="ownershipSelect">
+                                  <option value="100">I own 100% of the master recording</option>
+                                  <option value="co">I co-own the master recording</option>
+                                  <option value="represent">I represent the rights holder</option>
+                                  <option value="authorized">I have written authorization to submit this music</option>
+                                </select>
+                              </div>
 
-                                  <!-- CO-OWNERSHIP SECTION -->
+
+                              <!-- CO-OWNERSHIP SECTION -->
 
                               <div id="coOwnershipSection" style="display:none;">
 
-                                  <div class="mb-3">
-                                    <label>Your Ownership Percentage (%)</label>
-                                    <input type="number" class="form-control" min="1" max="100" placeholder="Enter your ownership percentage">
-                                  </div>
+                              <div class="mb-3">
+                                <label>Your Ownership Percentage (%)</label>
+                                <input type="number" class="form-control" min="1" max="100" placeholder="Enter your ownership percentage">
+                              </div>
 
 
-                                  <h6 class="mt-3">Other Rights Holders</h6>
+                              <h6 class="mt-3">Other Rights Holders</h6>
 
-                                  <div id="rightsHolders"></div>
+                              <div id="rightsHolders"></div>
 
-                                  <button type="button" class="btn btn-outline-primary-600 mt-2" id="addHolder">
-                                  Add Rights Holder
-                                  </button>
+                              <button type="button" class="btn btn-outline-primary-600 mt-2" id="addHolder">
+                              Add Rights Holder
+                              </button>
 
                               </div>
 
-                                  <button type="submit" class="btn btn-primary">Save & Continue</button>
+                        </div>
 
-                              </form>
 
-                          </div>
+                        <!-- STEP 3 -->
+
+                        <div class="form-step">
+
+                            <div class="step-title mb-3" style="font-weight: 600;">Song Upload & Metadata</div>
+
+                            <div class="upload-box mb-3">
+                                Upload Song File<br>
+                                <small>Drag & drop MP3 / WAV</small>
+                                <input type="file" hidden>
+                            </div>
+
+                        </div>
+
+
+                        <!-- STEP 4 -->
 
                           <div class="form-step">
-
-                            <form id="step3Form" enctype="multipart/form-data">
-
-                                <div class="step-title mb-3">Song Upload</div>
-
-                                 <div class="upload-box mb-3">
-                                    Upload Song File<br>
-                                    <small>Drag & drop MP3 / WAV</small>
-                                    <input type="file" hidden>
-                                </div>
-
-                                <button type="submit" class="btn btn-primary">Save & Continue</button>
-
-                            </form>
-
-                          </div>
-
-
-                           <div class="form-step">
-
-                             <form id="step4Form">
-
 
                               <div class="step-title mb-3" style="font-weight: 600;">Songwriter & Publishing</div>
 
@@ -416,23 +414,16 @@ margin-bottom:15px;
                                   Total Percentage: <strong id="totalPercent">0%</strong>
                               </div>
 
-                               <button type="submit" class="btn btn-primary mt-3">Save & Continue</button>
-
-                              </form>
-
                           </div>
 
 
-                          <div class="form-step">
+                        
 
-                              <form id="step5Form">
+                          <!-- STEP 5 -->
+
+                            <div class="form-step">
 
                                 <div class="step-title mb-3" style="font-weight: 600;">Copyright & Rights</div>
-
-                                <div class="alert alert-warning mt-4">
-                                    <strong>Important:</strong> Providing false information may lead to rejection of your submission or removal from
-                                    the platform.
-                                </div>
 
                                 <p class="text-muted mb-4">
                                     Please confirm the following statements before continuing.
@@ -473,16 +464,18 @@ margin-bottom:15px;
                                     </label>
                                 </div>
 
-                                
-                                  <button type="submit" class="btn btn-primary mt-3">Save & Continue</button>
-                               </form>
+                                <div class="alert alert-warning mt-4">
+                                    <strong>Important:</strong> Providing false information may lead to rejection of your submission or removal from
+                                    the platform.
+                                </div>
 
                             </div>
+                        <!-- End STEP 5 -->
+
+                       <!-- STEP 6 -->
 
 
-                        <div class="form-step">
-
-                           <form id="step6Form">
+                          <div class="form-step">
 
                               <div class="step-title mb-3" style="font-weight: 600;">Payment Information</div>
 
@@ -564,17 +557,15 @@ margin-bottom:15px;
 
                               </div>
 
-                              <button type="submit" class="btn btn-primary mt-3">Save & Continue</button>
-
-                            </form>
-
                           </div>
 
+                        <!-- STEP 7 -->
 
-                        <div class="form-step">
-                            <form id="finalSubmitForm">
+                          <div class="form-step">
 
-                               <!-- Final Notice -->
+                              <div class="step-title mb-3" style="font-weight: 600;">Review & Submit</div>
+
+                              <!-- Final Notice -->
                               <div class="alert alert-info">
                                   <p><strong>Important Notice:</strong></p>
                                   <ul>
@@ -584,9 +575,32 @@ margin-bottom:15px;
                                   </ul>
                               </div>
 
-                                <div class="step-title mb-3">Review & Submit</div>
+                              <!-- Required Confirmations -->
+                              <h6 class="mb-3">Confirmations</h6>
 
-                               <h6 class="mb-3" style="font-size: 18px !important;">Digital Signature</h6>
+                              <div class="form-check mb-2">
+                                  <input class="form-check-input review-check" type="checkbox" id="confirm1" required>
+                                  <label class="form-check-label" for="confirm1">
+                                      I understand and accept the review process.
+                                  </label>
+                              </div>
+
+                              <div class="form-check mb-2">
+                                  <input class="form-check-input review-check" type="checkbox" id="confirm2" required>
+                                  <label class="form-check-label" for="confirm2">
+                                      I understand that submission does not guarantee selection or payment.
+                                  </label>
+                              </div>
+
+                              <div class="form-check mb-3">
+                                  <input class="form-check-input review-check" type="checkbox" id="confirm3" required>
+                                  <label class="form-check-label" for="confirm3">
+                                      I agree to the FlareTechMusic Terms & Conditions.
+                                  </label>
+                              </div>
+
+                              <!-- Digital Signature -->
+                              <h6 class="mb-3">Digital Signature</h6>
 
                               <div class="mb-3">
                                   <label>Full Legal Name *</label>
@@ -598,13 +612,23 @@ margin-bottom:15px;
                                   <input type="text" class="form-control" id="digitalDate" readonly>
                               </div>
 
-                                <button type="submit" class="btn btn-success btn-lg">
-                                    Submit Catalog for Review
-                                </button>
+                              <!-- Submit Button -->
+                              <button type="submit" class="btn btn-success btn-lg">Submit Catalog for Review</button>
 
-                            </form>
+                          </div>
+
+
+                        <!-- NAVIGATION -->
+
+                        <div class="d-flex justify-content-between mt-4">
+
+                            <button type="button" class="btn btn-secondary" id="prevBtn">Back</button>
+
+                            <button type="button" class="btn btn-primary-600" id="nextBtn">Next</button>
 
                         </div>
+
+                        </form>
 
                    </div>
               </div>
@@ -621,85 +645,69 @@ margin-bottom:15px;
    
 
 <script>
-
-let currentStep = 0;
-
 document.addEventListener("DOMContentLoaded", function () {
 
-const steps = document.querySelectorAll(".form-step");
-const indicators = document.querySelectorAll(".step");
-const prevBtn = document.getElementById("prevBtn");
-const progressBar = document.getElementById("progressBar");
+    let currentStep = 0;
 
-window.updateWizard = function () {
+    const steps = document.querySelectorAll(".form-step");
+    const indicators = document.querySelectorAll(".step");
 
-    steps.forEach((step, i) => {
-        step.classList.remove("active");
-        if(i === currentStep){
-            step.classList.add("active");
-        }
-    });
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
 
-    indicators.forEach((indicator, i) => {
+    function updateWizard() {
+        // Show the correct step
+        steps.forEach((step, i) => {
+            step.classList.toggle("active", i === currentStep);
+        });
 
-        indicator.classList.remove("active");
+        // Update step indicators
+        indicators.forEach((indicator, i) => {
+            indicator.classList.toggle("active", i <= currentStep);
+        });
 
-        if(i <= currentStep){
-            indicator.classList.add("active");
-        }
+        // Update progress bar
+        let progress = ((currentStep + 1) / steps.length) * 100;
+        document.getElementById("progressBar").style.width = progress + "%";
 
-    });
-
-    // Progress calculation
-    let progress = ((currentStep + 1) / steps.length) * 100;
-    progressBar.style.width = progress + "%";
-
-    // Hide back button on step 0
-    if(prevBtn){
+        // Hide back button on first step
         prevBtn.style.display = currentStep === 0 ? "none" : "inline-block";
+
+        // Change next button text on last step
+        nextBtn.innerText = currentStep === steps.length - 1 ? "Submit" : "Next";
     }
 
-};
+    // Next button
+    nextBtn.addEventListener("click", function () {
+        if (currentStep < steps.length - 1) {
+            currentStep++;
+            updateWizard();
+        } else {
+            document.getElementById("artistWizard").submit();
+        }
+    });
 
+    // Back button
+    prevBtn.addEventListener("click", function () {
+        if (currentStep > 0) {
+            currentStep--;
+            updateWizard();
+        }
+    });
 
-/* BACK BUTTON */
+    // CLICKABLE STEP INDICATORS
+    indicators.forEach(stepIndicator => {
+        stepIndicator.addEventListener("click", function () {
+            let target = parseInt(this.dataset.step);
+            currentStep = target;  // allow moving forward or backward
+            updateWizard();
+        });
+    });
 
-if(prevBtn){
-
-prevBtn.addEventListener("click", function(){
-
-if(currentStep > 0){
-
-currentStep--;
-updateWizard();
-
-}
-
-});
-
-}
-
-
-/* CLICKABLE STEPS */
-
-indicators.forEach(stepIndicator => {
-
-stepIndicator.addEventListener("click", function(){
-
-let target = parseInt(this.dataset.step);
-
-currentStep = target; // allow jumping anywhere
-updateWizard();
+    // Initialize wizard
+    updateWizard();
 
 });
-
-});
-
-
-updateWizard();
-
-});
-
 </script>
 
 
@@ -707,73 +715,55 @@ updateWizard();
 
 
 <script>
-
 $(document).ready(function(){
 
-    $('#step1Form').on('submit', function(e){
+    $('#step1Submit').on('click', function(e){
+        e.preventDefault();
 
-    e.preventDefault();
+        let formData = new FormData(this);
 
-    let formData = new FormData(this);
 
-    $('.invalid-feedback').remove();
-    $('.is-invalid').removeClass('is-invalid');
+        // Remove previous validation errors
+        $('.invalid-feedback').remove();
+        $('.is-invalid').removeClass('is-invalid');
 
-    $.ajax({
-
-        url: "",
-        method: "POST",
-        data: formData,
-        processData:false,
-        contentType:false,
-        headers:{
-        'X-CSRF-TOKEN': "{{ csrf_token() }}"
-        },
-
-        success:function(response){
-
-        if(response.success){
-
-        window.artistId = response.artist_id;
-
-        currentStep++;
-        updateWizard();
-
-        }
-
-        },
-
-        error:function(xhr){
-
-          if(xhr.status === 422){
-
-            let errors = xhr.responseJSON.errors;
-
-              $.each(errors,function(field,msg){
-
-              let input = $('[name="'+field+'"]');
-
-              input.addClass('is-invalid');
-              input.after('<div class="invalid-feedback">'+msg[0]+'</div>');
-
-              });
-
-          }
-
-        }
-
-      });
-
+        $.ajax({
+            url: "{{ route('artist.step1') }}", // Laravel route
+            method: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+            },
+            success: function(response){
+                if(response.success){
+                    alert("Step 1 saved successfully!");
+                    // Move wizard to next step
+                    currentStep++;
+                    updateWizard();
+                    // Save artist ID for future steps if needed
+                    window.artistId = response.artist_id;
+                }
+            },
+            error: function(xhr){
+                if(xhr.status === 422){
+                    let errors = xhr.responseJSON.errors;
+                    $.each(errors, function(field, messages){
+                        let input = $('[name="'+field+'"]');
+                        input.addClass('is-invalid');
+                        input.after('<div class="invalid-feedback">'+messages[0]+'</div>');
+                    });
+                } else {
+                    alert("An error occurred. Please try again.");
+                }
+            }
+        });
     });
 
 });
-
 </script>
 
-<!--End Step 1 submission-->
-
-<!--Step 2 submission-->
-  
 <!--End Step 1 submission-->
 
 

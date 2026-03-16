@@ -23,6 +23,7 @@ use App\Http\Controllers\ProxyController;
 use App\Http\Controllers\CacheController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\ArtistOwnershipIdentityController;
 
 
 
@@ -256,6 +257,15 @@ Route::middleware(['artistusercheck','check.subscription'])->group(function () {
         Route::get('/notifications/load-more','loadMoreNotifications')->name('notifications.loadMore');
         Route::get('/notifications/{id}/read', 'read')->name('notifications.read');
     });
+
+
+    Route::controller(ArtistOwnershipIdentityController::class)->group(function () {
+
+          Route::post('/artist_identity/step1', 'storeStep1')->name('artist.step1');
+    });
+
+
+
 
     
 });
