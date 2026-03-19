@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('artist_ownership_identity', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->string('full_name');
             $table->string('stage_name');
             $table->date('dob');

@@ -4,13 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use DB;
+use App\Models\User;
+use App\Models\Country;
+use App\Models\ArtistOwnerIdentity;
 
 class CatalogController extends Controller
 {
     public function songUpload(Request $request){
        
+        $user = auth()->user();
         $all_countries = DB::table('countries')->get();
-        return view('dashboard.pages.monetize_songs.index', compact('all_countries'));
+        $user = User::where('id',$user->id)->first();
+        $artist = ArtistOwnerIdentity::where('user_id', $user->id)->first();
+        $user_country = Country::where('iso2', $user->country)->first();
+        return view('dashboard.pages.monetize_songs.index', compact('all_countries','user','user_country','artist'));
         
     }
 }

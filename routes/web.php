@@ -261,7 +261,8 @@ Route::middleware(['artistusercheck','check.subscription'])->group(function () {
 
     Route::controller(ArtistOwnershipIdentityController::class)->group(function () {
 
-          Route::post('/artist_identity/step1', 'storeStep1')->name('artist.step1');
+          Route::post('/artist/step1', 'storeStep1')->name('artist.step1');
+          Route::post('/artist/step2', 'storeStep2')->name('artist.step2');
     });
 
 

@@ -78,4 +78,9 @@ class User extends Authenticatable
     public function cryptowallet(){
        return $this->hasMany(CryptoWallet::class);
     }
+
+    public function artistOwnerIdentity()
+    {
+        return $this->hasOne(ArtistOwnerIdentity::class, 'user_id');
+    }
 }

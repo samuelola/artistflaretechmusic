@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ArtistOwnerIdenity extends Model
+class ArtistOwnerIdentity extends Model
 {
+    protected $table ="artist_ownership_identity";
     protected $fillable = [
         'full_name',
         'stage_name',
@@ -20,5 +21,6 @@ class ArtistOwnerIdenity extends Model
         'tiktok',
         'id_type',
         'government_id_path',
+        'user_id'
     ];
 }
