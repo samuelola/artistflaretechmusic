@@ -9,22 +9,28 @@ use Illuminate\Support\Facades\Storage;
 use App\Services\ArtistOwnershipService;
 use App\Http\Requests\Step1Request;
 use App\Http\Requests\Step2Request;
+use App\Http\Requests\Step3Request;
 use Illuminate\Support\Facades\Http;
 use App\Services\ArtistRoleRightService;
+use App\Services\ArtistSongService;
+
 
 class ArtistOwnershipIdentityController extends Controller
 {
     protected $artistownershipService;
     protected $artistrolerightService;
+    protected $songService;
 
 
     public function __construct(
         ArtistOwnershipService $artistOwnershipService,
-        ArtistRoleRightService $artistRoleRightService
+        ArtistRoleRightService $artistRoleRightService,
+        ArtistSongService $artistSongService
         )
     {
         $this->artistownershipService = $artistOwnershipService;
         $this->artistrolerightService = $artistRoleRightService;
+        $this->songService = $artistSongService;
     }
 
     
@@ -37,7 +43,7 @@ class ArtistOwnershipIdentityController extends Controller
 
             return response()->json([
                 'success' => true,
-                'id' => $artist->id
+                'artist_id' => $artist->id,
             ]);
 
         } catch (\Exception $e) {
@@ -55,13 +61,24 @@ class ArtistOwnershipIdentityController extends Controller
     {
         try {
             $artistId = $request->user()->artistOwnerIdentity->id; // assuming relation exists
+            $artist = $request->user()->artistOwnerIdentity;
+
+            if(!$artist){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please complete Step 1 first'
+                ], 400);
+            }
+
             $coOwners = [];
 
             if($request->ownership_type === 'co' && $request->co_owners) {
                 $coOwners = $request->co_owners; // array of co-owners
             }
 
-            $role = $this->artistrolerightService->saveStep2($artistId, array_merge($request->validated(), [
+            $role = $this->artistrolerightService->saveStep2(
+                $artistId, 
+                array_merge($request->validated(), [
                 'co_owners' => $coOwners
             ]));
 
@@ -78,5 +95,25 @@ class ArtistOwnershipIdentityController extends Controller
         }
     }
 
+    public function storeStep3 (Step3Request $request)
+    {
+            try {
+                $artistId = $request->user()->artistOwnerIdentity->id;
+                $songs = $request->songs;
+
+                $savedSongs = $this->songService->saveSongs($artistId, $request);
+
+                return response()->json([
+                    'success' => true,
+                    'count' => count($savedSongs)
+                ]);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 500);
+            }
     
+    }
 }

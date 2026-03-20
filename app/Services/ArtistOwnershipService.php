@@ -28,12 +28,28 @@ class ArtistOwnershipService
         }
 
         $data['user_id']= auth()->id();
-        $artist = ArtistOwnerIdentity::create($data);
+        $artist = ArtistOwnerIdentity::updateOrCreate(
+            ['user_id' => auth()->id()], // condition
+            $data // values to update
+        );
+        if (empty($artist->artist_code)) {
+            $artist->artist_code = $this->generateArtistCode($artist->id);
+            $artist->save();
+        }
         if(!$artist){
             
             throw new \Exception ("Artist Identity not submitted");
         }
 
         return $artist;
+    }
+
+    /**
+     * Generate unique artist code like FLR-CAT-20394
+     */
+    protected function generateArtistCode($id)
+    {
+        // You can use a prefix + padded ID or random number
+        return 'FLR-CAT-' . str_pad($id, 5, '0', STR_PAD_LEFT);
     }
 }

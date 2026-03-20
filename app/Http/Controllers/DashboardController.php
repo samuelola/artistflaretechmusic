@@ -21,6 +21,7 @@ use App\Notifications\NewMessageNotification;
 use App\Notifications\TestNotification;
 use App\Models\MusicRelease;
 use App\Models\Track;
+use App\Models\ArtistOwnerIdentity;
 
 
 class DashboardController extends Controller
@@ -149,6 +150,8 @@ class DashboardController extends Controller
         ->get();
 
         $stat_count = DB::table('user_statistics')->where('user_id',auth()->user()->id)->first();
+
+        $artist_owner = ArtistOwnerIdentity::where('user_id', auth()->id())->first();
         
         return view('dashboard.pages.home',compact(
             'stats_total',
@@ -172,7 +175,8 @@ class DashboardController extends Controller
             'albumvalue',
             'trackvalue',
             'thelang',
-            'thecountry'
+            'thecountry',
+            'artist_owner'
         ));
     }
 
@@ -326,9 +330,9 @@ class DashboardController extends Controller
         $response = Http::withToken($decrypted)->post('http://artistdashboard.test/api/logout');
         if($response->successful() == true){
             //$request->session()->forget('tokken');
-             $request->session()->flush();
-             $request->session()->regenerateToken();
-            return Redirect::to('http://authflaretech.test');
+        $request->session()->flush();
+        $request->session()->regenerateToken();
+        return Redirect::to('http://authflaretech.test');
             
         }
        

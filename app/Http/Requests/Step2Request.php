@@ -24,11 +24,14 @@ class Step2Request extends FormRequest
         return [
             'role' => 'required|string',
             'ownership_type' => 'required|string',
+
             'ownership_percentage' => 'nullable|integer|min:1|max:100',
+
             'co_owners' => 'nullable|array',
-            'co_owners.*.name' => 'required_with:co_owners|string',
-            'co_owners.*.role' => 'required_with:co_owners|string',
-            'co_owners.*.percentage' => 'required_with:co_owners|integer|min:1|max:100',
+
+            'co_owners.*.name' => 'required_if:ownership_type,co|string',
+            'co_owners.*.role' => 'required_if:ownership_type,co|string',
+            'co_owners.*.percentage' => 'required_if:ownership_type,co|integer|min:1|max:100',
         ];
     }
 }

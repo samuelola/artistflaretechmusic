@@ -31,6 +31,7 @@ return new class extends Migration
             // Identity verification
             $table->string('id_type');
             $table->string('government_id_path');
+            $table->string('artist_code')->unique()->nullable();
             $table->timestamps();
         });
     }

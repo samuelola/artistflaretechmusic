@@ -186,7 +186,7 @@ margin-bottom:15px;
 
                           </div>
                        <!-- End Step Indicator-->
-
+                        <input type="hidden" id="artistId" value="{{ $artist->id ?? '' }}">
                         <div class="form-step active">
 
                            <form id="step1Form" enctype="multipart/form-data">
@@ -321,20 +321,20 @@ margin-bottom:15px;
                                       <label>Your Role</label>
                                       <select class="form-select" name="role">
                                           <option value="">Select</option>
-                                          <option>Artist</option>
-                                          <option>Producer</option>
-                                          <option>Songwriter</option>
-                                          <option>Label Representative</option>
+                                          <option {{ ($step2->role ?? '') == 'Artist' ? 'selected' : '' }}>Artist</option>
+                                          <option {{ ($step2->role ?? '') == 'Producer' ? 'selected' : '' }}>Producer</option>
+                                          <option {{ ($step2->role ?? '') == 'Songwriter' ? 'selected' : '' }}>Songwriter</option>
+                                          <option {{ ($step2->role ?? '') == 'Label Representative' ? 'selected' : '' }}>Label Representative</option>
                                       </select>
                                   </div>
 
                                   <div class="mb-3">
                                       <label>Rights Ownership</label>
                                        <select class="form-select" id="ownershipSelect">
-                                          <option value="100">I own 100% of the master recording</option>
-                                          <option value="co">I co-own the master recording</option>
-                                          <option value="represent">I represent the rights holder</option>
-                                          <option value="authorized">I have written authorization to submit this music</option>
+                                            <option value="100" {{ ($step2->ownership_type ?? '') == '100' ? 'selected' : '' }}>I own 100% of the master recording</option>
+                                            <option value="co" {{ ($step2->ownership_type ?? '') == 'co' ? 'selected' : '' }}>I co-own the master recording</option>
+                                            <option value="represent" {{ ($step2->ownership_type ?? '') == 'represent' ? 'selected' : '' }}>I represent the rights holder</option>
+                                            <option value="authorized" {{ ($step2->ownership_type ?? '') == 'authorized' ? 'selected' : '' }}>I have written authorization to submit this music</option>
                                         </select>
                                   </div>
 
@@ -344,11 +344,11 @@ margin-bottom:15px;
 
                                   <div class="mb-3">
                                     <label>Your Ownership Percentage (%)</label>
-                                    <input type="number" class="form-control" min="1" max="100" placeholder="Enter your ownership percentage">
+                                    <input type="number" class="form-control" min="1" max="100" value="{{ $step2->ownership_percentage ?? '' }}" placeholder="Enter your ownership percentage">
                                   </div>
 
 
-                                  <h6 class="mt-3">Other Rights Holders</h6>
+                                  <h6 style="font-size:18px !important;" class="mt-3">Other Rights Holders</h6>
 
                                   <div id="rightsHolders"></div>
 
@@ -358,7 +358,7 @@ margin-bottom:15px;
 
                               </div>
 
-                                  <button type="submit" class="btn btn-primary">Save & Continue</button>
+                                  <button type="submit" id="step2Submit" class="btn btn-primary-600 mt-3">Save & Continue</button>
 
                               </form>
 
@@ -366,19 +366,23 @@ margin-bottom:15px;
 
                           <div class="form-step">
 
-                            <form id="step3Form" enctype="multipart/form-data">
+                            
+                           <form id="step3Form" enctype="multipart/form-data">
 
-                                <div class="step-title mb-3">Song Upload</div>
+    <div class="step-title mb-3" style="cursor:pointer;">Song Upload</div>
 
-                                 <div class="upload-box mb-3">
-                                    Upload Song File<br>
-                                    <small>Drag & drop MP3 / WAV</small>
-                                    <input type="file" hidden>
-                                </div>
+   <div class="mb-3">
+    <label>Upload Songs (MP3 / WAV)</label>
+    <input type="file" id="songFiles" class="form-control" multiple accept=".mp3,.wav">
+</div>
 
-                                <button type="submit" class="btn btn-primary">Save & Continue</button>
+<div id="songsContainer"></div>
+    
 
-                            </form>
+    <button type="submit" id="step3Submit" class="btn btn-primary">Save & Continue</button>
+
+</form>
+
 
                           </div>
 
@@ -745,10 +749,14 @@ $(document).ready(function(){
     e.preventDefault();
 
     let formData = new FormData(this);
-
+    let $btn = $('#step1Submit');
 
     $('.invalid-feedback').remove();
     $('.is-invalid').removeClass('is-invalid');
+
+    $btn.prop('disabled', true);
+        let originalText = $btn.html();
+        $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...');
 
     $.ajax({
 
@@ -766,8 +774,7 @@ $(document).ready(function(){
         if(response.success){
 
             alert('Step 1 saved successfully!');
-            window.artistId = response.artist_id;
-
+            $('#artistId').val(response.artist_id);
             currentStep++;
             updateWizard();
 
@@ -776,7 +783,7 @@ $(document).ready(function(){
         },
 
         error:function(xhr){
-
+    $btn.prop('disabled', false).html(originalText);
     console.log(xhr.responseJSON); // DEBUG
 
     $('.invalid-feedback').remove();
@@ -838,20 +845,36 @@ $(document).ready(function(){
     $('#step2Form').on('submit', function(e){
         e.preventDefault();
 
-        let artistId = window.artistId; // get from Step 1
+        let artistId = $('#artistId').val();
         if(!artistId) {
             alert('Please save Step 1 first.');
             return;
         }
 
+        let $btn = $('#step2Submit');
+        $btn.prop('disabled', true);
+        let originalText = $btn.html();
+        $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...');
+
         // Gather form data
         let coOwners = [];
         $('#rightsHolders .holder-row').each(function(){
-            coOwners.push({
-                name: $(this).find('input').eq(0).val(),
-                role: $(this).find('input').eq(1).val(),
-                percentage: $(this).find('input').eq(2).val()
-            });
+
+        let name = $(this).find('input').eq(0).val();
+        let role = $(this).find('select').val();
+        let percentage = $(this).find('input').eq(1).val();
+
+        // Skip empty rows
+        if(!name && !role && !percentage){
+            return;
+        }
+
+        coOwners.push({
+            name: name,
+            role: role,
+            percentage: percentage
+        });
+
         });
 
         let formData = {
@@ -864,6 +887,49 @@ $(document).ready(function(){
         // Clear previous errors
         $('.invalid-feedback').remove();
         $('.is-invalid').removeClass('is-invalid');
+
+    
+        // VALIDATE OWNERSHIP TOTAL
+        let ownershipType = $('#ownershipSelect').val();
+
+        if(ownershipType === 'co'){
+
+            let total = 0;
+
+            // Your percentage
+            let yourPercent = parseFloat($('#coOwnershipSection input[type="number"]').val()) || 0;
+            total += yourPercent;
+
+            // Co-owners percentage
+            $('#rightsHolders .holder-row').each(function(){
+               let val = parseFloat($(this).find('input').eq(1).val()) || 0;
+                total += val;
+            });
+
+            if(total !== 100){
+                alert('Total ownership must equal 100%. Current total: ' + total + '%');
+                return; // STOP submission
+            }
+
+        }
+
+        let hasError = false;
+
+$('#rightsHolders .holder-row').each(function(){
+
+    let name = $(this).find('input').eq(0).val();
+    let role = $(this).find('select').val();
+    let percentage = $(this).find('input').eq(1).val();
+
+    if(!name || !role || !percentage){
+        alert('All co-owner fields are required');
+        hasError = true;
+        return false; // break loop
+    }
+
+});
+
+if(hasError) return;
 
         $.ajax({
             url: "{{ route('artist.step2') }}",
@@ -880,6 +946,7 @@ $(document).ready(function(){
                 }
             },
             error: function(xhr){
+                $btn.prop('disabled', false).html(originalText);
                 if(xhr.status === 422){
                     let errors = xhr.responseJSON.errors;
                     $.each(errors, function(field, msgs){
@@ -910,6 +977,228 @@ $(document).ready(function(){
   
 <!--End Step 2 submission-->
 
+<!-- allows you to select multiple -->
+<script>
+$('.upload-box').on('click', function(){
+    $('#songFiles')[0].click(); // use native click
+});
+</script>
+<!-- end -->
+
+
+
+<!-- Step 3 submission -->
+
+
+
+
+<script>
+$(document).ready(function(){
+
+    const fileInput = $('#songFiles');
+    const container = $('#songsContainer');
+    let songIndex = 0;
+
+    // When user selects files
+    fileInput.on('change', function(){
+
+        let files = this.files;
+
+        if(!files.length) return;
+
+        for(let i = 0; i < files.length; i++){
+
+            let file = files[i];
+
+            let html = `
+                    <div class="song-block mb-4 border p-3 mt-3">
+
+                        <h6>${file.name}</h6>
+
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label>Song Title *</label>
+                                <input type="text" class="form-control" 
+                                    name="songs[${songIndex}][title]" 
+                                    value="${file.name.replace(/\.[^/.]+$/, '')}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Artist Name *</label>
+                                <input type="text" class="form-control" 
+                                    name="songs[${songIndex}][artist_name]" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Release Year *</label>
+                                <input type="number" class="form-control" 
+                                    name="songs[${songIndex}][release_year]" 
+                                    value="${new Date().getFullYear()}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Genre *</label>
+                                <select class="form-select" 
+                                    name="songs[${songIndex}][genre]" required>
+                                    <option value="">Select</option>
+                                    <option value="genre1">genre1</option>
+                                    <option value="genre2">genre2</option>
+                                    <option value="genre3">genre3</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Duration *</label>
+                                <input type="text" class="form-control duration-field" 
+                                    name="songs[${songIndex}][duration]" 
+                                    placeholder="Auto-filled" readonly required>
+                            </div>
+                            <div class="col-md-6">
+                                <label>Distribution Status *</label>
+                                <select class="form-select" 
+                                    name="songs[${songIndex}][distribution_status]" required>
+                                    <option value="">Select</option>
+                                    <option value="released">Released</option>
+                                    <option value="unreleased">Unreleased</option>
+                                    <option value="previously_distributed">Previously Distributed</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Spotify URL</label>
+                                <input type="url" class="form-control" 
+                                    name="songs[${songIndex}][spotify_link]" placeholder="https://">
+                            </div>
+                            <div class="col-md-6">
+                                <label>Apple Music URL</label>
+                                <input type="url" class="form-control" 
+                                    name="songs[${songIndex}][apple_link]" placeholder="https://">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label>Audiomack URL</label>
+                                <input type="url" class="form-control" 
+                                    name="songs[${songIndex}][audiomack_link]" placeholder="https://">
+                            </div>
+                            <div class="col-md-6">
+                                <label>YouTube URL</label>
+                                <input type="url" class="form-control" 
+                                    name="songs[${songIndex}][youtube_link]" placeholder="https://">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-danger remove-song mt-3">Remove</button>
+
+                    </div>
+                    `;
+
+            let block = $(html);
+            container.append(block);
+
+            // AUTO GET DURATION
+            let audio = document.createElement('audio');
+            audio.preload = 'metadata';
+
+            audio.onloadedmetadata = function(){
+                let duration = audio.duration;
+                let minutes = Math.floor(duration / 60);
+                let seconds = Math.floor(duration % 60);
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+
+                block.find('.duration-field').val(`${minutes}:${seconds}`);
+            };
+
+            audio.src = URL.createObjectURL(file);
+
+            songIndex++;
+        }
+
+        // reset so same file can be selected again
+        this.value = '';
+    });
+
+    // Remove song block
+    $(document).on('click', '.remove-song', function(){
+        $(this).closest('.song-block').remove();
+    });
+
+});
+</script>
+<!-- End Step 3 submission -->
+
+<script>
+   $('#step3Form').on('submit', function(e){
+        e.preventDefault();
+
+        if(uploadedFiles.length === 0){
+            alert('Please select at least one song.');
+            return;
+        }
+
+        let formData = new FormData();
+
+        // append songs fields
+        $('.song-block').each(function(i){
+            $(this).find('input, select').each(function(){
+                let name = $(this).attr('name');
+                let val = $(this).val();
+                formData.append(name, val);
+            });
+
+            // append corresponding audio file
+            formData.append(`files[${i}]`, uploadedFiles[i]);
+        });
+
+        // show spinner
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+
+        $.ajax({
+            url: "{{ route('artist.step3') }}",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers:{
+                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+            },
+            success: function(response){
+                alert('Songs saved successfully!');
+                submitBtn.prop('disabled', false);
+                submitBtn.html('Save & Continue');
+                // optionally move to next step
+                currentStep++;
+                updateWizard();
+            },
+            error: function(xhr){
+                submitBtn.prop('disabled', false);
+                submitBtn.html('Save & Continue');
+
+                if(xhr.status === 422){
+                    let errors = xhr.responseJSON.errors;
+                    // clear previous errors
+                    $('.is-invalid').removeClass('is-invalid');
+                    $('.invalid-feedback').remove();
+
+                    $.each(errors, function(field, msgs){
+                        let input = $('[name="'+field+'"]');
+                        input.addClass('is-invalid');
+                        input.after('<div class="invalid-feedback">'+msgs[0]+'</div>');
+                    });
+                } else {
+                    alert('An error occurred. Please try again.');
+                }
+            }
+        });
+
+    });
+</script>
 
 <script>
 
@@ -946,7 +1235,15 @@ holder.innerHTML = `
 </div>
 
 <div class="col-md-4">
-    <input type="text" class="form-control" placeholder="Role">
+
+    <select class="form-select">
+            <option value="">Select</option>
+            <option>Artist</option>
+            <option>Producer</option>
+            <option>Songwriter</option>
+            <option>Label Representative</option>
+    </select>
+    
 </div>
 
 <div class="col-md-3">
@@ -974,6 +1271,56 @@ e.target.closest(".holder-row").remove();
 
 });
 
+</script>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    let coOwners = @json($step2->co_owners ?? []);
+
+    if(coOwners.length > 0){
+
+        // Show co-ownership section
+        document.getElementById("coOwnershipSection").style.display = "block";
+
+        coOwners.forEach(function(owner){
+
+            const holder = document.createElement("div");
+            holder.classList.add("row","mb-3","holder-row");
+
+            holder.innerHTML = `
+                <div class="col-md-4">
+                    <input type="text" class="form-control" value="${owner.name}">
+                </div>
+
+                <div class="col-md-4">
+                    <select class="form-select">
+                        <option value="">Select</option>
+                        <option ${owner.role === 'Artist' ? 'selected' : ''}>Artist</option>
+                        <option ${owner.role === 'Producer' ? 'selected' : ''}>Producer</option>
+                        <option ${owner.role === 'Songwriter' ? 'selected' : ''}>Songwriter</option>
+                        <option ${owner.role === 'Label Representative' ? 'selected' : ''}>Label Representative</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <input type="number" class="form-control" value="${owner.percentage}">
+                </div>
+
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-danger removeHolder">X</button>
+                </div>
+            `;
+
+            document.getElementById("rightsHolders").appendChild(holder);
+
+        });
+
+    }
+
+});
 </script>
 
 

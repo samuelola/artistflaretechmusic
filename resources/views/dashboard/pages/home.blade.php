@@ -842,6 +842,8 @@
 
      <!--pop-->
 <!-- FlareTechMusic Monetization Modal -->
+ 
+@if(empty($artist_owner)) 
 <div class="modal fade" id="monetizeModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -900,6 +902,7 @@
     </div>
 </div>
     <!--endpopup-->
+@endif    
 
 @endsection
 
