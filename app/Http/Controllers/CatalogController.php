@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Country;
 use App\Models\ArtistOwnerIdentity;
 use App\Models\ArtistRoleRight;
+use App\Models\ArtistOwnerSong;
+
 
 class CatalogController extends Controller
 {
@@ -22,9 +24,16 @@ class CatalogController extends Controller
 
         if($artist){
             $step2 = ArtistRoleRight::where('artist_ownership_identity_id', $artist->id)->first();
+            $songsOwner = ArtistOwnerSong::where('artist_ownership_identity_id', $artist->id)->get();
         }
 
-        return view('dashboard.pages.monetize_songs.index', compact('all_countries','user','user_country','artist','step2'));
+        $genres = DB::table('genres')->get();
+        $musical_roles = DB::table('musical_roles')->select('name')->get();
+
+        return view('dashboard.pages.monetize_songs.index', compact(
+            'all_countries','user','user_country','artist','step2',
+            'genres','songsOwner','musical_roles'
+        ));
         
     }
 }

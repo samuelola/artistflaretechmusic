@@ -10,27 +10,32 @@ use App\Services\ArtistOwnershipService;
 use App\Http\Requests\Step1Request;
 use App\Http\Requests\Step2Request;
 use App\Http\Requests\Step3Request;
+use App\Http\Requests\Step4Request;
 use Illuminate\Support\Facades\Http;
 use App\Services\ArtistRoleRightService;
 use App\Services\ArtistSongService;
+use App\Services\SongContributorService;
 
 
 class ArtistOwnershipIdentityController extends Controller
 {
     protected $artistownershipService;
     protected $artistrolerightService;
-    protected $songService;
+    protected $artistsongservice;
+    protected $contributorService;
 
 
     public function __construct(
         ArtistOwnershipService $artistOwnershipService,
         ArtistRoleRightService $artistRoleRightService,
-        ArtistSongService $artistSongService
+        ArtistSongService $artistSongService,
+        SongContributorService $contributorService
         )
     {
         $this->artistownershipService = $artistOwnershipService;
         $this->artistrolerightService = $artistRoleRightService;
-        $this->songService = $artistSongService;
+        $this->artistsongservice = $artistSongService;
+        $this->contributorService = $contributorService;
     }
 
     
@@ -101,11 +106,11 @@ class ArtistOwnershipIdentityController extends Controller
                 $artistId = $request->user()->artistOwnerIdentity->id;
                 $songs = $request->songs;
 
-                $savedSongs = $this->songService->saveSongs($artistId, $request);
+                $this->artistsongservice->saveSongs($artistId, $request);
 
                 return response()->json([
                     'success' => true,
-                    'count' => count($savedSongs)
+                    'message' => 'Songs are being uploaded in background'
                 ]);
 
             } catch (\Exception $e) {
@@ -115,5 +120,27 @@ class ArtistOwnershipIdentityController extends Controller
                 ], 500);
             }
     
+    }
+
+    public function storeStep4(Step4Request $request)
+    {
+       
+        $songsData = $request->input('data');
+
+        try {
+            $saved = $this->contributorService->saveContributors($songsData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contributors saved successfully',
+                'saved_count' => count($saved)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save contributors: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

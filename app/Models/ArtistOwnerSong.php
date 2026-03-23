@@ -33,4 +33,9 @@ class ArtistOwnerSong extends Model
     {
         return $this->belongsTo(ArtistOwnerIdentity::class, 'artist_ownership_identity_id');
     }
+
+    public function contributors()
+    {
+        return $this->hasMany(SongContributor::class, 'artist_owner_song_id');
+    }
 }
