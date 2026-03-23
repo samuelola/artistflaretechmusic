@@ -11,10 +11,13 @@ use App\Http\Requests\Step1Request;
 use App\Http\Requests\Step2Request;
 use App\Http\Requests\Step3Request;
 use App\Http\Requests\Step4Request;
+use App\Http\Requests\Step5Request;
 use Illuminate\Support\Facades\Http;
 use App\Services\ArtistRoleRightService;
 use App\Services\ArtistSongService;
 use App\Services\SongContributorService;
+use App\Services\ArtistRightsService;
+
 
 
 class ArtistOwnershipIdentityController extends Controller
@@ -23,19 +26,22 @@ class ArtistOwnershipIdentityController extends Controller
     protected $artistrolerightService;
     protected $artistsongservice;
     protected $contributorService;
+    protected $artistRightsService;
 
 
     public function __construct(
         ArtistOwnershipService $artistOwnershipService,
         ArtistRoleRightService $artistRoleRightService,
         ArtistSongService $artistSongService,
-        SongContributorService $contributorService
+        SongContributorService $contributorService,
+        ArtistRightsService $rightsService
         )
     {
         $this->artistownershipService = $artistOwnershipService;
         $this->artistrolerightService = $artistRoleRightService;
         $this->artistsongservice = $artistSongService;
         $this->contributorService = $contributorService;
+        $this->artistRightsService = $rightsService;
     }
 
     
@@ -143,4 +149,26 @@ class ArtistOwnershipIdentityController extends Controller
             ], 500);
         }
     }
+
+    public function storeStep5(Step5Request $request)
+    {
+
+        $artistId = $request->user()->artistOwnerIdentity->id;
+
+        try {
+            $this->artistRightsService->saveRights($artistId,$request->validated());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Step 5 saved successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save rights: '.$e->getMessage()
+            ], 500);
+        }
+    }
+
+    
 }

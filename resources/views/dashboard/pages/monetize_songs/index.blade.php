@@ -297,8 +297,8 @@ margin-bottom:15px;
                             </form>
                           </div>
 <!-- Modal -->
-<div class="modal fade" id="viewIDModal" tabindex="-1" aria-labelledby="viewIDModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal modal-lg fade" id="viewIDModal" tabindex="-1" aria-labelledby="viewIDModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="viewIDModalLabel">Uploaded ID</h5>
@@ -522,58 +522,34 @@ margin-bottom:15px;
                           <div class="form-step">
 
                               <form id="step5Form">
+                                    <div class="step-title mb-3" style="font-weight: 600;">Copyright & Rights</div>
 
-                                <div class="step-title mb-3" style="font-weight: 600;">Copyright & Rights</div>
+                                    <div class="alert alert-warning mt-4">
+                                        <strong>Important:</strong> Providing false information may lead to rejection of your submission or removal from the platform.
+                                    </div>
 
-                                <div class="alert alert-warning mt-4">
-                                    <strong>Important:</strong> Providing false information may lead to rejection of your submission or removal from
-                                    the platform.
-                                </div>
+                                    <p class="text-muted mb-4">
+                                        Please confirm the following statements before continuing.
+                                    </p>
 
-                                <p class="text-muted mb-4">
-                                    Please confirm the following statements before continuing.
-                                </p>
+                                    @foreach([
+                                        'rights1' => 'I confirm that I own or control the rights to the submitted recordings.',
+                                        'rights2' => 'The submitted recordings do not infringe on any third-party copyrights.',
+                                        'rights3' => 'All samples used in the recordings are properly cleared.',
+                                        'rights4' => 'No legal disputes exist regarding the ownership of these works.',
+                                        'rights5' => 'I have the authority to submit these recordings for catalog evaluation.'
+                                    ] as $id => $label)
+                                        <div class="form-check d-flex align-items-start mb-3">
+                                            <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="{{ $id }}" name="{{ $id }}">
+                                            <label class="form-check-label" for="{{ $id }}">{{ $label }}</label>
+                                        </div>
+                                    @endforeach
 
-                                <div class="form-check d-flex align-items-start mb-3">
-                                    <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="rights1">
-                                    <label class="form-check-label" for="rights1">
-                                        I confirm that I own or control the rights to the submitted recordings.
-                                    </label>
-                                </div>
+                                    <button type="submit" class="btn btn-primary mt-3" id="step5Submit">Save & Continue</button>
+                                </form>
 
-                                <div class="form-check d-flex align-items-start mb-3">
-                                    <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="rights2">
-                                    <label class="form-check-label" for="rights2">
-                                        The submitted recordings do not infringe on any third-party copyrights.
-                                    </label>
-                                </div>
 
-                                <div class="form-check d-flex align-items-start mb-3">
-                                    <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="rights3">
-                                    <label class="form-check-label" for="rights3">
-                                        All samples used in the recordings are properly cleared.
-                                    </label>
-                                </div>
-
-                                <div class="form-check d-flex align-items-start mb-3">
-                                    <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="rights4">
-                                    <label class="form-check-label" for="rights4">
-                                        No legal disputes exist regarding the ownership of these works.
-                                    </label>
-                                </div>
-
-                                <div class="form-check d-flex align-items-start mb-3">
-                                    <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="rights5">
-                                    <label class="form-check-label" for="rights5">
-                                        I have the authority to submit these recordings for catalog evaluation.
-                                    </label>
-                                </div>
-
-                                
-                                  <button type="submit" class="btn btn-primary mt-3">Save & Continue</button>
-                               </form>
-
-                            </div>
+                          </div>
 
 
                         <div class="form-step">
@@ -1389,7 +1365,7 @@ $(document).ready(function(){
             type: "POST",
             data: {data: data, _token: "{{ csrf_token() }}"},
             success: function(res){
-                if(response.success){
+                if(res.success){
                     btn.prop('disabled', false).html('Save & Continue');
                     alert('Contributors saved successfully!');
                     currentStep++;
@@ -1408,6 +1384,59 @@ $(document).ready(function(){
 });
 </script>
 <!--end step 4-->
+
+<!-- step 5-->
+<script>
+$(document).ready(function(){
+
+    $('#step5Form').on('submit', function(e){
+        e.preventDefault();
+
+        let btn = $('#step5Submit');
+        let allChecked = true;
+
+        $('.rights-check').each(function(){
+            if(!$(this).is(':checked')){
+                allChecked = false;
+            }
+        });
+
+        if(!allChecked){
+            alert('Please confirm all statements before continuing.');
+            return;
+        }
+
+        // Show spinner
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+
+        // Collect data
+        let data = {};
+        $('.rights-check').each(function(){
+            data[$(this).attr('id')] = $(this).is(':checked') ? 1 : 0;
+        });
+
+        $.ajax({
+            url: "{{ route('artist.step5') }}",
+            type: "POST",
+            data: {...data, _token: "{{ csrf_token() }}"},
+            success: function(res){
+                alert('Step 5 saved successfully!');
+                btn.prop('disabled', false).html('Save & Continue');
+                // move to next step if using wizard
+                currentStep++;
+                updateWizard();
+            },
+            error: function(xhr){
+                alert('An error occurred. Please try again.');
+                btn.prop('disabled', false).html('Save & Continue');
+            }
+        });
+    });
+
+});
+</script>
+
+<!-- end step 5-->
 
 <script>
 

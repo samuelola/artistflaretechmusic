@@ -11,7 +11,7 @@ class PaystackFlareTechWebhookController extends Controller
 {
    public function handle(Request $request)
    {
-      dd("ok");
+      
       $signature = $request->header('x-paystack-signature');
       if (!$signature || $signature !== hash_hmac('sha512', $request->getContent(), config('paystack.secretKey'))) {
         abort(403, 'Invalid signature');

@@ -265,6 +265,7 @@ Route::middleware(['artistusercheck','check.subscription'])->group(function () {
           Route::post('/artist/step2', 'storeStep2')->name('artist.step2');
           Route::post('/artist/step3', 'storeStep3')->name('artist.step3');
           Route::post('/artist/step4', 'storeStep4')->name('artist.step4');
+          Route::post('/artist/step5', 'storeStep5')->name('artist.step5');
     });
 
 
