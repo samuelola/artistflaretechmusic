@@ -24,7 +24,7 @@ class PaystackService implements PaymentInterface
     public function __construct()
     {
         $this->baseUrl = config('services.paystack.url', 'https://api.paystack.co');
-        $this->secretKey = config('services.paystack.secret','sk_test_ecbf9d30f9330b81001f54a86729ff52d1d66a87');
+        $this->secretKey = config('services.paystack.secret');
         
     }
 

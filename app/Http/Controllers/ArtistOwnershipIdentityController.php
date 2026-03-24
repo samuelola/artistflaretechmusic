@@ -12,12 +12,15 @@ use App\Http\Requests\Step2Request;
 use App\Http\Requests\Step3Request;
 use App\Http\Requests\Step4Request;
 use App\Http\Requests\Step5Request;
+use App\Http\Requests\Step6Request;
+use App\Http\Requests\FinalSubmitRequest;
 use Illuminate\Support\Facades\Http;
 use App\Services\ArtistRoleRightService;
 use App\Services\ArtistSongService;
 use App\Services\SongContributorService;
 use App\Services\ArtistRightsService;
-
+use App\Services\ArtistOwnershipPaymentService;
+use App\Services\ArtistOwnCatalogSubmissionService;
 
 
 class ArtistOwnershipIdentityController extends Controller
@@ -27,6 +30,8 @@ class ArtistOwnershipIdentityController extends Controller
     protected $artistsongservice;
     protected $contributorService;
     protected $artistRightsService;
+    protected $artistpaymentService;
+    protected $submissionservice;
 
 
     public function __construct(
@@ -34,7 +39,9 @@ class ArtistOwnershipIdentityController extends Controller
         ArtistRoleRightService $artistRoleRightService,
         ArtistSongService $artistSongService,
         SongContributorService $contributorService,
-        ArtistRightsService $rightsService
+        ArtistRightsService $rightsService,
+        ArtistOwnershipPaymentService $artistpaymentService,
+        ArtistOwnCatalogSubmissionService $submissionService
         )
     {
         $this->artistownershipService = $artistOwnershipService;
@@ -42,6 +49,8 @@ class ArtistOwnershipIdentityController extends Controller
         $this->artistsongservice = $artistSongService;
         $this->contributorService = $contributorService;
         $this->artistRightsService = $rightsService;
+        $this->artistpaymentService = $artistpaymentService;
+        $this->submissionservice = $submissionService;
     }
 
     
@@ -166,6 +175,51 @@ class ArtistOwnershipIdentityController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save rights: '.$e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function storeStep6(Step6Request $request)
+    {
+        try {
+
+            $artistId = $request->user()->artistOwnerIdentity->id;
+
+            $this->artistpaymentService->save($artistId, $request);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment info saved'
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function finalSubmit(FinalSubmitRequest $request)
+    {
+        try {
+
+            $artistId = $request->user()->artistOwnerIdentity->id;
+
+            $this->submissionservice->submit($artistId, $request);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Submitted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
             ], 500);
         }
     }

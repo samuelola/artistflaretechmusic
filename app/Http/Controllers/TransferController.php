@@ -65,6 +65,7 @@ class TransferController extends Controller
         $bank_code = $request->bank_code;
         $account_number = $request->account_number;
         $result = $this->paystackService->resolve_bank($account_number,$bank_code);
+       
         // Paystack validation error
         if (!$result || $result->status === false) {
             return response()->json([

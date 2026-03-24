@@ -540,7 +540,12 @@ margin-bottom:15px;
                                         'rights5' => 'I have the authority to submit these recordings for catalog evaluation.'
                                     ] as $id => $label)
                                         <div class="form-check d-flex align-items-start mb-3">
-                                            <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="{{ $id }}" name="{{ $id }}">
+                                            <input class="form-check-input me-2 mt-1 rights-check" 
+                                              type="checkbox" 
+                                              id="{{ $id }}" 
+                                              name="{{ $id }}"
+                                              {{ isset($rights) && $rights->$id ? 'checked' : '' }}
+                                              >
                                             <label class="form-check-label" for="{{ $id }}">{{ $label }}</label>
                                         </div>
                                     @endforeach
@@ -560,12 +565,13 @@ margin-bottom:15px;
 
                               <div class="mb-3">
                                   <label>Preferred Payout Method *</label>
-                                  <select class="form-select" id="payoutMethod" required>
-                                      <option value="">Select Method</option>
-                                      <option value="bank">Bank Transfer</option>
-                                      <option value="mobile">Mobile Money</option>
-                                      <option value="other">Other</option>
-                                  </select>
+                                  
+                                  <select id="payoutMethod" class="form-select" required>
+                                        <option value="">Select Method</option>
+                                        <option value="bank" {{ optional($payment)->payout_method == 'bank' ? 'selected' : '' }}>Bank</option>
+                                        <option value="mobile" {{ optional($payment)->payout_method == 'mobile' ? 'selected' : '' }}>Mobile</option>
+                                        <option value="other" {{ optional($payment)->payout_method == 'other' ? 'selected' : '' }}>Other</option>
+                                   </select>
                               </div>
 
                               <!-- BANK FIELDS -->
@@ -574,28 +580,40 @@ margin-bottom:15px;
 
                                   <div class="mb-3">
                                       <label>Bank Name *</label>
-                                      <input type="text" class="form-control" id="bankName">
-                                  </div>
-
-                                  <div class="mb-3">
-                                      <label>Account Name *</label>
-                                      <input type="text" class="form-control" id="bankAccountName">
+                                      <select class="form-control" id="bankName">
+                                          <option>Select Bank</option>
+                                          @foreach($banks as $bank)
+                                              <option value="{{$bank->code}}"
+                                              {{ optional($payment)->bank_name == $bank->code ? 'selected' : '' }}
+                                              >{{$bank->name}}</option>
+                                          @endforeach
+                                      </select>
                                   </div>
 
                                   <div class="mb-3">
                                       <label>Account Number *</label>
-                                      <input type="number" class="form-control" id="bankAccountNumber">
+                                      <input type="number" class="form-control" id="bankAccountNumber"  value="{{ optional($payment)->account_number }}">
+                                  </div>
+
+                                  <div class="mb-3">
+                                      <label>Account Name *</label>
+                                      <input type="text" class="form-control" id="bankAccountName"  value="{{ optional($payment)->account_name }}">
                                   </div>
 
                                   <div class="mb-3">
                                       <label>Country *</label>
                                       <select class="form-select" id="bankCountry">
                                           <option>Select Country</option>
-                                          <option>USA</option>
-                                          <option>UK</option>
-                                          <option>Nigeria</option>
+                                          @foreach($all_countries as $country)
+                                          <option value="{{$country->name}}"
+                                           {{ optional($payment)->country == $country->name ? 'selected' : '' }}
+                                          >{{$country->name}}</option>
+                                          @endforeach
+                                         
                                       </select>
                                   </div>
+
+                                   
 
                               </div>
 
@@ -605,21 +623,24 @@ margin-bottom:15px;
 
                                   <div class="mb-3">
                                       <label>Mobile Money Number *</label>
-                                      <input type="tel" class="form-control" id="mobileNumber">
+                                      <input type="tel" class="form-control" id="mobileNumber"  value="{{ optional($payment)->mobile_number }}">
                                   </div>
 
                                   <div class="mb-3">
                                       <label>Account Name *</label>
-                                      <input type="text" class="form-control" id="mobileAccountName">
+                                      <input type="text" class="form-control" id="mobileAccountName"  value="{{ optional($payment)->account_name }}">
                                   </div>
 
                                   <div class="mb-3">
                                       <label>Country *</label>
                                       <select class="form-select" id="mobileCountry">
                                           <option>Select Country</option>
-                                          <option>Ghana</option>
-                                          <option>Kenya</option>
-                                          <option>Nigeria</option>
+                                          @foreach($all_countries as $country)
+                                          <option value="{{$country->name}}"
+                                          {{ optional($payment)->country == $country->name ? 'selected' : '' }}
+                                          >{{$country->name}}</option>
+                                         
+                                          @endforeach
                                       </select>
                                   </div>
 
@@ -631,7 +652,7 @@ margin-bottom:15px;
 
                                   <div class="mb-3">
                                       <label>Description / Account Info *</label>
-                                      <input type="text" class="form-control" id="otherAccountInfo">
+                                      <input type="text" class="form-control" id="otherAccountInfo" value="{{ optional($payment)->other_info }}">
                                   </div>
 
                               </div>
@@ -662,15 +683,31 @@ margin-bottom:15px;
 
                               <div class="mb-3">
                                   <label>Full Legal Name *</label>
-                                  <input type="text" class="form-control" id="digitalName" required>
+                                  <input type="text" class="form-control" id="digitalName"
+                                  value="{{ optional($submission)->digital_name }}"
+                                   required>
                               </div>
 
                               <div class="mb-3">
                                   <label>Date</label>
-                                  <input type="text" class="form-control" id="digitalDate" readonly>
+                                  <input type="text" class="form-control" id="digitalDate"
+                                  value="{{ optional($submission)->digital_date }}"
+                                   readonly>
                               </div>
 
-                                <button type="submit" class="btn btn-success btn-lg">
+                              <div class="form-check d-flex align-items-center mt-3">
+                                    <input 
+                                        class="form-check-input me-2" 
+                                        type="checkbox" 
+                                        id="agreeTerms"
+                                        {{ optional($submission)->agree_terms ? 'checked' : '' }}
+                                    >
+                                    <label class="form-check-label mb-0" for="agreeTerms">
+                                        I agree to the <a href="#" target="_blank">Terms & Conditions</a>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-success btn-lg mt-3">
                                     Submit Catalog for Review
                                 </button>
 
@@ -1438,6 +1475,139 @@ $(document).ready(function(){
 
 <!-- end step 5-->
 
+<!-- step 6 --> 
+<script>
+$('#step6Form').on('submit', function(e){
+    e.preventDefault();
+
+    let method = $('#payoutMethod').val();
+
+    let data = {
+        payout_method: method,
+        _token: "{{ csrf_token() }}"
+    };
+
+    // ========================
+    // CLIENT VALIDATION
+    // ========================
+    if(!method){
+        alert('Please select payout method');
+        return;
+    }
+
+    if(method === 'bank'){
+        data.bank_name = $('#bankName').val();
+        data.account_name = $('#bankAccountName').val();
+        data.account_number = $('#bankAccountNumber').val();
+        data.country = $('#bankCountry').val();
+
+        if(!data.bank_name || !data.account_name || !data.account_number){
+            alert('Please fill all bank details');
+            return;
+        }
+    }
+
+    if(method === 'mobile'){
+        data.mobile_number = $('#mobileNumber').val();
+        data.account_name = $('#mobileAccountName').val();
+        data.country = $('#mobileCountry').val();
+
+        if(!data.mobile_number || !data.account_name){
+            alert('Please fill all mobile money details');
+            return;
+        }
+    }
+
+    if(method === 'other'){
+        data.other_info = $('#otherAccountInfo').val();
+
+        if(!data.other_info){
+            alert('Please provide account info');
+            return;
+        }
+    }
+
+    let btn = $(this).find('button');
+
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+
+    $.ajax({
+        url: "{{ route('artist.step6') }}",
+        type: "POST",
+        data: data,
+        success: function(res){
+            alert('Payment info saved!');
+            btn.prop('disabled', false).html('Save & Continue');
+            currentStep++;
+            updateWizard();
+        },
+        error: function(xhr){
+            btn.prop('disabled', false).html('Save & Continue');
+
+            if(xhr.status === 422){
+                let errors = xhr.responseJSON.errors;
+                alert(Object.values(errors).flat().join('\n'));
+            }else{
+                alert('Something went wrong');
+            }
+        }
+    });
+});
+</script>
+<!-- end step 6 -->
+
+<!--final submission-->
+<script>
+$('#finalSubmitForm').on('submit', function(e){
+    e.preventDefault();
+
+    let name = $('#digitalName').val();
+    let date = $('#digitalDate').val();
+    let agreed = $('#agreeTerms').is(':checked');
+
+    if(!name){
+        alert('Please enter your full legal name');
+        return;
+    }
+
+    if(!agreed){
+        alert('You must agree to the Terms & Conditions');
+        return;
+    }
+
+    let btn = $(this).find('button');
+
+    btn.prop('disabled', true)
+       .html('<span class="spinner-border spinner-border-sm"></span> Submitting...');
+
+    $.ajax({
+        url: "{{ route('artist.final.submit') }}",
+        type: "POST",
+        data: {
+            digital_name: name,
+            digital_date: date,
+            agree_terms: agreed ? 1 : 0,
+            _token: "{{ csrf_token() }}"
+        },
+        success: function(res){
+            alert('Catalog submitted successfully! Awaiting Approval');
+            window.location = "{{route('dashboard')}}";
+        },
+        error: function(xhr){
+            btn.prop('disabled', false)
+               .html('Submit Catalog for Review');
+
+            if(xhr.status === 422){
+                let errors = xhr.responseJSON.errors;
+                alert(Object.values(errors).flat().join('\n'));
+            }else{
+                alert('Something went wrong');
+            }
+        }
+    });
+});
+</script>
+<!--end final submission-->
 <script>
 
 const ownershipSelect = document.getElementById("ownershipSelect");
@@ -1566,32 +1736,32 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
 <script>
-const payoutMethod = document.getElementById("payoutMethod");
-const bankFields = document.getElementById("bankFields");
-const mobileFields = document.getElementById("mobileFields");
-const otherFields = document.getElementById("otherFields");
+$(document).ready(function(){
 
-payoutMethod.addEventListener("change", function() {
-    const val = this.value;
+    const payoutMethod = $('#payoutMethod');
 
-    bankFields.style.display = val === "bank" ? "block" : "none";
-    mobileFields.style.display = val === "mobile" ? "block" : "none";
-    otherFields.style.display = val === "other" ? "block" : "none";
+    function toggleFields(){
+        let val = payoutMethod.val();
 
-    // Clear hidden fields when switching
-    if(val !== "bank") bankFields.querySelectorAll("input, select").forEach(i => i.value = "");
-    if(val !== "mobile") mobileFields.querySelectorAll("input, select").forEach(i => i.value = "");
-    if(val !== "other") otherFields.querySelectorAll("input, select").forEach(i => i.value = "");
+        $('#bankFields, #mobileFields, #otherFields').hide();
+
+        if(val === 'bank'){
+            $('#bankFields').show();
+        }else if(val === 'mobile'){
+            $('#mobileFields').show();
+        }else if(val === 'other'){
+            $('#otherFields').show();
+        }
+    }
+
+    payoutMethod.on('change', toggleFields);
+
+    toggleFields(); // run on load (important for reload)
+
 });
 </script>
 
 
-<script>
-// Auto-fill today's date in STEP 7
-const digitalDate = document.getElementById("digitalDate");
-const today = new Date();
-digitalDate.value = today.toLocaleDateString();
-</script>
 
 <script>
 $(document).ready(function() {
@@ -1677,6 +1847,62 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+
+
+
+
+<script>
+$(document).ready(function(){
+
+    function verifyAccount(){
+
+        let accountNumber = $('#bankAccountNumber').val();
+        let bankCode = $('#bankName').val();
+
+        if(accountNumber.length === 10 && bankCode){
+
+            $('#bankAccountName').val('Checking...');
+
+            $.ajax({
+                url: "{{ route('resolve_account') }}",
+                type: "POST",
+                data: {
+                    account_number: accountNumber,
+                    bank_code: bankCode,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(res){
+                    if(res.success){
+                        $('#bankAccountName').val(res.data.data.account_name);
+                    }else{
+                        $('#bankAccountName').val('');
+                        alert(res.message);
+                    }
+                },
+                error: function(){
+                    $('#bankAccountName').val('');
+                    alert('Verification failed');
+                }
+            });
+
+        }
+    }
+
+    // Trigger when user finishes typing
+    $('#bankAccountNumber, #bankName').on('change keyup', function(){
+        verifyAccount();
+    });
+
+});
+</script>
+
+<script>
+$(document).ready(function(){
+    let today = new Date().toISOString().split('T')[0];
+    $('#digitalDate').val(today);
+});
+</script>
+
 
 @endsection
 
