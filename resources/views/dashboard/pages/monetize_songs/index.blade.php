@@ -321,10 +321,10 @@ margin-bottom:15px;
                                       <label>Your Role</label>
                                       <select class="form-select" name="role">
                                           <option value="">Select</option>
-                                          <option {{ ($step2->role ?? '') == 'Artist' ? 'selected' : '' }}>Artist</option>
-                                          <option {{ ($step2->role ?? '') == 'Producer' ? 'selected' : '' }}>Producer</option>
-                                          <option {{ ($step2->role ?? '') == 'Songwriter' ? 'selected' : '' }}>Songwriter</option>
-                                          <option {{ ($step2->role ?? '') == 'Label Representative' ? 'selected' : '' }}>Label Representative</option>
+                                          @foreach($musical_roles as $role)
+                                                <option value="{{ $role->name }}" {{ ($step2->role ?? '') == $role->name ? 'selected' : '' }}>{{ $role->name }}</option>
+                                          @endforeach
+
                                       </select>
                                   </div>
 
@@ -454,7 +454,7 @@ margin-bottom:15px;
                             </div>
                                 
 
-                                <button type="submit" id="step3Submit" class="btn btn-primary">Save & Continue</button>
+                                <button type="submit" id="step3Submit" class="btn btn-primary-600">Save & Continue</button>
 
                             </form>
 
@@ -505,7 +505,7 @@ margin-bottom:15px;
                                                 </tbody>
                                             </table>
 
-                                            <button type="button" class="btn btn-outline-primary addContributorBtn">Add Contributor</button>
+                                            <button type="button" class="btn btn-outline-primary-600 addContributorBtn">Add Contributor</button>
                                             <!-- <div class="mt-2 text-muted">Total Percentage: <strong class="totalPercent">0%</strong></div> -->
                                         </div>
                                         @endforeach
@@ -513,7 +513,7 @@ margin-bottom:15px;
 
                                    
 
-                                    <button type="button" class="btn btn-primary mt-3" id="step4Submit">Save & Continue</button>
+                                    <button type="button" class="btn btn-primary-600 mt-3" id="step4Submit">Save & Continue</button>
                                 </form>
 
                            </div>
@@ -550,7 +550,7 @@ margin-bottom:15px;
                                         </div>
                                     @endforeach
 
-                                    <button type="submit" class="btn btn-primary mt-3" id="step5Submit">Save & Continue</button>
+                                    <button type="submit" class="btn btn-primary-600 mt-3" id="step5Submit">Save & Continue</button>
                                 </form>
 
 
@@ -657,7 +657,7 @@ margin-bottom:15px;
 
                               </div>
 
-                              <button type="submit" class="btn btn-primary mt-3">Save & Continue</button>
+                              <button type="submit" class="btn btn-primary-600 mt-3">Save & Continue</button>
 
                             </form>
 
@@ -707,9 +707,16 @@ margin-bottom:15px;
                                     </label>
                                 </div>
 
-                                <button type="submit" class="btn btn-success btn-lg mt-3">
+                                <!-- <button type="submit" class="btn btn-success btn-lg mt-3">
                                     Submit Catalog for Review
+                                </button> -->
+                                <button type="submit" 
+                                    class="btn btn-success btn-lg"
+                                    {{ optional($submission)->is_submitted ? 'disabled' : '' }}>
+                                    
+                                    {{ optional($submission)->is_submitted ? 'Submitted' : 'Submit Catalog for Review' }}
                                 </button>
+                                
 
                             </form>
 
@@ -1561,22 +1568,9 @@ $('#step6Form').on('submit', function(e){
 $('#finalSubmitForm').on('submit', function(e){
     e.preventDefault();
 
-    let name = $('#digitalName').val();
-    let date = $('#digitalDate').val();
-    let agreed = $('#agreeTerms').is(':checked');
+    let btn = $(this).find('button[type="submit"]');
 
-    if(!name){
-        alert('Please enter your full legal name');
-        return;
-    }
-
-    if(!agreed){
-        alert('You must agree to the Terms & Conditions');
-        return;
-    }
-
-    let btn = $(this).find('button');
-
+    // disable immediately
     btn.prop('disabled', true)
        .html('<span class="spinner-border spinner-border-sm"></span> Submitting...');
 
@@ -1584,24 +1578,29 @@ $('#finalSubmitForm').on('submit', function(e){
         url: "{{ route('artist.final.submit') }}",
         type: "POST",
         data: {
-            digital_name: name,
-            digital_date: date,
-            agree_terms: agreed ? 1 : 0,
+            digital_name: $('#digitalName').val(),
+            digital_date: $('#digitalDate').val(),
+            agree_terms: $('#agreeTerms').is(':checked') ? 1 : 0,
             _token: "{{ csrf_token() }}"
         },
         success: function(res){
-            alert('Catalog submitted successfully! Awaiting Approval');
-            window.location = "{{route('dashboard')}}";
+
+            alert('Catalog submitted successfully!');
+
+            // keep button disabled AFTER success
+            btn.html('Submitted');
+
         },
         error: function(xhr){
+
             btn.prop('disabled', false)
                .html('Submit Catalog for Review');
 
             if(xhr.status === 422){
                 let errors = xhr.responseJSON.errors;
-                alert(Object.values(errors).flat().join('\n'));
-            }else{
-                alert('Something went wrong');
+                alert(Object.values(errors).join('\n'));
+            } else {
+                alert('Something went wrong.');
             }
         }
     });

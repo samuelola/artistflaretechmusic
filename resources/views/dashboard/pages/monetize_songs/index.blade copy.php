@@ -297,8 +297,8 @@ margin-bottom:15px;
                             </form>
                           </div>
 <!-- Modal -->
-<div class="modal fade" id="viewIDModal" tabindex="-1" aria-labelledby="viewIDModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal modal-lg fade" id="viewIDModal" tabindex="-1" aria-labelledby="viewIDModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="viewIDModalLabel">Uploaded ID</h5>
@@ -321,10 +321,10 @@ margin-bottom:15px;
                                       <label>Your Role</label>
                                       <select class="form-select" name="role">
                                           <option value="">Select</option>
-                                          <option {{ ($step2->role ?? '') == 'Artist' ? 'selected' : '' }}>Artist</option>
-                                          <option {{ ($step2->role ?? '') == 'Producer' ? 'selected' : '' }}>Producer</option>
-                                          <option {{ ($step2->role ?? '') == 'Songwriter' ? 'selected' : '' }}>Songwriter</option>
-                                          <option {{ ($step2->role ?? '') == 'Label Representative' ? 'selected' : '' }}>Label Representative</option>
+                                          @foreach($musical_roles as $role)
+                                                <option value="{{ $role->name }}" {{ ($step2->role ?? '') == $role->name ? 'selected' : '' }}>{{ $role->name }}</option>
+                                          @endforeach
+
                                       </select>
                                   </div>
 
@@ -376,10 +376,85 @@ margin-bottom:15px;
                                 <input type="file" id="songFiles" class="form-control" multiple accept=".mp3,.wav">
                             </div>
 
-                            <div id="songsContainer"></div>
+                            <div id="songsContainer">
+                                <div id="songsContainer">
+                                    @foreach($songsOwner as $index => $song)
+                                    <div class="song-block mb-4 border p-3 mt-3" data-index="{{ $index }}">
+                                        <h6>{{ $song->title }}</h6>
+
+                                        <div class="row mb-2">
+                                            <div class="col-md-6">
+                                                <label>Song Title *</label>
+                                                <input type="text" class="form-control" name="songs[{{ $index }}][title]" value="{{ $song->title }}" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label>Artist Name *</label>
+                                                <input type="text" class="form-control" name="songs[{{ $index }}][artist_name]" value="{{ $song->artist_name }}" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label>Release Year *</label>
+                                                <input type="number" class="form-control" name="songs[{{ $index }}][release_year]" value="{{ $song->release_year }}" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label>Genre *</label>
+                                                <select class="form-select" name="songs[{{ $index }}][genre]" required>
+                                                    <option value="">Select</option>
+                                                    @foreach($genres as $genre)
+                                                        <option value="{{ $genre->name }}" {{ $song->genre == $genre->name ? 'selected' : '' }}>{{ $genre->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label>Duration *</label>
+                                                <input type="text" class="form-control duration-field" name="songs[{{ $index }}][duration]" value="{{ $song->duration }}" readonly required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label>Distribution Status *</label>
+                                                <select class="form-select" name="songs[{{ $index }}][distribution_status]" required>
+                                                    <option value="">Select</option>
+                                                    <option value="released" {{ $song->distribution_status=='released'?'selected':'' }}>Released</option>
+                                                    <option value="unreleased" {{ $song->distribution_status=='unreleased'?'selected':'' }}>Unreleased</option>
+                                                    <option value="previously_distributed" {{ $song->distribution_status=='previously_distributed'?'selected':'' }}>Previously Distributed</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label>Spotify URL</label>
+                                                <input type="url" class="form-control" name="songs[{{ $index }}][spotify_link]" value="{{ $song->spotify_link }}" placeholder="https://">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label>Apple Music URL</label>
+                                                <input type="url" class="form-control" name="songs[{{ $index }}][apple_link]" value="{{ $song->apple_link }}" placeholder="https://">
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label>Audiomack URL</label>
+                                                <input type="url" class="form-control" name="songs[{{ $index }}][audiomack_link]" value="{{ $song->audiomack_link }}" placeholder="https://">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label>YouTube URL</label>
+                                                <input type="url" class="form-control" name="songs[{{ $index }}][youtube_link]" value="{{ $song->youtube_link }}" placeholder="https://">
+                                            </div>
+                                        </div>
+
+                                        <button type="button" class="btn btn-danger remove-song mt-3">Remove</button>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
                                 
 
-                                <button type="submit" id="step3Submit" class="btn btn-primary">Save & Continue</button>
+                                <button type="submit" id="step3Submit" class="btn btn-primary-600">Save & Continue</button>
 
                             </form>
 
@@ -389,129 +464,97 @@ margin-bottom:15px;
 
                            <div class="form-step">
 
-                             <form id="step4Form">
+                                <form id="step4Form">
+                                    <div class="step-title mb-3" style="font-weight: 600;">Songwriter & Publishing</div>
 
+                                    <h6 class="mb-3">Contributors</h6>
 
-                              <div class="step-title mb-3" style="font-weight: 600;">Songwriter & Publishing</div>
+                                    <div id="step4SongsContainer">
+                                        @foreach($songsOwner as $song)
+                                        <div class="song-contributors-block mb-4 border p-3">
+                                            <h6>{{ $song->title }}</h6>
+                                            <input type="hidden" name="song_id[]" value="{{ $song->id }}">
 
-                              <h6 class="mb-3">Contributors</h6>
+                                            <table class="table table-bordered align-middle contributorsTable">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Role</th>
+                                                        <th>Percentage (%)</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($song->contributors as $contributor)
+                                                    <tr>
+                                                        <td><input type="text" class="form-control" value="{{ $contributor->name }}"></td>
+                                                        <td>
+                                                            <select class="form-select contributor-role">
+                                                                @foreach($musical_roles as $role)
+                                                                    <option value="{{ $role->name }}" 
+                                                                        @if(isset($contributor) && $contributor->role == $role->name) selected @endif>
+                                                                        {{ $role->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td>
+                                                        <td><input type="number" class="form-control percentage" value="{{ $contributor->percentage }}"></td>
+                                                        <td><button type="button" class="btn btn-danger removeContributor">X</button></td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
 
-                              <div class="table-responsive">
+                                            <button type="button" class="btn btn-outline-primary-600 addContributorBtn">Add Contributor</button>
+                                            <!-- <div class="mt-2 text-muted">Total Percentage: <strong class="totalPercent">0%</strong></div> -->
+                                        </div>
+                                        @endforeach
+                                    </div>
 
-                                  <table class="table table-bordered align-middle" id="contributorsTable">
+                                   
 
-                                      <thead class="table-light">
-                                          <tr>
-                                              <th>Name</th>
-                                              <th>Role</th>
-                                              <th>Percentage (%)</th>
-                                              <th style="width:80px;">Action</th>
-                                          </tr>
-                                      </thead>
+                                    <button type="button" class="btn btn-primary-600 mt-3" id="step4Submit">Save & Continue</button>
+                                </form>
 
-                                      <tbody id="contributorsBody">
-
-                                          <tr>
-
-                                              <td>
-                                                  <input type="text" class="form-control" placeholder="Contributor name">
-                                              </td>
-
-                                              <td>
-                                                  <select class="form-select">
-                                                      <option>Songwriter</option>
-                                                      <option>Producer</option>
-                                                      <option>Composer</option>
-                                                      <option>Lyricist</option>
-                                                  </select>
-                                              </td>
-
-                                              <td>
-                                                  <input type="number" class="form-control percentage" min="1" max="100" placeholder="%">
-                                              </td>
-
-                                              <td>
-                                                  <button type="button" class="btn btn-danger removeContributor">X</button>
-                                              </td>
-
-                                          </tr>
-
-                                      </tbody>
-
-                                  </table>
-
-                              </div>
-
-                              <button type="button" class="btn btn-outline-primary mt-2" id="addContributor">
-                                  Add Contributor
-                              </button>
-
-                              <div class="mt-3 text-muted">
-                                  Total Percentage: <strong id="totalPercent">0%</strong>
-                              </div>
-
-                               <button type="submit" class="btn btn-primary mt-3">Save & Continue</button>
-
-                              </form>
-
-                          </div>
+                           </div>
 
 
                           <div class="form-step">
 
                               <form id="step5Form">
+                                    <div class="step-title mb-3" style="font-weight: 600;">Copyright & Rights</div>
 
-                                <div class="step-title mb-3" style="font-weight: 600;">Copyright & Rights</div>
+                                    <div class="alert alert-warning mt-4">
+                                        <strong>Important:</strong> Providing false information may lead to rejection of your submission or removal from the platform.
+                                    </div>
 
-                                <div class="alert alert-warning mt-4">
-                                    <strong>Important:</strong> Providing false information may lead to rejection of your submission or removal from
-                                    the platform.
-                                </div>
+                                    <p class="text-muted mb-4">
+                                        Please confirm the following statements before continuing.
+                                    </p>
 
-                                <p class="text-muted mb-4">
-                                    Please confirm the following statements before continuing.
-                                </p>
+                                    @foreach([
+                                        'rights1' => 'I confirm that I own or control the rights to the submitted recordings.',
+                                        'rights2' => 'The submitted recordings do not infringe on any third-party copyrights.',
+                                        'rights3' => 'All samples used in the recordings are properly cleared.',
+                                        'rights4' => 'No legal disputes exist regarding the ownership of these works.',
+                                        'rights5' => 'I have the authority to submit these recordings for catalog evaluation.'
+                                    ] as $id => $label)
+                                        <div class="form-check d-flex align-items-start mb-3">
+                                            <input class="form-check-input me-2 mt-1 rights-check" 
+                                              type="checkbox" 
+                                              id="{{ $id }}" 
+                                              name="{{ $id }}"
+                                              {{ isset($rights) && $rights->$id ? 'checked' : '' }}
+                                              >
+                                            <label class="form-check-label" for="{{ $id }}">{{ $label }}</label>
+                                        </div>
+                                    @endforeach
 
-                                <div class="form-check d-flex align-items-start mb-3">
-                                    <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="rights1">
-                                    <label class="form-check-label" for="rights1">
-                                        I confirm that I own or control the rights to the submitted recordings.
-                                    </label>
-                                </div>
+                                    <button type="submit" class="btn btn-primary-600 mt-3" id="step5Submit">Save & Continue</button>
+                                </form>
 
-                                <div class="form-check d-flex align-items-start mb-3">
-                                    <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="rights2">
-                                    <label class="form-check-label" for="rights2">
-                                        The submitted recordings do not infringe on any third-party copyrights.
-                                    </label>
-                                </div>
 
-                                <div class="form-check d-flex align-items-start mb-3">
-                                    <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="rights3">
-                                    <label class="form-check-label" for="rights3">
-                                        All samples used in the recordings are properly cleared.
-                                    </label>
-                                </div>
-
-                                <div class="form-check d-flex align-items-start mb-3">
-                                    <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="rights4">
-                                    <label class="form-check-label" for="rights4">
-                                        No legal disputes exist regarding the ownership of these works.
-                                    </label>
-                                </div>
-
-                                <div class="form-check d-flex align-items-start mb-3">
-                                    <input class="form-check-input me-2 mt-1 rights-check" type="checkbox" id="rights5">
-                                    <label class="form-check-label" for="rights5">
-                                        I have the authority to submit these recordings for catalog evaluation.
-                                    </label>
-                                </div>
-
-                                
-                                  <button type="submit" class="btn btn-primary mt-3">Save & Continue</button>
-                               </form>
-
-                            </div>
+                          </div>
 
 
                         <div class="form-step">
@@ -522,12 +565,13 @@ margin-bottom:15px;
 
                               <div class="mb-3">
                                   <label>Preferred Payout Method *</label>
-                                  <select class="form-select" id="payoutMethod" required>
-                                      <option value="">Select Method</option>
-                                      <option value="bank">Bank Transfer</option>
-                                      <option value="mobile">Mobile Money</option>
-                                      <option value="other">Other</option>
-                                  </select>
+                                  
+                                  <select id="payoutMethod" class="form-select" required>
+                                        <option value="">Select Method</option>
+                                        <option value="bank" {{ optional($payment)->payout_method == 'bank' ? 'selected' : '' }}>Bank</option>
+                                        <option value="mobile" {{ optional($payment)->payout_method == 'mobile' ? 'selected' : '' }}>Mobile</option>
+                                        <option value="other" {{ optional($payment)->payout_method == 'other' ? 'selected' : '' }}>Other</option>
+                                   </select>
                               </div>
 
                               <!-- BANK FIELDS -->
@@ -536,28 +580,40 @@ margin-bottom:15px;
 
                                   <div class="mb-3">
                                       <label>Bank Name *</label>
-                                      <input type="text" class="form-control" id="bankName">
-                                  </div>
-
-                                  <div class="mb-3">
-                                      <label>Account Name *</label>
-                                      <input type="text" class="form-control" id="bankAccountName">
+                                      <select class="form-control" id="bankName">
+                                          <option>Select Bank</option>
+                                          @foreach($banks as $bank)
+                                              <option value="{{$bank->code}}"
+                                              {{ optional($payment)->bank_name == $bank->code ? 'selected' : '' }}
+                                              >{{$bank->name}}</option>
+                                          @endforeach
+                                      </select>
                                   </div>
 
                                   <div class="mb-3">
                                       <label>Account Number *</label>
-                                      <input type="number" class="form-control" id="bankAccountNumber">
+                                      <input type="number" class="form-control" id="bankAccountNumber"  value="{{ optional($payment)->account_number }}">
+                                  </div>
+
+                                  <div class="mb-3">
+                                      <label>Account Name *</label>
+                                      <input type="text" class="form-control" id="bankAccountName"  value="{{ optional($payment)->account_name }}">
                                   </div>
 
                                   <div class="mb-3">
                                       <label>Country *</label>
                                       <select class="form-select" id="bankCountry">
                                           <option>Select Country</option>
-                                          <option>USA</option>
-                                          <option>UK</option>
-                                          <option>Nigeria</option>
+                                          @foreach($all_countries as $country)
+                                          <option value="{{$country->name}}"
+                                           {{ optional($payment)->country == $country->name ? 'selected' : '' }}
+                                          >{{$country->name}}</option>
+                                          @endforeach
+                                         
                                       </select>
                                   </div>
+
+                                   
 
                               </div>
 
@@ -567,21 +623,24 @@ margin-bottom:15px;
 
                                   <div class="mb-3">
                                       <label>Mobile Money Number *</label>
-                                      <input type="tel" class="form-control" id="mobileNumber">
+                                      <input type="tel" class="form-control" id="mobileNumber"  value="{{ optional($payment)->mobile_number }}">
                                   </div>
 
                                   <div class="mb-3">
                                       <label>Account Name *</label>
-                                      <input type="text" class="form-control" id="mobileAccountName">
+                                      <input type="text" class="form-control" id="mobileAccountName"  value="{{ optional($payment)->account_name }}">
                                   </div>
 
                                   <div class="mb-3">
                                       <label>Country *</label>
                                       <select class="form-select" id="mobileCountry">
                                           <option>Select Country</option>
-                                          <option>Ghana</option>
-                                          <option>Kenya</option>
-                                          <option>Nigeria</option>
+                                          @foreach($all_countries as $country)
+                                          <option value="{{$country->name}}"
+                                          {{ optional($payment)->country == $country->name ? 'selected' : '' }}
+                                          >{{$country->name}}</option>
+                                         
+                                          @endforeach
                                       </select>
                                   </div>
 
@@ -593,12 +652,12 @@ margin-bottom:15px;
 
                                   <div class="mb-3">
                                       <label>Description / Account Info *</label>
-                                      <input type="text" class="form-control" id="otherAccountInfo">
+                                      <input type="text" class="form-control" id="otherAccountInfo" value="{{ optional($payment)->other_info }}">
                                   </div>
 
                               </div>
 
-                              <button type="submit" class="btn btn-primary mt-3">Save & Continue</button>
+                              <button type="submit" class="btn btn-primary-600 mt-3">Save & Continue</button>
 
                             </form>
 
@@ -624,17 +683,41 @@ margin-bottom:15px;
 
                               <div class="mb-3">
                                   <label>Full Legal Name *</label>
-                                  <input type="text" class="form-control" id="digitalName" required>
+                                  <input type="text" class="form-control" id="digitalName"
+                                  value="{{ optional($submission)->digital_name }}"
+                                   required>
                               </div>
 
                               <div class="mb-3">
                                   <label>Date</label>
-                                  <input type="text" class="form-control" id="digitalDate" readonly>
+                                  <input type="text" class="form-control" id="digitalDate"
+                                  value="{{ optional($submission)->digital_date }}"
+                                   readonly>
                               </div>
 
-                                <button type="submit" class="btn btn-success btn-lg">
+                              <div class="form-check d-flex align-items-center mt-3">
+                                    <input 
+                                        class="form-check-input me-2" 
+                                        type="checkbox" 
+                                        id="agreeTerms"
+                                        {{ optional($submission)->agree_terms ? 'checked' : '' }}
+                                    >
+                                    <label class="form-check-label mb-0" for="agreeTerms">
+                                        I agree to the <a href="#" target="_blank">Terms & Conditions</a>
+                                    </label>
+                                </div>
+
+                                <!-- <button type="submit" class="btn btn-success btn-lg mt-3">
                                     Submit Catalog for Review
-                                </button>
+                                </button> -->
+                                @if($submission->is_submitted)
+                                     <button type="submit" 
+                                        class="btn btn-success btn-lg disabled">
+                                        
+                                        {{ optional($submission)->is_submitted ? 'Submitted' : 'Submit Catalog for Review' }}
+                                    </button>
+                                @endif
+                                
 
                             </form>
 
@@ -1152,97 +1235,387 @@ $(document).ready(function(){
     // SUBMIT FORM
     // ===============================
     $('#step3Form').on('submit', function(e){
-        e.preventDefault();
+    e.preventDefault();
 
-        if(Object.keys(uploadedFiles).length === 0){
-            alert('Please select at least one song.');
-            return;
+    if(Object.keys(uploadedFiles).length === 0){
+        alert('Please select at least one song.');
+        return;
+    }
+
+    let formData = new FormData();
+    let i = 0;
+
+    $('.song-block').each(function(){
+
+        let index = $(this).data('index');
+
+        // append inputs
+        $(this).find('input, select').each(function(){
+            let name = $(this).attr('name');
+
+            // normalize index
+            let newName = name.replace(/\[\d+\]/, `[${i}]`);
+
+            formData.append(newName, $(this).val());
+        });
+
+        // append correct file
+        if(uploadedFiles[index]){
+            formData.append(`files[${i}]`, uploadedFiles[index]);
         }
 
-        let formData = new FormData();
-        let i = 0;
-
-        $('.song-block').each(function(){
-
-            let index = $(this).data('index');
-
-            // append inputs
-            $(this).find('input, select').each(function(){
-                let name = $(this).attr('name');
-
-                // normalize index
-                let newName = name.replace(/\[\d+\]/, `[${i}]`);
-
-                formData.append(newName, $(this).val());
-            });
-
-            // append correct file
-            if(uploadedFiles[index]){
-                formData.append(`files[${i}]`, uploadedFiles[index]);
-            }
-
-            i++;
-        });
-
-        // ===============================
-        // SPINNER
-        // ===============================
-        submitBtn.prop('disabled', true);
-        submitBtn.html('<span class="spinner-border spinner-border-sm"></span> Saving...');
-
-        
-
-        $.ajax({
-            url: "{{ route('artist.step3') }}",
-            type: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers:{
-                'X-CSRF-TOKEN': "{{ csrf_token() }}"
-            },
-            success: function(response){
-                if(response.success){
-
-                    alert('Songs saved successfully!');
-                    submitBtn.prop('disabled', false).html('Save & Continue');
-                    currentStep++;
-                    updateWizard();
-
-                }
-                
-            },
-            error: function(xhr){
-
-                submitBtn.prop('disabled', false).html('Save & Continue');
-
-                if(xhr.status === 422){
-
-                    let errors = xhr.responseJSON.errors;
-
-                    $('.is-invalid').removeClass('is-invalid');
-                    $('.invalid-feedback').remove();
-
-                    $.each(errors, function(field, msgs){
-                        let input = $('[name="'+field+'"]');
-                        input.addClass('is-invalid');
-                        input.after('<div class="invalid-feedback">'+msgs[0]+'</div>');
-                    });
-
-                } else {
-                    alert('An error occurred. Please try again.');
-                }
-            }
-        });
-
+        i++;
     });
+
+    // ===============================
+    // SPINNER
+    // ===============================
+    submitBtn.prop('disabled', true);
+    submitBtn.html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+
+    $.ajax({
+        url: "{{ route('artist.step3') }}",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers:{
+            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+        },
+        xhr: function() {
+            let xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    let percentComplete = Math.round((evt.loaded / evt.total) * 100);
+                    // Update spinner text with percentage
+                    submitBtn.html(`<span class="spinner-border spinner-border-sm"></span> Uploading ${percentComplete}%`);
+                }
+            }, false);
+            return xhr;
+        },
+        success: function(response){
+            if(response.success){
+                submitBtn.prop('disabled', false).html('Save & Continue');
+                alert('All songs uploaded successfully!');
+                currentStep++;
+                updateWizard();
+            }
+        },
+        error: function(xhr){
+            submitBtn.prop('disabled', false).html('Save & Continue');
+
+            if(xhr.status === 422){
+                let errors = xhr.responseJSON.errors;
+
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+
+                $.each(errors, function(field, msgs){
+                    let input = $('[name="'+field+'"]');
+                    input.addClass('is-invalid');
+                    input.after('<div class="invalid-feedback">'+msgs[0]+'</div>');
+                });
+
+            } else {
+                alert('An error occurred. Please try again.');
+            }
+        }
+    });
+
+});
 
 });
 </script>
 <!-- End Step 3 submission -->
 
 
+<!--step 4 --->
+<script>
+   $(document).ready(function(){
 
+    // Role options
+    let roleOptions = `@foreach($musical_roles as $role)
+        <option value="{{ $role->name }}">{{ $role->name }}</option>
+    @endforeach`;
+
+    // Add contributor
+    $(document).on('click', '.addContributorBtn', function(){
+        let tbody = $(this).siblings('table').find('tbody');
+        tbody.append(`
+            <tr>
+                <td><input type="text" class="form-control contributor-name" placeholder="Contributor name"></td>
+                <td>
+                    <select class="form-select contributor-role">${roleOptions}</select>
+                </td>
+                <td><input type="number" class="form-control contributor-percentage" placeholder="%"></td>
+                <td><button type="button" class="btn btn-danger removeContributor">X</button></td>
+            </tr>
+        `);
+    });
+
+    // Remove contributor
+    $(document).on('click', '.removeContributor', function(){
+        $(this).closest('tr').remove();
+    });
+
+    // Save contributors via AJAX
+    $('#step4Submit').on('click', function(e){
+        e.preventDefault(); // prevent reload
+
+        let btn = $(this);
+        let data = [];
+        let hasError = false;
+        let errorMsg = "";
+
+        $('.song-contributors-block').each(function(){
+            let songId = $(this).find('input[name="song_id[]"]').val();
+            let contributors = [];
+            let totalPercent = 0;
+
+            $(this).find('tbody tr').each(function(){
+                let name = $(this).find('.contributor-name').val();
+                let role = $(this).find('.contributor-role').val();
+                let percentage = parseFloat($(this).find('.contributor-percentage').val());
+
+                if(name && role && !isNaN(percentage)){
+                    contributors.push({name, role, percentage});
+                    totalPercent += percentage;
+                }
+            });
+
+            if(contributors.length === 0){
+                hasError = true;
+                errorMsg = `Please add at least one contributor for the song: "${$(this).find('h6').text()}"`;
+                return false;
+            }
+
+            if(totalPercent !== 100){
+                hasError = true;
+                errorMsg = `Total percentage for song "${$(this).find('h6').text()}" must be 100%. Currently: ${totalPercent}%`;
+                return false;
+            }
+
+            data.push({artist_owner_song_id: songId, contributors: contributors});
+        });
+
+        if(hasError){
+            alert(errorMsg);
+            return;
+        }
+
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+
+        $.ajax({
+            url: "{{ route('artist.step4') }}",
+            type: "POST",
+            data: {data: data, _token: "{{ csrf_token() }}"},
+            success: function(res){
+                if(res.success){
+                    btn.prop('disabled', false).html('Save & Continue');
+                    alert('Contributors saved successfully!');
+                    currentStep++;
+                    updateWizard();
+                }
+                
+                
+            },
+            error: function(xhr){
+                alert('An error occurred. Please try again.');
+                btn.prop('disabled', false).html('Save & Continue');
+            }
+        });
+    });
+
+});
+</script>
+<!--end step 4-->
+
+<!-- step 5-->
+<script>
+$(document).ready(function(){
+
+    $('#step5Form').on('submit', function(e){
+        e.preventDefault();
+
+        let btn = $('#step5Submit');
+        let allChecked = true;
+
+        $('.rights-check').each(function(){
+            if(!$(this).is(':checked')){
+                allChecked = false;
+            }
+        });
+
+        if(!allChecked){
+            alert('Please confirm all statements before continuing.');
+            return;
+        }
+
+        // Show spinner
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+
+        // Collect data
+        let data = {};
+        $('.rights-check').each(function(){
+            data[$(this).attr('id')] = $(this).is(':checked') ? 1 : 0;
+        });
+
+        $.ajax({
+            url: "{{ route('artist.step5') }}",
+            type: "POST",
+            data: {...data, _token: "{{ csrf_token() }}"},
+            success: function(res){
+                alert('Step 5 saved successfully!');
+                btn.prop('disabled', false).html('Save & Continue');
+                // move to next step if using wizard
+                currentStep++;
+                updateWizard();
+            },
+            error: function(xhr){
+                alert('An error occurred. Please try again.');
+                btn.prop('disabled', false).html('Save & Continue');
+            }
+        });
+    });
+
+});
+</script>
+
+<!-- end step 5-->
+
+<!-- step 6 --> 
+<script>
+$('#step6Form').on('submit', function(e){
+    e.preventDefault();
+
+    let method = $('#payoutMethod').val();
+
+    let data = {
+        payout_method: method,
+        _token: "{{ csrf_token() }}"
+    };
+
+    // ========================
+    // CLIENT VALIDATION
+    // ========================
+    if(!method){
+        alert('Please select payout method');
+        return;
+    }
+
+    if(method === 'bank'){
+        data.bank_name = $('#bankName').val();
+        data.account_name = $('#bankAccountName').val();
+        data.account_number = $('#bankAccountNumber').val();
+        data.country = $('#bankCountry').val();
+
+        if(!data.bank_name || !data.account_name || !data.account_number){
+            alert('Please fill all bank details');
+            return;
+        }
+    }
+
+    if(method === 'mobile'){
+        data.mobile_number = $('#mobileNumber').val();
+        data.account_name = $('#mobileAccountName').val();
+        data.country = $('#mobileCountry').val();
+
+        if(!data.mobile_number || !data.account_name){
+            alert('Please fill all mobile money details');
+            return;
+        }
+    }
+
+    if(method === 'other'){
+        data.other_info = $('#otherAccountInfo').val();
+
+        if(!data.other_info){
+            alert('Please provide account info');
+            return;
+        }
+    }
+
+    let btn = $(this).find('button');
+
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+
+    $.ajax({
+        url: "{{ route('artist.step6') }}",
+        type: "POST",
+        data: data,
+        success: function(res){
+            alert('Payment info saved!');
+            btn.prop('disabled', false).html('Save & Continue');
+            currentStep++;
+            updateWizard();
+        },
+        error: function(xhr){
+            btn.prop('disabled', false).html('Save & Continue');
+
+            if(xhr.status === 422){
+                let errors = xhr.responseJSON.errors;
+                alert(Object.values(errors).flat().join('\n'));
+            }else{
+                alert('Something went wrong');
+            }
+        }
+    });
+});
+</script>
+<!-- end step 6 -->
+
+<!--final submission-->
+<script>
+$('#finalSubmitForm').on('submit', function(e){
+    e.preventDefault();
+
+    let name = $('#digitalName').val();
+    let date = $('#digitalDate').val();
+    let agreed = $('#agreeTerms').is(':checked');
+
+    if(!name){
+        alert('Please enter your full legal name');
+        return;
+    }
+
+    if(!agreed){
+        alert('You must agree to the Terms & Conditions');
+        return;
+    }
+
+    let btn = $(this).find('button');
+
+    btn.prop('disabled', true)
+       .html('<span class="spinner-border spinner-border-sm"></span> Submitting...');
+
+    $.ajax({
+        url: "{{ route('artist.final.submit') }}",
+        type: "POST",
+        data: {
+            digital_name: name,
+            digital_date: date,
+            agree_terms: agreed ? 1 : 0,
+            _token: "{{ csrf_token() }}"
+        },
+        success: function(res){
+            alert('Catalog submitted successfully! Awaiting Approval');
+            window.location = "{{route('dashboard')}}";
+        },
+        error: function(xhr){
+            btn.prop('disabled', false)
+               .html('Submit Catalog for Review');
+
+            if(xhr.status === 422){
+                let errors = xhr.responseJSON.errors;
+                alert(Object.values(errors).flat().join('\n'));
+            }else{
+                alert('Something went wrong');
+            }
+        }
+    });
+});
+</script>
+<!--end final submission-->
 <script>
 
 const ownershipSelect = document.getElementById("ownershipSelect");
@@ -1368,118 +1741,35 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
 
-<script>
 
-const contributorsBody = document.getElementById("contributorsBody");
-const addContributorBtn = document.getElementById("addContributor");
-const totalPercent = document.getElementById("totalPercent");
-
-
-/* ADD CONTRIBUTOR */
-
-addContributorBtn.addEventListener("click", function(){
-
-const row = document.createElement("tr");
-
-row.innerHTML = `
-
-<td>
-    <input type="text" class="form-control" placeholder="Contributor name">
-</td>
-
-<td>
-    <select class="form-select">
-        <option>Songwriter</option>
-        <option>Producer</option>
-        <option>Composer</option>
-        <option>Lyricist</option>
-    </select>
-</td>
-
-<td>
-    <input type="number" class="form-control percentage" min="1" max="100" placeholder="%">
-</td>
-
-<td>
-    <button type="button" class="btn btn-danger removeContributor">X</button>
-</td>
-
-`;
-
-contributorsBody.appendChild(row);
-
-});
-
-
-/* REMOVE CONTRIBUTOR */
-
-document.addEventListener("click", function(e){
-
-if(e.target.classList.contains("removeContributor")){
-e.target.closest("tr").remove();
-calculateTotal();
-}
-
-});
-
-
-/* CALCULATE TOTAL PERCENTAGE */
-
-document.addEventListener("input", function(e){
-
-if(e.target.classList.contains("percentage")){
-calculateTotal();
-}
-
-});
-
-function calculateTotal(){
-
-let total = 0;
-
-document.querySelectorAll(".percentage").forEach(function(input){
-
-let val = parseFloat(input.value);
-
-if(!isNaN(val)){
-total += val;
-}
-
-});
-
-totalPercent.innerText = total + "%";
-
-}
-
-</script>
 
 <script>
-const payoutMethod = document.getElementById("payoutMethod");
-const bankFields = document.getElementById("bankFields");
-const mobileFields = document.getElementById("mobileFields");
-const otherFields = document.getElementById("otherFields");
+$(document).ready(function(){
 
-payoutMethod.addEventListener("change", function() {
-    const val = this.value;
+    const payoutMethod = $('#payoutMethod');
 
-    bankFields.style.display = val === "bank" ? "block" : "none";
-    mobileFields.style.display = val === "mobile" ? "block" : "none";
-    otherFields.style.display = val === "other" ? "block" : "none";
+    function toggleFields(){
+        let val = payoutMethod.val();
 
-    // Clear hidden fields when switching
-    if(val !== "bank") bankFields.querySelectorAll("input, select").forEach(i => i.value = "");
-    if(val !== "mobile") mobileFields.querySelectorAll("input, select").forEach(i => i.value = "");
-    if(val !== "other") otherFields.querySelectorAll("input, select").forEach(i => i.value = "");
+        $('#bankFields, #mobileFields, #otherFields').hide();
+
+        if(val === 'bank'){
+            $('#bankFields').show();
+        }else if(val === 'mobile'){
+            $('#mobileFields').show();
+        }else if(val === 'other'){
+            $('#otherFields').show();
+        }
+    }
+
+    payoutMethod.on('change', toggleFields);
+
+    toggleFields(); // run on load (important for reload)
+
 });
 </script>
 
 
-<script>
-// Auto-fill today's date in STEP 7
-const digitalDate = document.getElementById("digitalDate");
-const today = new Date();
-digitalDate.value = today.toLocaleDateString();
-</script>
 
 <script>
 $(document).ready(function() {
@@ -1565,6 +1855,62 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+
+
+
+
+<script>
+$(document).ready(function(){
+
+    function verifyAccount(){
+
+        let accountNumber = $('#bankAccountNumber').val();
+        let bankCode = $('#bankName').val();
+
+        if(accountNumber.length === 10 && bankCode){
+
+            $('#bankAccountName').val('Checking...');
+
+            $.ajax({
+                url: "{{ route('resolve_account') }}",
+                type: "POST",
+                data: {
+                    account_number: accountNumber,
+                    bank_code: bankCode,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(res){
+                    if(res.success){
+                        $('#bankAccountName').val(res.data.data.account_name);
+                    }else{
+                        $('#bankAccountName').val('');
+                        alert(res.message);
+                    }
+                },
+                error: function(){
+                    $('#bankAccountName').val('');
+                    alert('Verification failed');
+                }
+            });
+
+        }
+    }
+
+    // Trigger when user finishes typing
+    $('#bankAccountNumber, #bankName').on('change keyup', function(){
+        verifyAccount();
+    });
+
+});
+</script>
+
+<script>
+$(document).ready(function(){
+    let today = new Date().toISOString().split('T')[0];
+    $('#digitalDate').val(today);
+});
+</script>
+
 
 @endsection
 

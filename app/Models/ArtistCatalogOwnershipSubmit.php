@@ -12,7 +12,8 @@ class ArtistCatalogOwnershipSubmit extends Model
         'digital_name',
         'digital_date',
         'status',
-        'agree_terms'
+        'agree_terms',
+        'is_submitted'
     ];
 
 }
