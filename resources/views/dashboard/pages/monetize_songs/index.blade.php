@@ -853,6 +853,8 @@ $(document).ready(function(){
 
         success:function(response){
 
+        $btn.prop('disabled', false).html(originalText);
+
         if(response.success){
 
             alert('Step 1 saved successfully!');
@@ -922,135 +924,125 @@ $(document).ready(function(){
 
 <!--Step 2 submission-->
 <script>
-$(document).ready(function(){
+$('#step2Form').on('submit', function(e){
+    e.preventDefault();
 
-    $('#step2Form').on('submit', function(e){
-        e.preventDefault();
+    let artistId = $('#artistId').val();
+    if(!artistId) {
+        alert('Please save Step 1 first.');
+        return;
+    }
 
-        let artistId = $('#artistId').val();
-        if(!artistId) {
-            alert('Please save Step 1 first.');
-            return;
-        }
+    let $btn = $('#step2Submit');
+    let originalText = $btn.html();
 
-        let $btn = $('#step2Submit');
-        $btn.prop('disabled', true);
-        let originalText = $btn.html();
-        $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...');
+    // =========================
+    // VALIDATION FIRST
+    // =========================
 
-        // Gather form data
-        let coOwners = [];
-        $('#rightsHolders .holder-row').each(function(){
+    let coOwners = [];
+
+    $('#rightsHolders .holder-row').each(function(){
 
         let name = $(this).find('input').eq(0).val();
         let role = $(this).find('select').val();
         let percentage = $(this).find('input').eq(1).val();
 
-        // Skip empty rows
         if(!name && !role && !percentage){
             return;
         }
 
-        coOwners.push({
-            name: name,
-            role: role,
-            percentage: percentage
+        coOwners.push({ name, role, percentage });
+    });
+
+    let ownershipType = $('#ownershipSelect').val();
+
+    if(ownershipType === 'co'){
+
+        let total = 0;
+
+        let yourPercent = parseFloat($('#coOwnershipSection input[type="number"]').val()) || 0;
+        total += yourPercent;
+
+        $('#rightsHolders .holder-row').each(function(){
+            let val = parseFloat($(this).find('input').eq(1).val()) || 0;
+            total += val;
         });
 
-        });
+        if(total !== 100){
+            alert('Total ownership must equal 100%. Current total: ' + total + '%');
+            return; // button not disabled yet
+        }
+    }
 
-        let formData = {
+    let hasError = false;
+
+    $('#rightsHolders .holder-row').each(function(){
+
+        let name = $(this).find('input').eq(0).val();
+        let role = $(this).find('select').val();
+        let percentage = $(this).find('input').eq(1).val();
+
+        if(!name || !role || !percentage){
+            alert('All co-owner fields are required');
+            hasError = true;
+            return false;
+        }
+
+    });
+
+    if(hasError) return;
+
+    // =========================
+    // NOW DISABLE BUTTON 
+    // =========================
+    $btn.prop('disabled', true);
+    $btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+
+    // =========================
+    // AJAX
+    // =========================
+    $.ajax({
+        url: "{{ route('artist.step2') }}",
+        method: "POST",
+        data: {
             role: $('[name="role"]').val(),
             ownership_type: $('#ownershipSelect').val(),
             ownership_percentage: $('#coOwnershipSection input[type="number"]').val() || null,
             co_owners: coOwners
-        };
+        },
+        headers:{
+            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+        },
 
-        // Clear previous errors
-        $('.invalid-feedback').remove();
-        $('.is-invalid').removeClass('is-invalid');
-
-    
-        // VALIDATE OWNERSHIP TOTAL
-        let ownershipType = $('#ownershipSelect').val();
-
-        if(ownershipType === 'co'){
-
-            let total = 0;
-
-            // Your percentage
-            let yourPercent = parseFloat($('#coOwnershipSection input[type="number"]').val()) || 0;
-            total += yourPercent;
-
-            // Co-owners percentage
-            $('#rightsHolders .holder-row').each(function(){
-               let val = parseFloat($(this).find('input').eq(1).val()) || 0;
-                total += val;
-            });
-
-            if(total !== 100){
-                alert('Total ownership must equal 100%. Current total: ' + total + '%');
-                return; // STOP submission
+        success: function(response){
+            if(response.success){
+                alert('Step 2 saved successfully!');
+                currentStep++;
+                updateWizard();
             }
+        },
 
+        error: function(xhr){
+
+            if(xhr.status === 422){
+                let errors = xhr.responseJSON.errors;
+
+                $.each(errors, function(field, msgs){
+                    let input = $('[name="'+field+'"]');
+                    input.addClass('is-invalid');
+                    input.after('<div class="invalid-feedback">'+msgs[0]+'</div>');
+                });
+
+            } else {
+                alert('An error occurred.');
+            }
+        },
+
+        complete: function(){
+            // ALWAYS RESET BUTTON
+            $btn.prop('disabled', false).html(originalText);
         }
-
-        let hasError = false;
-
-$('#rightsHolders .holder-row').each(function(){
-
-    let name = $(this).find('input').eq(0).val();
-    let role = $(this).find('select').val();
-    let percentage = $(this).find('input').eq(1).val();
-
-    if(!name || !role || !percentage){
-        alert('All co-owner fields are required');
-        hasError = true;
-        return false; // break loop
-    }
-
-});
-
-if(hasError) return;
-
-        $.ajax({
-            url: "{{ route('artist.step2') }}",
-            method: "POST",
-            data: formData,
-            headers:{
-                'X-CSRF-TOKEN': "{{ csrf_token() }}"
-            },
-            success: function(response){
-                if(response.success){
-                    alert('Step 2 saved successfully!');
-                    currentStep++;
-                    updateWizard();
-                }
-            },
-            error: function(xhr){
-                $btn.prop('disabled', false).html(originalText);
-                if(xhr.status === 422){
-                    let errors = xhr.responseJSON.errors;
-                    $.each(errors, function(field, msgs){
-                        let input;
-                        if(field.startsWith('co_owners')) {
-                            // Handle co_owners validation dynamically
-                            let idx = field.match(/\d+/)[0];
-                            let subField = field.split('.').pop();
-                            input = $('#rightsHolders .holder-row').eq(idx).find('input, select').filter(function(){
-                                return $(this).attr('placeholder').toLowerCase().includes(subField);
-                            });
-                        } else {
-                            input = $('[name="'+field+'"]');
-                        }
-                        input.addClass('is-invalid');
-                        input.after('<div class="invalid-feedback">'+msgs[0]+'</div>');
-                    });
-                } else {
-                    alert('An error occurred. Please try again.');
-                }
-            }
-        });
 
     });
 
@@ -1293,17 +1285,12 @@ $(document).ready(function(){
             return xhr;
         },
         success: function(response){
+            
             if(response.success){
                 submitBtn.prop('disabled', false).html('Save & Continue');
                 alert('All songs uploaded successfully!');
                 currentStep++;
                 updateWizard();
-                // REFRESH STEP 4 DATA WITHOUT RELOAD
-                // $.get(`/artist/${response.artist_id}/step4-data`, function(data){
-                //     console.log(data.songs);
-                //     renderStep4(data.songs);
-                // });
-
                 renderStep4(response.songs);
                 
             }
