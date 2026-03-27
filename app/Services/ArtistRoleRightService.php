@@ -12,9 +12,10 @@ class ArtistRoleRightService
     {
        
 
-            return ArtistRoleRight::updateOrCreate(
-            ['artist_ownership_identity_id' => $artistId],
+            return ArtistRoleRight::create(
+           
             [
+                'artist_ownership_identity_id' => $artistId,
                 'role' => $data['role'],
                 'ownership_type' => $data['ownership_type'],
                 'ownership_percentage' => $data['ownership_percentage'] ?? null,

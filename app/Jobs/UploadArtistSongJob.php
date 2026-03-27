@@ -16,14 +16,12 @@ class UploadArtistSongJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $artistId;
-    public $song;
+    public $songId;
     public $filePath;
 
-    public function __construct($artistId, $song, $filePath)
+    public function __construct($songId, $filePath)
     {
-        $this->artistId = $artistId;
-        $this->song = $song;
+        $this->songId = $songId;
         $this->filePath = $filePath;
     }
 
@@ -31,15 +29,22 @@ class UploadArtistSongJob implements ShouldQueue
     {
         try {
 
+           $song = ArtistOwnerSong::find($this->songId);
+
+            if(!$song){
+                Log::error("Song not found ID: ".$this->songId);
+                return;
+            }
+
             $fileFullPath = storage_path('app/public/'.$this->filePath);
 
             if(!file_exists($fileFullPath)){
                 Log::error("File not found: ".$fileFullPath);
                 return;
             }
-
+            
             $response = Http::withHeaders([
-                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+            'X-APP-A-KEY' => env('APP_A_API_KEY'),
             ])->attach(
                 'audio_file',
                 file_get_contents($fileFullPath),
@@ -58,25 +63,14 @@ class UploadArtistSongJob implements ShouldQueue
                 return;
             }
 
-            // SAVE TO DB
-            ArtistOwnerSong::updateOrCreate(
-            [
-                'artist_ownership_identity_id' => $this->artistId,
-                'title' => $this->song['title'], // unique key per artist
-            ],
-            [
-                'artist_name' => $this->song['artist_name'],
-                'release_year' => $this->song['release_year'],
-                'genre' => $this->song['genre'],
-                'duration' => $this->song['duration'],
-                'distribution_status' => $this->song['distribution_status'],
-                'spotify_link' => $this->song['spotify_link'] ?? null,
-                'apple_link' => $this->song['apple_link'] ?? null,
-                'audiomack_link' => $this->song['audiomack_link'] ?? null,
-                'youtube_link' => $this->song['youtube_link'] ?? null,
+            // =========================
+            // UPDATE EXISTING SONG
+            // =========================
+            Log::info($song);
+            $song->update([
                 'file_path' => $data['path'],
-            ]
-        );
+                'upload_status' => 'completed'
+            ]);
 
             // DELETE TEMP FILE AFTER SUCCESS
             unlink($fileFullPath);

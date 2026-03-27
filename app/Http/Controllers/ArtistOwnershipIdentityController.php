@@ -21,6 +21,9 @@ use App\Services\SongContributorService;
 use App\Services\ArtistRightsService;
 use App\Services\ArtistOwnershipPaymentService;
 use App\Services\ArtistOwnCatalogSubmissionService;
+use App\Models\ArtistOwnerIdentity;
+use App\Models\ArtistOwnerSong;
+
 
 
 class ArtistOwnershipIdentityController extends Controller
@@ -80,8 +83,15 @@ class ArtistOwnershipIdentityController extends Controller
     public function storeStep2(Step2Request $request)
     {
         try {
-            $artistId = $request->user()->artistOwnerIdentity->id; // assuming relation exists
-            $artist = $request->user()->artistOwnerIdentity;
+            
+            $user = auth()->user();
+            // $artist = $request->user()->artistOwnerIdentity;
+            $artist = ArtistOwnerIdentity::where('user_id', $user->id)
+            ->where('catalog_status', 'draft')
+            ->latest()
+            ->first();
+
+            $artistId = $artist->id; 
 
             if(!$artist){
                 return response()->json([
@@ -118,13 +128,21 @@ class ArtistOwnershipIdentityController extends Controller
     public function storeStep3 (Step3Request $request)
     {
             try {
-                $artistId = $request->user()->artistOwnerIdentity->id;
+
+                $user = auth()->user();
+                $artist = ArtistOwnerIdentity::where('user_id', $user->id)
+                ->where('catalog_status', 'draft')
+                ->latest()
+                ->first();
+                $artistId = $artist->id;
                 $songs = $request->songs;
 
-                $this->artistsongservice->saveSongs($artistId, $request);
+                $newsongs = $this->artistsongservice->saveSongs($artistId, $request);
 
                 return response()->json([
                     'success' => true,
+                    'artist_id' => $artistId,
+                    'songs'=> $newsongs,
                     'message' => 'Songs are being uploaded in background'
                 ]);
 
@@ -162,7 +180,14 @@ class ArtistOwnershipIdentityController extends Controller
     public function storeStep5(Step5Request $request)
     {
 
-        $artistId = $request->user()->artistOwnerIdentity->id;
+        $user = auth()->user();
+            // $artist = $request->user()->artistOwnerIdentity;
+            $artist = ArtistOwnerIdentity::where('user_id', $user->id)
+            ->where('catalog_status', 'draft')
+            ->latest()
+            ->first();
+
+        $artistId = $artist->id; 
 
         try {
             $this->artistRightsService->saveRights($artistId,$request->validated());
@@ -183,7 +208,13 @@ class ArtistOwnershipIdentityController extends Controller
     {
         try {
 
-            $artistId = $request->user()->artistOwnerIdentity->id;
+            $user = auth()->user();
+            $artist = ArtistOwnerIdentity::where('user_id', $user->id)
+            ->where('catalog_status', 'draft')
+            ->latest()
+            ->first();
+
+            $artistId = $artist->id; 
 
             $this->artistpaymentService->save($artistId, $request);
 
@@ -206,9 +237,21 @@ class ArtistOwnershipIdentityController extends Controller
     {
         try {
 
-            $artistId = $request->user()->artistOwnerIdentity->id;
+            $user = auth()->user();
+            $artist = ArtistOwnerIdentity::where('user_id', $user->id)
+            ->where('catalog_status', 'draft')
+            ->latest()
+            ->first();
+
+            $artistId = $artist->id; 
 
             $this->submissionservice->submit($artistId, $request);
+
+            ArtistOwnerIdentity::where('id',$artistId)->update([
+                  'catalog_status' => 'submitted',
+            ]);
+
+            
 
             return response()->json([
                 'success' => true,
@@ -222,6 +265,20 @@ class ArtistOwnershipIdentityController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+
+    public function step4Data($artistId)
+    {
+         $songsOwner = ArtistOwnerSong::where('artist_ownership_identity_id', $artistId)
+        ->with('contributors')
+        ->get();
+
+        
+
+        return response()->json([
+            'songs' => $songsOwner
+        ]);
     }
 
     

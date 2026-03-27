@@ -9,9 +9,10 @@ class ArtistRightsService
     public function saveRights($artistId, array $data)
     {
         // Update or create for current artist
-        ArtistRightsConfirmation::updateOrCreate(
-            ['artist_ownership_identity_id' => $artistId],
+        ArtistRightsConfirmation::create(
+           
             [
+                'artist_ownership_identity_id' => $artistId,
                 'rights1' => $data['rights1'],
                 'rights2' => $data['rights2'],
                 'rights3' => $data['rights3'],

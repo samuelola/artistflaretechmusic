@@ -28,9 +28,9 @@ class ArtistOwnershipService
         }
 
         $data['user_id']= auth()->id();
-        $artist = ArtistOwnerIdentity::updateOrCreate(
-            ['user_id' => auth()->id()], // condition
-            $data // values to update
+        $data['catalog_status'] = 'draft';
+        $artist = ArtistOwnerIdentity::create(
+            $data 
         );
         if (empty($artist->artist_code)) {
             $artist->artist_code = $this->generateArtistCode($artist->id);

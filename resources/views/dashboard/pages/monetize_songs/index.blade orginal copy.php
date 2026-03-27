@@ -376,7 +376,7 @@ margin-bottom:15px;
                                 <input type="file" id="songFiles" class="form-control" multiple accept=".mp3,.wav">
                             </div>
 
-                            
+                            <div id="songsContainer">
                                 <div id="songsContainer">
                                     @foreach($songsOwner as $index => $song)
                                     <div class="song-block mb-4 border p-3 mt-3" data-index="{{ $index }}">
@@ -451,7 +451,7 @@ margin-bottom:15px;
                                     </div>
                                     @endforeach
                                 </div>
-                            
+                            </div>
                                 
 
                                 <button type="submit" id="step3Submit" class="btn btn-primary-600">Save & Continue</button>
@@ -1298,14 +1298,6 @@ $(document).ready(function(){
                 alert('All songs uploaded successfully!');
                 currentStep++;
                 updateWizard();
-                // REFRESH STEP 4 DATA WITHOUT RELOAD
-                // $.get(`/artist/${response.artist_id}/step4-data`, function(data){
-                //     console.log(data.songs);
-                //     renderStep4(data.songs);
-                // });
-
-                renderStep4(response.songs);
-                
             }
         },
         error: function(xhr){
@@ -1334,108 +1326,6 @@ $(document).ready(function(){
 });
 </script>
 <!-- End Step 3 submission -->
-
-<script>
-    function renderStep4(songs){
-
-    let html = '';
-
-    if(!songs || songs.length === 0){
-        $('#step4SongsContainer').html('<p>No songs found</p>');
-        return;
-    }
-
-    songs.forEach(song => {
-
-        let contributorsRows = '';
-
-        if(song.contributors && song.contributors.length > 0){
-
-            song.contributors.forEach(contributor => {
-                contributorsRows += `
-                <tr>
-                    <td><input type="text" class="form-control contributor-name" value="${contributor.name}"></td>
-
-                    <td>
-                        <select class="form-select contributor-role">
-                            ${musicalRoles.map(role => `
-                                <option value="${role.name}" ${role.name === contributor.role ? 'selected' : ''}>
-                                    ${role.name}
-                                </option>
-                            `).join('')}
-                        </select>
-                    </td>
-
-                    <td>
-                        <input type="number" class="form-control contributor-percentage" value="${contributor.percentage}">
-                    </td>
-
-                    <td>
-                        <button type="button" class="btn btn-danger removeContributor">X</button>
-                    </td>
-                </tr>
-                `;
-            });
-
-        } else {
-
-            // DEFAULT EMPTY ROW
-            contributorsRows = `
-                <tr>
-                    <td><input type="text" class="form-control contributor-name" placeholder="Contributor name"></td>
-
-                    <td>
-                        <select class="form-select contributor-role">
-                            <option value="">Select</option>
-                            ${musicalRoles.map(role => `
-                                <option value="${role.name}">
-                                    ${role.name}
-                                </option>
-                            `).join('')}
-                        </select>
-                    </td>
-
-                    <td>
-                        <input type="number" class="form-control contributor-percentage" placeholder="%">
-                    </td>
-
-                    <td>
-                        <button type="button" class="btn btn-danger removeContributor">X</button>
-                    </td>
-                </tr>
-            `;
-        }
-
-        html += `
-        <div class="song-contributors-block mb-4 border p-3">
-            <h6>${song.title}</h6>
-
-            <input type="hidden" name="song_id[]" value="${song.id}">
-
-            <table class="table table-bordered align-middle contributorsTable">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Role</th>
-                        <th>Percentage (%)</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    ${contributorsRows}
-                </tbody>
-            </table>
-
-            <button type="button" class="btn btn-outline-primary-600 addContributorBtn">
-                Add Contributor
-            </button>
-        </div>`;
-    });
-
-    $('#step4SongsContainer').html(html);
-}
-</script>
 
 
 <!--step 4 --->
@@ -1755,10 +1645,10 @@ holder.innerHTML = `
 
     <select class="form-select">
             <option value="">Select</option>
-            @foreach($musical_roles as $role)
-                <option value="{{ $role->name }}">{{ $role->name }}</option>
-            @endforeach
-            
+            <option>Artist</option>
+            <option>Producer</option>
+            <option>Songwriter</option>
+            <option>Label Representative</option>
     </select>
     
 </div>
@@ -1790,9 +1680,7 @@ e.target.closest(".holder-row").remove();
 
 </script>
 
-<script>
-    const musicalRoles = @json($musical_roles);
-</script>
+
 <script>
 
 document.addEventListener("DOMContentLoaded", function(){
@@ -1817,12 +1705,10 @@ document.addEventListener("DOMContentLoaded", function(){
                 <div class="col-md-4">
                     <select class="form-select">
                         <option value="">Select</option>
-                       ${musicalRoles.map(role => `
-                            <option value="${role.name}" ${owner.role === role.name ? 'selected' : ''}>
-                                ${role.name}
-                            </option>
-                        `).join('')}
-                        
+                        <option ${owner.role === 'Artist' ? 'selected' : ''}>Artist</option>
+                        <option ${owner.role === 'Producer' ? 'selected' : ''}>Producer</option>
+                        <option ${owner.role === 'Songwriter' ? 'selected' : ''}>Songwriter</option>
+                        <option ${owner.role === 'Label Representative' ? 'selected' : ''}>Label Representative</option>
                     </select>
                 </div>
 

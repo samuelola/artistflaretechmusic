@@ -10,9 +10,10 @@ class ArtistOwnershipPaymentService
 {
     public function save($artistId, $request)
     {
-        return ArtistOwnershipPayment::updateOrCreate(
-            ['artist_ownership_identity_id' => $artistId],
+        return ArtistOwnershipPayment::create(
+            
             [
+                'artist_ownership_identity_id' => $artistId,
                 'payout_method' => $request->payout_method,
                 'bank_name' => $request->bank_name,
                 'account_name' => $request->account_name,

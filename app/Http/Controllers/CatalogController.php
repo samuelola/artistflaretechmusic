@@ -20,10 +20,25 @@ class CatalogController extends Controller
        
         $user = auth()->user();
         $all_countries = DB::table('countries')->get();
-        $user = User::where('id',$user->id)->first();
-        $artist = ArtistOwnerIdentity::where('user_id', $user->id)->first();
+        // $artist = ArtistOwnerIdentity::where('user_id', $user->id)->first();
+        
         $user_country = Country::where('iso2', $user->country)->first();
         $banks = DB::table('banks')->get();
+        $genres = DB::table('genres')->get();
+        $musical_roles = DB::table('musical_roles')->select('name')->get();
+
+        // 1. Check for existing draft
+        $artist = ArtistOwnerIdentity::where('user_id', $user->id)
+            ->where('catalog_status', 'draft')
+            ->latest()
+            ->first();
+        
+         // 2. If none, create new
+        if (!$artist) {
+            $artist = new ArtistOwnerIdentity();
+            $artist->user_id = $user->id;
+            $artist->catalog_status = 'draft';
+        }    
         $step2 = null;
 
         if($artist){
@@ -34,8 +49,7 @@ class CatalogController extends Controller
             $submission = ArtistCatalogOwnershipSubmit::where('artist_ownership_identity_id', $artist->id)->first();
         }
 
-        $genres = DB::table('genres')->get();
-        $musical_roles = DB::table('musical_roles')->select('name')->get();
+        
 
         return view('dashboard.pages.monetize_songs.index', compact(
             'all_countries','user','user_country','artist','step2',
