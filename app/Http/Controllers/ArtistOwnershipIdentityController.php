@@ -238,14 +238,14 @@ class ArtistOwnershipIdentityController extends Controller
         try {
 
             $user = auth()->user();
-            $artist = ArtistOwnerIdentity::where('user_id', $user->id)
+            $artist = ArtistOwnerIdentity::with(['user'])->where('user_id', $user->id)
             ->where('catalog_status', 'draft')
             ->latest()
             ->first();
 
             $artistId = $artist->id; 
 
-            $this->submissionservice->submit($artistId, $request);
+            $this->submissionservice->submit($artistId, $request,$artist);
 
             ArtistOwnerIdentity::where('id',$artistId)->update([
                   'catalog_status' => 'submitted',

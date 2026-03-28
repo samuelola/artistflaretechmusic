@@ -23,4 +23,9 @@ class ArtistOwnerIdentity extends Model
         'government_id_path',
         'user_id'
     ];
+
+    public function user(){
+
+       return $this->belongsTo(User::class,'user_id');
+    }
 }

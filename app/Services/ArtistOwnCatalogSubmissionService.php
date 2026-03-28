@@ -4,13 +4,15 @@ namespace App\Services;
 
 
 use App\Models\ArtistCatalogOwnershipSubmit;
+use App\Notifications\NewMessageNotification;
 
 
 class ArtistOwnCatalogSubmissionService
 {
-    public function submit($artistId, $request)
+    public function submit($artistId, $request, $artist)
     {
-        return ArtistCatalogOwnershipSubmit::create(
+        
+        ArtistCatalogOwnershipSubmit::create(
             
             [
                 'artist_ownership_identity_id' => $artistId,
@@ -22,6 +24,17 @@ class ArtistOwnCatalogSubmissionService
                 'submitted_at' => NOW()
             ]
         );
+
+        
+        $recipient = $artist->user;
+        $recipient->notify(
+            new NewMessageNotification(
+                'Catalog Submission & Ownership Verification submission ',
+                "Your Catalog Submission & Ownership Verification is successfull a waiting Admin approval"
+            )
+        );
+
+        return true;
     }
 
 }
