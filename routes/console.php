@@ -16,7 +16,11 @@ Schedule::command('charge:renewals')->everyMinute();
 
 Schedule::command('subscription:reminder')->twiceDaily(9, 21)->withoutOverlapping(); // run at 9am and 9pm also 13(1pm)
 
-Schedule::command('queue:work --stop-when-empty')->everyMinute();
+// Schedule::command('queue:work --stop-when-empty')->everyMinute();
+
+Schedule::command(
+    'queue:work --stop-when-empty --memory=256 --max-jobs=1 --timeout=0'
+)->everyMinute()->withoutOverlapping();
 
 
 

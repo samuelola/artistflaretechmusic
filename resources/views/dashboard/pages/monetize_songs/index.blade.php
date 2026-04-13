@@ -101,6 +101,17 @@ border-radius:10px;
 margin-bottom:15px;
 }
 
+.content-agreement h3{
+    font-size:18px !important;
+    margin-top:18px;
+}
+
+.content-agreement{
+    margin-left:10px;
+}
+
+
+
 </style>
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -702,8 +713,8 @@ margin-bottom:15px;
                                         id="agreeTerms"
                                         {{ optional($submission)->agree_terms ? 'checked' : '' }}
                                     >
-                                    <label class="form-check-label mb-0" for="agreeTerms">
-                                        I agree to the <a href="#" target="_blank">Terms & Conditions</a>
+                                    <label class="form-check-label mb-0" for="agreeTerms" style="color:#700084;">
+                                        I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#contentAquiModal">Terms & Conditions</a>
                                     </label>
                                 </div>
 
@@ -711,7 +722,7 @@ margin-bottom:15px;
                                     Submit Catalog for Review
                                 </button> -->
                                 <button type="submit" 
-                                    class="btn btn-success btn-lg"
+                                    class="btn btn-success btn-lg mt-3"
                                     {{ optional($submission)->is_submitted ? 'disabled' : '' }}>
                                     
                                     {{ optional($submission)->is_submitted ? 'Submitted' : 'Submit Catalog for Review' }}
@@ -731,10 +742,213 @@ margin-bottom:15px;
     </div>
   </div>
 
+
+<!-- Terms & Conditions Modal -->
+<div class="modal fade" id="contentAquiModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+      <!-- Header -->
+      <div class="modal-header bg-white border-bottom px-4 py-3">
+        <div class="w-100 text-center">
+          <h5 class="modal-title fw-bold mb-0">End User Agreement</h5>
+        </div>
+        <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body bg-light px-4 py-4">
+             
+        <div class="content-agreement">
+
+        <p style="text-align:center;" class="mt-3"><strong>CONTENT ACQUISITION AND RIGHTS ASSIGNMENT AGREEMENT</strong></p>
+
+         
+            <!-- <p>Effective Date: January 1, 2026</p>
+            <p>Last Updated: March 31, 2026</p> -->
+
+            <p>This Content Acquisition and Rights Assignment Agreement (“Agreement”) is made on this ___ day of _______, 20.</p>
+
+            <p>BETWEEN</p>
+
+            <p>Assignor (Rights Holder):</p>
+            <p>Name: __________________________________________</p>
+            <p>Address: ________________________________________</p>
+            <p>Email: __________________________________________</p>
+            <p>Phone: __________________________________________</p>
+
+            <p>AND</p>
+
+            <p>Assignee (Acquiring Company):</p>
+            <p>Company Name: ___________________________________</p>
+            <p>Address: ________________________________________</p>
+            <p>Email: __________________________________________</p>
+
+            <p>The Assignor and Assignee may collectively be referred to as “the Parties.”</p>
+
+            <h3>1. PURPOSE OF THE AGREEMENT</h3>
+            <p>This Agreement confirms that the Assignor has agreed to transfer and assign all rights, title, and interest in the content described in this Agreement to the Assignee following payment of the agreed acquisition fee.</p>
+
+            <h3>2. DESCRIPTION OF THE CONTENT</h3>
+            <p>The content covered under this Agreement includes the works listed in Schedule A (Catalogue of Works) attached to this Agreement.</p>
+
+            <p>The content may include:</p>
+            <ul>
+            <li>- Sound recordings</li>
+            <li>- Musical compositions</li>
+            <li>- Audiovisual works</li>
+            <li>- Video recordings</li>
+            <li>- Associated metadata and related materials</li>
+            </ul>
+
+            <p>Identifiers such as ISRC, ISWC, UPC, and other metadata relating to the works shall form part of the catalogue schedule.</p>
+
+            <h3>3. ACQUISITION FEE</h3>
+            <p>In consideration for the assignment of rights under this Agreement, the Assignee has paid the Assignor the agreed acquisition fee.</p>
+
+            <p>Amount: __________________________</p>
+            <p>Date of Payment: ___________________</p>
+
+            <p>The Assignor hereby acknowledges receipt of the full amount and confirms that the payment represents full and final consideration for the transfer of the rights assigned under this Agreement, unless otherwise agreed in writing.</p>
+
+            <h3>4. ASSIGNMENT OF RIGHTS</h3>
+            <p>The Assignor hereby irrevocably assigns, transfers, and conveys to the Assignee all rights, title, and interest in the content described in this Agreement, including but not limited to the exclusive right to:</p>
+            <ul>
+            <li>- Distribute the content</li>
+            <li>- Commercially exploit the content in all formats</li>
+            <li>- License the content to third parties</li>
+            <li>- Synchronize the content with audiovisual productions</li>
+            <li>- Digitally distribute the content across platforms</li>
+            <li>- Collect and administer revenues arising from exploitation of the content</li>
+            </ul>
+
+            <p>This assignment includes all current and future forms of exploitation, whether now known or later developed.</p>
+
+            <h3>5. TERRITORY</h3>
+            <p>The rights assigned under this Agreement shall apply to:</p>
+            <p>☐ Worldwide</p>
+
+            <h3>6. TERM</h3>
+            <p>Unless otherwise agreed in writing, the assignment shall apply for the full term of copyright protection and any renewals or extensions thereof.</p>
+
+            <h3>7. DELIVERY OF CONTENT AND MATERIALS</h3>
+            <p>The Assignor agrees to provide the Assignee with the following materials relating to the content:</p>
+            <ul>
+            <li>- Master recordings or digital files</li>
+            <li>- Metadata and catalogue information</li>
+            <li>- Artwork and promotional materials (if available)</li>
+            <li>- Documentation confirming ownership or control of rights</li>
+            <li>- Any relevant contracts or agreements relating to the content</li>
+            </ul>
+
+            <p>Delivery shall be completed within __________ days of the execution of this Agreement.</p>
+
+            <h3>8. CHAIN OF TITLE</h3>
+            <p>The Assignor represents and warrants that:</p>
+            <ul>
+            <li>- They are the lawful owner or authorized controller of the rights in the content.</li>
+            <li>- The content is free from encumbrances, liens, or conflicting claims.</li>
+            <li>- No third party holds rights that would restrict the assignment of the content to the Assignee.</li>
+            <li>- All performers, producers, and contributors have granted the necessary permissions for exploitation of the content.</li>
+            </ul>
+
+            <h3>9. MORAL RIGHTS WAIVER (WHERE PERMITTED BY LAW)</h3>
+            <p>To the extent permitted by applicable law, the Assignor agrees to waive any moral rights or similar rights that may prevent the Assignee from fully exploiting the content.</p>
+
+            <h3>10. INDEMNIFICATION</h3>
+            <p>The Assignor agrees to indemnify and hold the Assignee harmless against any claims, damages, or liabilities arising from breach of the representations and warranties made in this Agreement.</p>
+
+            <h3>11. FURTHER ASSURANCES</h3>
+            <p>The Assignor agrees to execute any additional documents or provide assistance reasonably required by the Assignee to confirm or enforce the rights assigned under this Agreement.</p>
+
+            <h3>12. GOVERNING LAW</h3>
+            <p>This Agreement shall be governed by and interpreted in accordance with the laws of the Federal Republic of Nigeria.</p>
+
+            <h3>13. ENTIRE AGREEMENT</h3>
+            <p>This Agreement constitutes the entire understanding between the Parties with respect to the subject matter herein and supersedes any prior discussions or agreements.</p>
+
+            <h3>14. SIGNATURES</h3>
+            <p>IN WITNESS WHEREOF, the Parties have executed this Agreement on the date first written above.</p>
+
+            <p>Assignor (Rights Holder)</p>
+            <p>Name: __________________________________</p>
+            <p>Signature: ______________________________</p>
+            <p>Date: __________________________________</p>
+
+            <p>Assignee (Acquiring Company)</p>
+            <p>Name: __________________________________</p>
+            <p>Title: __________________________________</p>
+            <p>Signature: ______________________________</p>
+            <p>Date: __________________________________</p>
+
+            <h3>SCHEDULE A – CATALOGUE OF WORKS</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                    <th>No</th>
+                    <th>Title of Work</th>
+                    <th>Artist / Composer</th>
+                    <th>ISRC / ISWC</th>
+                    <th>Album / Project</th>
+                    <th>Year</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                    <td>1</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    </tr>
+                    <tr>
+                    <td>2</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    </tr>
+                    <tr>
+                    <td>3</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    </tr>
+                </tbody>
+              </table>
+            
+
+        </div>
+       
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer bg-white border-top px-4 py-3 d-flex justify-content-between">
+        <p>Please read the content acquisition right carefully</p>
+        <!-- <button type="button" class="btn btn-primary-600 px-4" data-bs-dismiss="modal">
+          I Understand
+        </button> -->
+        
+        <a href="{{asset('content-acquisition-agreement.docx')}}" 
+            download="Content-Acquisition-Agreement.docx"
+            class="btn btn-primary-600 px-4">
+            Download Agreement
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>  
+
 @endsection
 
 @section('script')
-   
+
+
 
 <script>
 

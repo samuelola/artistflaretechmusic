@@ -4,6 +4,6 @@ namespace App\Enum;
 
 class MinimumBalance
 {
-    const Min = 2000.00;
+    const Min = 3000.00;
     
 }
