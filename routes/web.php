@@ -24,7 +24,7 @@ use App\Http\Controllers\CacheController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\ArtistOwnershipIdentityController;
-
+use App\Http\Controllers\TestR2Controller;
 
 
 
@@ -75,6 +75,8 @@ Route::middleware(['artistusercheck','check.subscription'])->group(function () {
          Route::post('/update_profile','updateProfile')->name('update_profile');
          Route::post('/user_update_profile/{id}','userUpdateProfile')->name('update_user_profile');
     });
+
+    Route::get('/test-r2', [TestR2Controller::class, 'uploadTest']);
 
     Route::controller(SubscriptionController::class)->group(function () {
         Route::get('/subscription','subscription_form')->name('subscription');

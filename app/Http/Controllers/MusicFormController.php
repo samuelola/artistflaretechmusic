@@ -505,7 +505,8 @@ class MusicFormController extends Controller
             'artwork' => [
                 'id' => $art->id,
                 //'url' => $data['url'],
-                'url' => config('app.website_storage_url') . '/' . ltrim($art->path, '/'),
+                'url' => env('R2_PUBLIC_URL') . '/' . ltrim($art->path, '/'),
+                
             ]
         ]);
     }
