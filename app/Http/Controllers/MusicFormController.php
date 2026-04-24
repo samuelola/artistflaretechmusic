@@ -139,7 +139,7 @@ class MusicFormController extends Controller
                 'X-APP-A-KEY' => env('APP_A_API_KEY'),
             ])->attach(
                 'upload_doc',
-                file_get_contents($imageFile->getRealPath()),
+                fopen($imageFile->getRealPath(), 'r'),
                 $imageFile->getClientOriginalName()
             )->post(config('app.website_storage_link') . "/api/upload_verification");
 
@@ -181,7 +181,25 @@ class MusicFormController extends Controller
     // AJAX save step
     public function ajaxSaveStep(Request $request)
     {
-       
+        $request->validate([
+            'fields.release_date' => 'required|date|after_or_equal:today',
+            'fields.label_name' => 'required|string|min:3',
+            'fields.title'      => 'required|string|min:3',
+            'fields.stereo_type' => 'required|string'
+        ],
+
+        [
+            'fields.release_date.required' => 'Please select a release date.',
+            'fields.release_date.date' => 'Release date must be a valid date.',
+            'fields.release_date.after_or_equal' => 'Release date cannot be in the past.',
+            'fields.title.required' => 'Title field is required.',
+            'fields.label_name.required' => 'Label name is required.',
+            'fields.stereo_type.required' => 'Stereo Type is required.',
+    
+        ]
+        
+        );
+
         $data = $request->only(['music_release_id','step','fields']);
         $fields = $request->input('fields', []);
         $release = $data['music_release_id'] ? MusicRelease::find($data['music_release_id']) : null;
@@ -229,60 +247,87 @@ class MusicFormController extends Controller
     
 
     // Upload audio files
-    public function uploadAudio(Request $request){
+ 
+
+public function uploadAudio(Request $request)
+{
     $request->validate([
         'music_release_id' => 'nullable|integer',
         'audios.*' => 'required|mimes:mp3,wav,aac,m4a,flac,ogg|max:40960'
     ]);
 
-    $durations = json_decode($request->input('durations','{}'), true) ?: [];
+    $durations = json_decode($request->input('durations', '{}'), true) ?: [];
 
     $release = $request->music_release_id
         ? MusicRelease::find($request->music_release_id)
-        : MusicRelease::create(['title' => 'Untitled Release']);    
+        : MusicRelease::create(['title' => 'Untitled Release']);
 
     if (!$request->hasFile('audios')) {
         return response()->json(['status' => 'error', 'message' => 'No audio files uploaded'], 422);
     }
 
-   
-        // Create a unique cache key for polling
-        $cacheKey = 'audio_upload_' . Str::uuid();
+    $cacheKey = 'audio_upload_' . Str::uuid();
 
-         // Store uploaded files temporarily
-        $files = [];
-        foreach ($request->file('audios') as $file) {
+    $files = [];
+    $savedTracks = [];
+
+    foreach ($request->file('audios') as $i => $file) {
+
         $tempName = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        // Store locally so it persists until job runs
         $storedPath = $file->storeAs('temp_audios', $tempName, 'local');
         $absolutePath = Storage::disk('local')->path($storedPath);
 
-        // Log path for debugging
-        \Log::info('Stored temp file at: ' . $absolutePath);
+        $originalName = $file->getClientOriginalName();
 
-        // Verify existence immediately
-        if (!file_exists($absolutePath)) {
-            \Log::warning('Temp file not found right after storing: ' . $absolutePath);
-        }
+        // CREATE DB RECORDS IMMEDIATELY
+        $audio = AudioFile::create([
+            'music_release_id' => $release->id,
+            'filename' => $originalName,
+            'path' => null,
+            'duration_ms' => $durations[$originalName] ?? null,
+            'status' => 'processing'
+        ]);
 
+        $track = Track::create([
+            'music_release_id' => $release->id,
+            'audio_file_id' => $audio->id,
+            'title' => pathinfo($originalName, PATHINFO_FILENAME),
+            'duration_ms' => $audio->duration_ms,
+            'isrc' => null,
+            'status' => 'processing'
+        ]);
+
+        $savedTracks[] = [
+            'track_id' => $track->id,
+            'audio_id' => $audio->id,
+            'filename' => $originalName,
+            'status' => 'processing'
+        ];
 
         $files[] = [
-            'original_name' => $file->getClientOriginalName(),
+            'original_name' => $originalName,
             'real_path' => $absolutePath,
             'extension' => $file->getClientOriginalExtension(),
+            'audio_id' => $audio->id,
+            'track_id' => $track->id,
         ];
-       }
-
-
-        // Dispatch job with paths, not file objects
-        dispatch(new ProcessAudioUpload($release->id, $durations, $files, $cacheKey));
-
-        return response()->json([
-            'status' => 'processing',
-            'cache_key' => $cacheKey,
-            'music_release_id' => $release->id,
-        ]);
     }
+
+    // DISPATCH JOB
+    dispatch(new ProcessAudioUpload(
+        $release->id,
+        $durations,
+        $files,
+        $cacheKey
+    ));
+
+    return response()->json([
+        'status' => 'processing',
+        'music_release_id' => $release->id,
+        'tracks' => $savedTracks,
+        'cache_key' => $cacheKey
+    ]);
+}
 
     public function audioUploadStatus($cacheKey){
         $result = Cache::get($cacheKey);
@@ -477,13 +522,22 @@ class MusicFormController extends Controller
                     ])
                         ->attach(
                             'artwork',
-                            file_get_contents($imageFile->getRealPath()),
+                            // file_get_contents($imageFile->getRealPath()),
+                            fopen($imageFile->getRealPath(), 'r'),
                             $imageFile->getClientOriginalName()
                         )->post(config('app.website_storage_link')."/api/upload_artworks");
 
                   
             if ($response->failed()) {
-                return response()->json(['status' => 'error', 'message' => 'Upload failed'], 500);
+                \Log::error('Artwork upload failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Upload failed'
+                ], 500);
             }
             
             $data = $response->json();
@@ -678,7 +732,7 @@ class MusicFormController extends Controller
                 'exists' => true,
                 'official_id' => $draft->verification->official_id,
                 'id_document_url' => $draft->verification->id_document
-                    ? config('app.website_storage_url') . '/' . ltrim($draft->verification->id_document, '/')
+                    ? env('R2_PUBLIC_URL') . '/' . ltrim($draft->verification->id_document, '/')
                     : null,
                 'account_number' => $draft->verification->account_number,
                 'bank_code' => $draft->verification->bank_code,
@@ -702,7 +756,7 @@ class MusicFormController extends Controller
         'artworks' => $draft->artworks->map(function ($art) {
             return [
                 'id' => $art->id,
-                'url' => config('app.website_storage_url') . '/' . ltrim($art->path, '/'),
+                'url' => env('R2_PUBLIC_URL') . '/' . ltrim($art->path, '/'),
             ];
         }),
 
@@ -828,7 +882,7 @@ class MusicFormController extends Controller
                 'exists' => true,
                 'official_id' => $release->verification->official_id,
                 'id_document_url' => $release->verification->id_document
-                    ? config('app.website_storage_url') . '/' . ltrim($release->verification->id_document, '/')
+                    ? env('R2_PUBLIC_URL') . '/' . ltrim($release->verification->id_document, '/')
                     : null,
                 'account_number' => $release->verification->account_number,
                 'bank_code' => $release->verification->bank_code,
@@ -856,7 +910,8 @@ class MusicFormController extends Controller
                 return [
                     'id' => $art->id ?? '',
                     'path' => $art->path ?? '',
-                    'url' => config('app.website_storage_url') . '/' . ltrim($art->path, '/') ?? '',
+                    
+                    'url' => env('R2_PUBLIC_URL') . '/' . ltrim($art->path, '/') ?? '',
                 ];
             });
 
@@ -952,7 +1007,7 @@ class MusicFormController extends Controller
                     ])
                   ->attach(
                 'artwork',
-                file_get_contents($imageFile->getRealPath()),
+                fopen($imageFile->getRealPath(), 'r'),
                 $imageFile->getClientOriginalName()
             )->post(config('app.website_storage_link')."/api/upload_artworks");
 
@@ -1010,7 +1065,7 @@ class MusicFormController extends Controller
     Cache::put($cacheKey, ['status' => 'pending'], 600);
 
     // ────────────────────────────────────────────────
-    // 1️⃣ METADATA-ONLY UPDATE
+    // 1️METADATA-ONLY UPDATE
     // ────────────────────────────────────────────────
     if (empty($audioFiles) && $isUpdate) {
         dispatch(new ProcessAudioUpdateMetadata(
@@ -1028,7 +1083,7 @@ class MusicFormController extends Controller
     }
 
     // ────────────────────────────────────────────────
-    // 2️⃣ USER TRIED TO UPLOAD NOTHING (INVALID)
+    // USER TRIED TO UPLOAD NOTHING (INVALID)
     // ────────────────────────────────────────────────
     if (empty($audioFiles)) {
         return response()->json([
@@ -1038,7 +1093,7 @@ class MusicFormController extends Controller
     }
 
     // ────────────────────────────────────────────────
-    // 3️⃣ SAVE TEMP FILES FOR BACKGROUND JOB
+    // SAVE TEMP FILES FOR BACKGROUND JOB
     // ────────────────────────────────────────────────
     $tempFiles = [];
 
@@ -1338,7 +1393,7 @@ class MusicFormController extends Controller
             'X-APP-A-KEY' => env('APP_A_API_KEY'),
         ])->attach(
             'upload_doc',
-            file_get_contents($imageFile->getRealPath()),
+            fopen($imageFile->getRealPath(), 'r'),
             $imageFile->getClientOriginalName()
         )->post(config('app.website_storage_link') . "/api/upload_verification");
 

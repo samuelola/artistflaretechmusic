@@ -15,6 +15,7 @@ class CacheController extends Controller
       Artisan::call('config:clear');
       Artisan::call('route:clear');
       Artisan::call('view:clear');
+      Artisan::call('queue:flush');
 
       return "cleared";
     

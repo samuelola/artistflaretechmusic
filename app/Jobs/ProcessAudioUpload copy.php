@@ -13,6 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class ProcessAudioUpload implements ShouldQueue
 {
@@ -32,68 +33,103 @@ class ProcessAudioUpload implements ShouldQueue
     }
     
     public function handle(): void
-{
-    $release = MusicRelease::find($this->releaseId);
-    if (!$release) {
-        Cache::put($this->cacheKey, ['status' => 'error', 'message' => 'Release not found'], 600);
-        return;
-    }
+    {
+       $release = MusicRelease::find($this->releaseId);
+       if (!$release) {
+            Cache::put($this->cacheKey, ['status' => 'error', 'message' => 'Release not found'], 600);
+            return;
+       }
 
-    $saved = [];
+       $baseUrl = config('app.website_storage_link');
+       \Log::info('Uploading audios to: ' . $baseUrl);
 
-    foreach ($this->audioFiles as $fileData) {
-        $originalName = $fileData['original_name'];
-        $tempPath = $fileData['temp_path'];
+       try {
+        
+           $request = Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+                    ])
+                  ->asMultipart();
+            foreach ($this->audioFiles as $i => $fileData) {
+                if (!file_exists($fileData['real_path'])) {
+                    \Log::warning('Missing file: ' . $fileData['real_path']);
+                    continue;
+                }
+                $request = $request->attach(
+                    "audios[{$i}]",
+                    file_get_contents($fileData['real_path']),
+                    $fileData['original_name']
+                );
 
-        if (!Storage::exists($tempPath)) {
-            continue;
+                if (file_exists($fileData['real_path'])) {
+                   unlink($fileData['real_path']);
+                }
+            }
+
+          $response = $request->post($baseUrl . '/api/upload_audios');
+          if ($response->failed()) {
+            Cache::put($this->cacheKey, [
+                'status' => 'error',
+                'message' => 'Failed to upload files to storage service'
+            ], 600);
+            return;
+          }
+
+            // if (file_exists($fileData['real_path'])) {
+            //     unlink($fileData['real_path']);
+            // }
+
+          $files = $response->json()['files'] ?? [];
+          $saved = [];
+        foreach ($files as $file) {
+            $originalName = $file['original_name'];
+            $path = $file['path'];
+            $url = $file['url'];
+
+            $audio = AudioFile::create([
+                'music_release_id' => $release->id,
+                'filename' => $originalName,
+                'path' => $path,
+                'duration_ms' => $this->durations[$originalName] ?? null,
+            ]);
+
+            $isrc = $this->generateIsrcForTrack($release);
+
+            $track = Track::create([
+                'music_release_id' => $release->id,
+                'audio_file_id' => $audio->id,
+                'title' => pathinfo($originalName, PATHINFO_FILENAME),
+                'duration_ms' => $audio->duration_ms,
+                // 'isrc' => $isrc,
+                'isrc' => NULL,
+            ]);
+
+            $saved[] = [
+                'audio_id' => $audio->id,
+                'track_id' => $track->id,
+                'filename' => $originalName,
+                'duration_ms' => $audio->duration_ms,
+                //'isrc' => $isrc,
+                'isrc' => NULL,
+                //'audio_url' => config('app.website_storage_link').$url ,
+                'audio_url' => config('app.website_storage_link'). '/storage/' . ltrim($track->audioFile->path, '/') ,
+            ];
         }
 
-        // Move from temp to permanent
-        $uniqueName = Str::uuid() . '.' . pathinfo($originalName, PATHINFO_EXTENSION);
-        $newPath = Storage::disk('public')->putFileAs('audios', Storage::path($tempPath), $uniqueName);
-        
-        // OR simpler:
-        // $newPath = 'audios/' . $uniqueName;
-        // Storage::move($tempPath, $newPath);
-
-        $audio = AudioFile::create([
+        Cache::put($this->cacheKey, [
+            'status' => 'ok',
             'music_release_id' => $release->id,
-            'filename' => $originalName,
-            'path' => $newPath,
-            'duration_ms' => $this->durations[$originalName] ?? null,
-        ]);
+            'files' => $saved
+        ], 600);
 
-        //$isrc = app('App\Http\Controllers\MusicFormController')->generateIsrcForTrack($release);
-        $isrc = $this->generateIsrcForTrack($release);
-
-        $track = Track::create([
-            'music_release_id' => $release->id,
-            'audio_file_id' => $audio->id,
-            'title' => pathinfo($originalName, PATHINFO_FILENAME),
-            'duration_ms' => $audio->duration_ms,
-            'isrc' => $isrc,
-        ]);
-
-        $saved[] = [
-            'audio_id' => $audio->id,
-            'track_id' => $track->id,
-            'filename' => $audio->filename,
-            'duration_ms' => $audio->duration_ms,
-            'isrc' => $isrc,
-            'audio_url' => Storage::url($audio->path),
-        ];
-
-        // Delete temp file
-        Storage::delete($tempPath);
+       }
+       catch (\Exception $e) {
+            \Log::error('Audio upload batch failed: ' . $e->getMessage());
+            Cache::put($this->cacheKey, [
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 600);
+       }
     }
-
-    Cache::put($this->cacheKey, [
-        'status' => 'ok',
-        'music_release_id' => $release->id,
-        'files' => $saved
-    ],600);
-}
 
 
     protected function generateIsrcForTrack(MusicRelease $release)

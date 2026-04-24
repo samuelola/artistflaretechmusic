@@ -307,24 +307,9 @@ document.getElementById('backToStep5')?.addEventListener('click', () => {
         }
 
         $('#saveStep1Status').html('<span class="badge bg-success saved-badge">Saved</span>');
-        $('.is-invalid').removeClass('is-invalid');
         setProgress(2);
       },
-      
-      error(xhr) {
-            if (xhr.status === 422) {
-            // Parse the JSON error response
-              let errors = xhr.responseJSON.errors;
-              
-              // Loop through all error messages
-              for (let field in errors) {
-                  alert(errors[field][0]); // show the first error message
-                  $('#saveStep1Status').text('Upload failed'); // stop spinner after alert closed
-              }
-            } else {
-                $('#saveStep1Status').text('Error uploading artwork'); 
-            }
-        }
+      error(){ $('#saveStep1Status').text('Error'); }
     });
   });
 
@@ -635,101 +620,87 @@ $('#uploadAudiosBtn').on('click', function () {
     processData: false,
     contentType: false,
 
-   xhr: function () {
-  const xhr = new window.XMLHttpRequest();
-
-  // Simple uploading state (no %)
-  $('#audioUploadProgress')
-    .css('width', '100%')
-    .removeClass('bg-success bg-danger bg-warning')
-    .addClass('progress-bar-striped progress-bar-animated')
-    .text('Uploading audio files...');
-
-  return xhr;
-},
+    xhr: function () {
+      const xhr = new window.XMLHttpRequest();
+      xhr.upload.addEventListener('progress', function (evt) {
+        if (evt.lengthComputable) {
+          const percent = Math.round((evt.loaded / evt.total) * 100);
+          $('#audioUploadProgress').css('width', percent + '%').text(percent + '%');
+        }
+      }, false);
+      return xhr;
+    },
 
     success(resp) {
-          if (resp.status === 'processing') {
+      if (resp.status === 'processing') {
 
-            // STEP 1: ADD TRACKS IMMEDIATELY
-            const files = resp.tracks || [];
+  // STEP 1: ADD TRACKS IMMEDIATELY
+  const files = resp.tracks || [];
 
-            files.forEach(file => {
-              const exists = window.__allTracks.find(t => t.track_id === file.track_id);
-              if (!exists) window.__allTracks.push(file);
-              else Object.assign(exists, file);
-            });
+  files.forEach(file => {
+    const exists = window.__allTracks.find(t => t.track_id === file.track_id);
+    if (!exists) window.__allTracks.push(file);
+    else Object.assign(exists, file);
+  });
 
-            // IMPORTANT: show them instantly
-            rebuildTrackUI();
+  // IMPORTANT: show them instantly
+  rebuildTrackUI();
 
-            // STEP 2: show processing state
-            $('#audioUploadProgress')
-            .css('width', '100%')
-            .removeClass('bg-success bg-danger')
-            .addClass('progress-bar-striped progress-bar-animated')
-            .text('Processing audio...');
+  // STEP 2: show processing state
+  $('#audioUploadProgress')
+    .removeClass('bg-success bg-danger')
+    .addClass('progress-bar-animated progress-bar-striped')
+    .css('width', '100%')
+    .text('Processing...');
 
-            let dots = 0;
+  $('#audioUploadStatus').append(
+    '<div class="text-muted mt-2">Uploading in background...</div>'
+  );
 
-          const processingInterval = setInterval(() => {
-            dots = (dots + 1) % 4;
+  // STEP 3: poll in background (no UI blocking)
+  pollAudioUploadStatus(resp.cache_key, (files, releaseId) => {
 
-            $('#audioUploadProgress')
-              .text('Processing' + '.'.repeat(dots));
+    files.forEach(file => {
+      const exists = window.__allTracks.find(t => t.track_id === file.track_id);
+      if (!exists) window.__allTracks.push(file);
+      else Object.assign(exists, file); // update status + URL
+    });
 
-          }, 500);
+    // refresh UI with completed data
+    rebuildTrackUI();
 
-            $('#audioUploadStatus').append(
-              '<div class="text-muted mt-2">Uploading in background...</div>'
-            );
+    $('#audioUploadProgress')
+      .removeClass('progress-bar-animated progress-bar-striped')
+      .addClass('bg-success')
+      .text('Processing Complete');
 
-            // STEP 3: poll in background (no UI blocking)
-            pollAudioUploadStatus(resp.cache_key, (files, releaseId) => {
+    $('#audioUploadStatus').html(
+      '<span class="badge bg-success saved-badge">Uploaded</span>'
+    );
+  });
+} else if (resp.status === 'ok') {
+        // Normal upload completed immediately
+        files = resp.tracks || resp.finalTracks || [];
+        files.forEach(file => {
+          const exists = window.__allTracks.find(t => t.filename === file.filename);
+          if (!exists) window.__allTracks.push(file);
+          else Object.assign(exists, file);
+        });
+        rebuildTrackUI();
 
-              files.forEach(file => {
-                const exists = window.__allTracks.find(t => t.track_id === file.track_id);
-                if (!exists) window.__allTracks.push(file);
-                else Object.assign(exists, file); // update status + URL
-              });
+        $('#audioUploadProgress')
+          .removeClass('progress-bar-animated')
+          .addClass('bg-success')
+          .text('Upload Complete');
 
-              // refresh UI with completed data
-              rebuildTrackUI();
+        $('#audioUploadStatus').html('<span class="badge bg-success saved-badge">Uploaded</span>');
 
-              clearInterval(processingInterval);
-
-          $('#audioUploadProgress')
-            .removeClass('progress-bar-animated progress-bar-striped')
-            .addClass('bg-success')
-            .text('Upload Complete');
-
-              $('#audioUploadStatus').html(
-                '<span class="badge bg-success saved-badge">Uploaded</span>'
-              );
-            });
-          } else if (resp.status === 'ok') {
-            // Normal upload completed immediately
-            files = resp.tracks || resp.finalTracks || [];
-            files.forEach(file => {
-              const exists = window.__allTracks.find(t => t.filename === file.filename);
-              if (!exists) window.__allTracks.push(file);
-              else Object.assign(exists, file);
-            });
-            rebuildTrackUI();
-
-            $('#audioUploadProgress')
-              .removeClass('progress-bar-animated')
-              .addClass('bg-success')
-              .text('Upload Complete');
-
-            $('#audioUploadStatus').html('<span class="badge bg-success saved-badge">Uploaded</span>');
-
-          } else {
-            $('#audioUploadProgress')
-              .removeClass('progress-bar-animated')
-              .addClass('bg-warning')
-              .text('Waiting...');
-          }
+      } else {
+        $('#audioUploadProgress')
+          .removeClass('progress-bar-animated')
+          .addClass('bg-warning')
+          .text('Waiting...');
+      }
     },
 
     error(err) {

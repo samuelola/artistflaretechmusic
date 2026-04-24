@@ -635,15 +635,31 @@ $('#uploadAudiosBtn').on('click', function () {
     processData: false,
     contentType: false,
 
-   xhr: function () {
+    xhr: function () {
   const xhr = new window.XMLHttpRequest();
 
-  // Simple uploading state (no %)
+  let displayProgress = 5; // start instantly (no 0% delay)
+
+  // Set initial state
   $('#audioUploadProgress')
-    .css('width', '100%')
-    .removeClass('bg-success bg-danger bg-warning')
-    .addClass('progress-bar-striped progress-bar-animated')
-    .text('Uploading audio files...');
+    .css('width', '5%')
+    .text('Starting...');
+
+  xhr.upload.addEventListener('progress', function (evt) {
+    if (evt.lengthComputable) {
+
+      const realProgress = (evt.loaded / evt.total) * 100;
+
+      // Smooth easing toward real progress
+      displayProgress += (realProgress - displayProgress) * 0.2;
+
+      const percent = Math.min(99, Math.round(displayProgress));
+
+      $('#audioUploadProgress')
+        .css('width', percent + '%')
+        .text(percent + '% Uploading...');
+    }
+  }, false);
 
   return xhr;
 },
@@ -666,8 +682,6 @@ $('#uploadAudiosBtn').on('click', function () {
             // STEP 2: show processing state
             $('#audioUploadProgress')
             .css('width', '100%')
-            .removeClass('bg-success bg-danger')
-            .addClass('progress-bar-striped progress-bar-animated')
             .text('Processing audio...');
 
             let dots = 0;

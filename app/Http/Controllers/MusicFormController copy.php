@@ -16,10 +16,50 @@ use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use App\Jobs\ProcessAudioUpload;
+use App\Jobs\ProcessAudioUpdate;
+use App\Jobs\ProcessAudioUpdateMetadata;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
+use App\Services\YouTubeService;
+use App\Models\Verification;
+
 
 
 class MusicFormController extends Controller
 {
+
+    function getYoutubeVideoId($url){
+    preg_match(
+        '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i',
+        $url,
+        $matches
+        );
+
+        return $matches[1] ?? null;
+    }
+
+    public function youtubeValidation (Request $request,YouTubeService $youtube){
+        
+         $videoId = $this->getYoutubeVideoId($request->youtube_url);
+         if (!$videoId) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Invalid YouTube URL',
+            ]);
+        }
+
+        $result = $youtube->validateVideo($videoId);     
+        if (!isset($result['valid'])) {
+            $result['valid'] = true; // fallback if $youtube->validateVideo returns just details
+        }
+
+
+        return response()->json($result);
+    }
+
+
     // Show create form (stepper)
     public function showStep()
     {
@@ -31,7 +71,9 @@ class MusicFormController extends Controller
                     ->first();
         $r_outlets = DB::table('outlets')->select('status')->first(); 
         $languages = DB::table('languages')->select('name')->get();
-        $genres = DB::table('genres')->get();  
+        $genres = DB::table('genres')->get(); 
+        $getBanks = DB::table('banks')->get();
+        $rels = json_decode($getBanks); 
                  
         return view('dashboard.pages.music_form', compact(
             'musical_roles',
@@ -40,9 +82,101 @@ class MusicFormController extends Controller
             'subcount',
             'r_outlets',
             'languages',
-            'genres'
+            'genres',
+            'rels'
         ));
     }
+
+
+    // start verification 
+
+   public function verification(Request $request)
+    {
+        $request->validate([
+            'music_release_id' => 'required|integer',
+            'official_id' => 'required',
+            'account_number' => 'required',
+            'bank' => 'required',
+            'account_name' => 'required',
+            'social_media_handles' => 'required|array',
+            'video_links' => 'required|url'
+        ]);
+
+        $release = MusicRelease::findOrFail($request->music_release_id);
+
+        $verification = Verification::where('music_release_id', $release->id)->first();
+
+        // Conditional validation for upload_doc
+        if (!$verification || !$verification->id_document) {
+            $request->validate([
+                'upload_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240'
+            ]);
+        } else {
+            $request->validate([
+                'upload_doc' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240'
+            ]);
+        }
+
+        //Keep old document by default
+        $docPath = $verification?->id_document;
+
+        // Handle new upload
+        if ($request->hasFile('upload_doc')) {
+
+            // Delete old document remotely
+            if ($verification && $verification->id_document) {
+                Http::withHeaders([
+                    'X-APP-A-KEY' => env('APP_A_API_KEY'),
+                ])->delete(
+                    config('app.website_storage_link') . "/api/delete_verification",
+                    ['upload_doc' => $verification->id_document]
+                );
+            }
+
+            $imageFile = $request->file('upload_doc');
+
+            $response = Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+            ])->attach(
+                'upload_doc',
+                file_get_contents($imageFile->getRealPath()),
+                $imageFile->getClientOriginalName()
+            )->post(config('app.website_storage_link') . "/api/upload_verification");
+
+            if ($response->failed()) {
+                return response()->json(['status' => 'error', 'message' => 'Upload failed'], 500);
+            }
+
+            $data = $response->json();
+            $docPath = $data['path']; //overwrite only when new upload exists
+        }
+
+        $get_bank = DB::table('banks')->where('code', $request->bank)->first();
+
+        //UPDATE OR CREATE (single verification per release)
+        $verification = Verification::updateOrCreate(
+            ['music_release_id' => $release->id],
+            [
+                'official_id' => $request->official_id,
+                'id_document' => $docPath,
+                'account_number' => $request->account_number,
+                'bank_code' => $request->bank,
+                'bank_name' => $get_bank->name ?? null,
+                'account_name' => $request->account_name,
+                'social_media_handles' => json_encode($request->social_media_handles),
+                'video_link' => $request->video_links,
+            ]
+        );
+
+        return response()->json([
+            'status' => 'ok',
+            'music_release_id' => $release->id,
+        ]);
+    }
+
+
+    // end verification
+    
 
     // AJAX save step
     public function ajaxSaveStep(Request $request)
@@ -56,7 +190,8 @@ class MusicFormController extends Controller
             // Create a new release and auto-generate EAN
             $release = MusicRelease::create([
                 'title' => $fields['title'] ?? 'Untitled Release',
-                'stereo_code' => $this->generateEANCode(), //generate EAN here
+                'stereo_code' => 'NULL', //generate EAN here
+                // 'stereo_code' => $this->generateEANCode(),
             ]);
             
         }
@@ -90,63 +225,75 @@ class MusicFormController extends Controller
         ]);
     }
 
+
+    
+
     // Upload audio files
-    public function uploadAudio(Request $request)
-    {
-        $request->validate([
-            'music_release_id' => 'nullable|integer',
-            'audios.*' => 'required|mimes:mp3,wav,aac,m4a,flac,ogg|max:40960'
-        ]);
+    public function uploadAudio(Request $request){
+    $request->validate([
+        'music_release_id' => 'nullable|integer',
+        'audios.*' => 'required|mimes:mp3,wav,aac,m4a,flac,ogg|max:40960'
+    ]);
 
-        $durations = json_decode($request->input('durations','{}'), true) ?: [];
+    $durations = json_decode($request->input('durations','{}'), true) ?: [];
 
-        $release = $request->music_release_id 
-            ? MusicRelease::find($request->music_release_id)
-            : MusicRelease::create(['title' => 'Untitled Release']);
+    $release = $request->music_release_id
+        ? MusicRelease::find($request->music_release_id)
+        : MusicRelease::create(['title' => 'Untitled Release']);    
 
-        if (!$request->hasFile('audios')) {
-            return response()->json(['status'=>'error','message'=>'No audio files uploaded'],422);
-        }
-
-        $saved = [];
-        foreach ($request->file('audios') as $file) {
-
-            $filename = $file->getClientOriginalName();
-            //$path = $file->store('audios','public');
-            $uniqueName = Str::uuid()->toString() . '.' . $filename;
-
-            // Store file using the unique name
-            $path = $file->storeAs('audios', $uniqueName, 'public');
-
-            $audio = AudioFile::create([
-                'music_release_id' => $release->id,
-                'filename' => $filename,
-                'path' => $path,
-                'duration_ms' => $durations[$filename] ?? null
-            ]);
-
-            $isrc = $this->generateIsrcForTrack($release);
-
-            $track = Track::create([
-                'music_release_id' => $release->id,
-                'audio_file_id' => $audio->id,
-                'title' => pathinfo($filename, PATHINFO_FILENAME),
-                'duration_ms' => $audio->duration_ms,
-                'isrc' => $isrc
-            ]);
-
-            $saved[] = [
-                'audio_id' => $audio->id,
-                'track_id' => $track->id,
-                'filename' => $audio->filename,
-                'duration_ms' => $audio->duration_ms,
-                'isrc' => $isrc,
-                'audio_url' => Storage::url($audio->path)
-            ];
-        }
-
-        return response()->json(['status'=>'ok','music_release_id'=>$release->id,'files'=>$saved]);
+    if (!$request->hasFile('audios')) {
+        return response()->json(['status' => 'error', 'message' => 'No audio files uploaded'], 422);
     }
+
+   
+        // Create a unique cache key for polling
+        $cacheKey = 'audio_upload_' . Str::uuid();
+
+         // Store uploaded files temporarily
+        $files = [];
+        foreach ($request->file('audios') as $file) {
+        $tempName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        // Store locally so it persists until job runs
+        $storedPath = $file->storeAs('temp_audios', $tempName, 'local');
+        $absolutePath = Storage::disk('local')->path($storedPath);
+
+        // Log path for debugging
+        \Log::info('Stored temp file at: ' . $absolutePath);
+
+        // Verify existence immediately
+        if (!file_exists($absolutePath)) {
+            \Log::warning('Temp file not found right after storing: ' . $absolutePath);
+        }
+
+
+        $files[] = [
+            'original_name' => $file->getClientOriginalName(),
+            'real_path' => $absolutePath,
+            'extension' => $file->getClientOriginalExtension(),
+        ];
+       }
+
+
+        // Dispatch job with paths, not file objects
+        dispatch(new ProcessAudioUpload($release->id, $durations, $files, $cacheKey));
+
+        return response()->json([
+            'status' => 'processing',
+            'cache_key' => $cacheKey,
+            'music_release_id' => $release->id,
+        ]);
+    }
+
+    public function audioUploadStatus($cacheKey){
+        $result = Cache::get($cacheKey);
+        if (!$result) {
+            return response()->json(['status' => 'processing']);
+        }
+
+        return response()->json($result);
+    }
+
+    
 
     private function generateIsrcForTrack(MusicRelease $release)
     {
@@ -193,10 +340,12 @@ class MusicFormController extends Controller
 
     // Save tracks including participants
     public function saveTrackDetails(Request $request){
+        
     $payload = $request->validate([
         'music_release_id' => 'required|integer|exists:music_releases,id',
         'tracks' => 'required|array',
         'tracks.*.id' => 'nullable|integer|exists:tracks,id',
+        'tracks.*.title' => 'required|string|max:255',
         'tracks.*.artist' => 'required|string|max:255',
         'tracks.*.feature_artist' => 'required|string|max:255',
         'tracks.*.iswc' => 'nullable|string|max:255',
@@ -227,7 +376,7 @@ class MusicFormController extends Controller
         }
 
         $track->fill([
-            //'title' => $t['title'] ?? $track->title,
+            'title' => $t['title'] ?? $track->title,
             'artist' => $t['artist'] ?? $track->artist,
             'feature_artist' => $t['feature_artist'] ?? $track->feature_artist,
             'iswc' => $t['iswc'] ?? $track->iswc,
@@ -285,40 +434,81 @@ class MusicFormController extends Controller
         $img = Image::read($imageFile->getPathname());
         $width = $img->width();
         $height = $img->height();
-        // if ($width !== $height) {
-        //     return response()->json([
-        //         'status' => 'error',
-        //         'errors' => ['artwork_image' => ['Image must be square (equal width and height).']]
-        //     ], 422);
-        // }
+        if ($width !== $height) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => ['artwork_image' => ['Image must be square (equal width and height).']]
+            ], 422);
+        }
 
-        // if ($width < 1400 || $width > 4000) {
-        //     return response()->json([
-        //         'status' => 'error',
-        //         'errors' => ['artwork_image' => ['Image dimensions must be between 1400x1400 and 4000x4000 pixels.']]
-        //     ], 422);
-        // }
+        if ($width < 1400 || $width > 4000) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => ['artwork_image' => ['Image dimensions must be between 1400x1400 and 4000x4000 pixels.']]
+            ], 422);
+        }
 
         if ($request->hasFile('artwork')) {
 
-             // delete old
+            // --- Delete old artwork (ask App B) ---
             $old = $release->artworks()->first();
-            if ($old && Storage::disk('public')->exists($old->path)) {
-                Storage::disk('public')->delete($old->path);
-            }
-            $old?->delete();
 
-            $path = $imageFile->storeAs('artworks', time().'.'.$imageFile->extension());
+            // $tokken = Session::get('tokken');
+             
+            if ($old) {
+                Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+                    ])
+                  ->delete(config('app.website_storage_link')."/api/delete_artwork", [
+                  'path' => $old->path
+                ]);
+
+                $old?->delete();
+            }
+
+            // $response = Http::attach(
+            //     'artwork',
+            //     file_get_contents($imageFile->getRealPath()),
+            //     $imageFile->getClientOriginalName()
+            // )->post("http://flarestorage.test/api/upload_artworks");
+
+            $response = Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+                    ])
+                        ->attach(
+                            'artwork',
+                            file_get_contents($imageFile->getRealPath()),
+                            $imageFile->getClientOriginalName()
+                        )->post(config('app.website_storage_link')."/api/upload_artworks");
+
+                  
+            if ($response->failed()) {
+                return response()->json(['status' => 'error', 'message' => 'Upload failed'], 500);
+            }
+            
+            $data = $response->json();
+            
+            // --- Create new record in App A ---
 
             $art = Artwork::create([
-                'music_release_id'=>$release->id,
-                'path'=>$path,
-                'mime'=>$request->file('artwork')->getMimeType()
+                'music_release_id' => $release->id,
+                'path' => $data['path'],
+                'mime' => $imageFile->getMimeType(),
             ]);
+
         }
         
 
-        return response()->json(['status'=>'ok','artwork'=>['id'=>$art->id,'url'=>Storage::url($path)]]);
+        // --- Return unified response ---
+        return response()->json([
+            'status' => 'ok',
+            'artwork' => [
+                'id' => $art->id,
+                //'url' => $data['url'],
+                'url' => env('R2_PUBLIC_URL') . '/' . ltrim($art->path, '/'),
+                
+            ]
+        ]);
     }
 
 
@@ -346,7 +536,11 @@ class MusicFormController extends Controller
             ]);
         }
 
-        return response()->json(['status' => 'ok']);
+        return response()->json([
+            'status' => 'ok',
+            'music_release_id' => $release->id,
+            ]
+        );
     }
 
     // Final submission: validates all steps are complete
@@ -386,7 +580,7 @@ class MusicFormController extends Controller
         foreach ($release->tracks as $track) {
             if (empty($track->title))       $missing[] = "Track {$track->title} title";
             if (empty($track->duration_ms)) $missing[] = "Track {$track->title} duration";
-            if (empty($track->isrc))        $missing[] = "Track {$track->title} ISRC";
+            // if (empty($track->isrc))        $missing[] = "Track {$track->title} ISRC";
 
             //Check for missing audio file
             if (!$track->audioFile) {
@@ -457,7 +651,7 @@ class MusicFormController extends Controller
 
     $draft = MusicRelease::where('user_id', auth()->id())
         ->where('status', '!=', 'submitted')
-        ->with(['artworks', 'tracks.participants', 'outlets', 'tracks.audioFile'])
+        ->with(['artworks', 'tracks.participants', 'outlets', 'tracks.audioFile','verification'])
         ->latest()
         ->first();
 
@@ -476,11 +670,39 @@ class MusicFormController extends Controller
         'label_name' => $draft->label_name,
         'release_date' => $draft->release_date,
 
+        
+
+        // === Verification ===
+        'verification' => $draft->verification
+            ? [
+                'exists' => true,
+                'official_id' => $draft->verification->official_id,
+                'id_document_url' => $draft->verification->id_document
+                    ? config('app.website_storage_url') . '/' . ltrim($draft->verification->id_document, '/')
+                    : null,
+                'account_number' => $draft->verification->account_number,
+                'bank_code' => $draft->verification->bank_code,
+                'account_name' => $draft->verification->account_name,
+                'social_media_handles' => json_decode($draft->verification->social_media_handles ?? '[]', true),
+                'video_link' => $draft->verification->video_link,
+            ]
+            : [
+                'exists' => false,
+                'official_id' => null,
+                'id_document_url' => null,
+                'account_number' => null,
+                'bank_code' => null,
+                'account_name' => null,
+                'social_media_handles' => [],
+                'video_link' => null,
+            ],
+
+
         // === Artworks ===
         'artworks' => $draft->artworks->map(function ($art) {
             return [
                 'id' => $art->id,
-                'url' => Storage::url($art->path),
+                'url' => config('app.website_storage_url') . '/' . ltrim($art->path, '/'),
             ];
         }),
 
@@ -489,11 +711,11 @@ class MusicFormController extends Controller
     $audioUrl = null;
     $missing = false;
 
-    if ($track->audioFile && Storage::exists($track->audioFile->path)) {
-        $audioUrl = Storage::url($track->audioFile->path);
-    } elseif ($track->audioFile) {
-        $missing = true;
-    }
+    // if ($track->audioFile && Storage::exists($track->audioFile->path)) {
+    //     $audioUrl = Storage::url($track->audioFile->path);
+    // } elseif ($track->audioFile) {
+    //     $missing = true;
+    // }
 
     return [
         'id' => $track->id,
@@ -518,7 +740,7 @@ class MusicFormController extends Controller
                 'missing' => $missing,
             ]
             : null,
-        'audio_url' => $audioUrl,
+        'audio_url' => config('app.website_storage_url') . '/' . ltrim($track->audioFile->path, '/'),
         'participants' => $track->participants->map(function ($p) {
             return [
                 'participant' => $p->participant,
@@ -552,7 +774,7 @@ class MusicFormController extends Controller
             'artworks', 
             'tracks.participants', 
             'outlets',
-            'audioFiles'
+            'audioFiles',
         ])->findOrFail($id);
 
           $genres = DB::table('genres')->get();
@@ -563,6 +785,8 @@ class MusicFormController extends Controller
           $subscription_limit = DB::table('subscription_limit')->select('the_number')->get();
           $musical_roles = DB::table('musical_roles')->select('name')->get();
           $stores = DB::table('music_stores')->select('id','name','release_date')->get();
+          $getBanks = DB::table('banks')->get();
+          $rels = json_decode($getBanks); 
         
         return view('dashboard.pages.edit_music_form', compact(
             'release', 
@@ -572,7 +796,8 @@ class MusicFormController extends Controller
             'languages',
             'subscription_limit',
             'musical_roles',
-            
+            'getBanks',
+            'rels'
         ));
     }
 
@@ -583,58 +808,86 @@ class MusicFormController extends Controller
             $release = MusicRelease::with([
                 'artworks',
                 'tracks.audioFile',
-                'outlets'
+                'outlets',
+                'verification'
             ])->findOrFail($id);
 
             // Format response
             $formatted = [
                 'id' => $release->id,
-                'title' => $release->title,
+                'title' => $release->title ?? '',
                 'plan' => $release->plan,
                 'release_type' => $release->release_type,
                 'stereo_type' => $release->stereo_type,
                 'stereo_code' => $release->stereo_code,
                 'label_name' => $release->label_name,
                 'release_date' => $release->release_date,
+                // === Verification ===
+        'verification' => $release->verification
+            ? [
+                'exists' => true,
+                'official_id' => $release->verification->official_id,
+                'id_document_url' => $release->verification->id_document
+                    ? config('app.website_storage_url') . '/' . ltrim($release->verification->id_document, '/')
+                    : null,
+                'account_number' => $release->verification->account_number,
+                'bank_code' => $release->verification->bank_code,
+                'account_name' => $release->verification->account_name,
+                'social_media_handles' => json_decode($release->verification->social_media_handles ?? '[]', true),
+                'video_link' => $release->verification->video_link,
+            ]
+            : [
+                'exists' => false,
+                'official_id' => null,
+                'id_document_url' => null,
+                'account_number' => null,
+                'bank_code' => null,
+                'account_name' => null,
+                'social_media_handles' => [],
+                'video_link' => null,
+            ],
+
             ];
+
+            
 
             /* --------------------------- Artwork section --------------------------- */
             $formatted['artworks'] = $release->artworks->map(function ($art) {
                 return [
-                    'id' => $art->id,
-                    'path' => $art->path,
-                    'url' => Storage::url($art->path),
+                    'id' => $art->id ?? '',
+                    'path' => $art->path ?? '',
+                    'url' => config('app.website_storage_url') . '/' . ltrim($art->path, '/') ?? '',
                 ];
             });
 
             /* ---------------------------- Tracks section --------------------------- */
             $formatted['tracks'] = $release->tracks->map(function ($track) {
                 return [
-                    'id' => $track->id,
-                    'title' => $track->title,
-                    'filename' => $track->filename,
-                    'duration_ms' => $track->duration_ms,
-                    'isrc' => $track->isrc,
-                    'artist' => $track->artist,
-                    'feature_artist' => $track->feature_artist,
-                    'iswc' => $track->iswc,
-                    'instrumental' => $track->instrumental,
-                    'language' => $track->language,
-                    'parental' => $track->parental,
-                    'lyrics' => $track->track_lyrics,
-                    'for' => $track->stream_type,
-                    'genre' => $track->genre,
+                    'id' => $track->id ?? '',
+                    'title' => $track->title ?? '',
+                    'filename' => $track->filename ?? '',
+                    'duration_ms' => $track->duration_ms ?? '',
+                    'isrc' => $track->isrc ?? '',
+                    'artist' => $track->artist ?? '',
+                    'feature_artist' => $track->feature_artist ?? '',
+                    'iswc' => $track->iswc ?? '',
+                    'instrumental' => $track->instrumental ?? '',
+                    'language' => $track->language ?? '',
+                    'parental' => $track->parental ?? '',
+                    'lyrics' => $track->track_lyrics ?? '',
+                    'for' => $track->stream_type ?? '',
+                    'genre' => $track->genre ?? '',
                     'participants' => json_decode($track->participants, true) ?? [],
-                    'audio_url' => $track->audioFile ? Storage::url($track->audioFile->path) : null,
+                    'audio_url' => $track->audioFile ? config('app.website_storage_url') . '/' . ltrim($track->audioFile->path, '/') : null,
                 ];
             });
 
             /* ---------------------------- Outlets section -------------------------- */
             $formatted['outlets'] = $release->outlets->map(function ($outlet) {
                 return [
-                    'id' => $outlet->id,
-                    'outlet_id' => $outlet->outlet_id,
-                    'outlet_release_date' => $outlet->outlet_release_date,
+                    'id' => $outlet->id ?? '',
+                    'outlet_id' => $outlet->outlet_id ?? '',
+                    'outlet_release_date' => $outlet->outlet_release_date ?? '',
                 ];
             });
 
@@ -683,16 +936,35 @@ class MusicFormController extends Controller
         if ($request->hasFile('artwork')) {
             // delete old
             $old = $release->artworks()->first();
-            if ($old && Storage::disk('public')->exists($old->path)) {
-                Storage::disk('public')->delete($old->path);
+            if ($old) {
+                Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+                    ])
+                  ->delete(config('app.website_storage_link')."/api/delete_artwork", [
+                  'path' => $old->path
+                ]);
             }
             $old?->delete();
 
             // save new
-            $path = $imageFile->storeAs('artworks', time().'.'.$imageFile->extension());
+            $response = Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+                    ])
+                  ->attach(
+                'artwork',
+                file_get_contents($imageFile->getRealPath()),
+                $imageFile->getClientOriginalName()
+            )->post(config('app.website_storage_link')."/api/upload_artworks");
+
+            if ($response->failed()) {
+                return response()->json(['status' => 'error', 'message' => 'Upload failed'], 500);
+            }
+            
+            $data = $response->json();
+
             $release->artworks()->create([
-                'path' => $path,
-                'mime'=>$request->file('artwork')->getMimeType()
+                'path' => $data['path'],
+                'mime'=>$imageFile->getMimeType()
             ]);
         }
 
@@ -700,16 +972,16 @@ class MusicFormController extends Controller
     }
 
 
-    public function updateAudio(Request $request, $id){
-
+    public function updateAudio(Request $request, $id)
+{
     $release = MusicRelease::findOrFail($id);
 
     $validator = Validator::make($request->all(), [
-        'audios.*' => 'required|file|mimes:mp3,wav,aac,m4a,flac,ogg|max:51200',
+        'audios.*' => 'nullable|file|mimes:mp3,wav,aac,m4a,flac,ogg|max:51200',
         'track_ids' => 'nullable|array',
         'track_ids.*' => 'nullable|integer|exists:tracks,id',
-        'is_update' => 'nullable', // new flag from frontend
-       
+        'is_update' => 'nullable',
+        'durations' => 'nullable',
     ]);
 
     if ($validator->fails()) {
@@ -719,152 +991,82 @@ class MusicFormController extends Controller
         ], 422);
     }
 
-    // --- Handle durations gracefully (string or array) ---
-    $durationsInput = $request->input('durations', []);
-    if (is_string($durationsInput)) {
-        $durations = json_decode($durationsInput, true) ?: [];
-    } elseif (is_array($durationsInput)) {
-        $durations = $durationsInput;
-    } else {
-        $durations = [];
-    }
-
-    $savedTracks = [];
     $isUpdate = filter_var($request->input('is_update'), FILTER_VALIDATE_BOOLEAN);
 
-    DB::transaction(function () use ($request, $release, $durations, &$savedTracks, $isUpdate) {
-        $audioFiles = $request->file('audios', []);
-        $trackIds = $request->input('track_ids', []);
+    $audioFiles = $request->file('audios', []);
+    $trackIdsInput = $request->input('track_ids', []);
+    $trackIds = is_string($trackIdsInput)
+    ? json_decode($trackIdsInput, true) ?? []
+    : (array) $trackIdsInput;
 
-        foreach ($audioFiles as $i => $file) {
-            if (!$file) continue;
+    // Normalize durations array
+    $durationsInput = $request->input('durations', []);
+    $durations = is_string($durationsInput)
+        ? json_decode($durationsInput, true) ?? []
+        : (array) $durationsInput;
 
-            $originalName = $file->getClientOriginalName();
-            $durationMs = $durations[$originalName] ?? $durations[$i] ?? null;
-            $trackId = $trackIds[$i] ?? null;
+    // Generate unique cacheKey for queue response
+    $cacheKey = Str::uuid()->toString();
+    Cache::put($cacheKey, ['status' => 'pending'], 600);
 
-            $uniqueName = Str::uuid()->toString() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('audios', $uniqueName, 'public');
+    // ────────────────────────────────────────────────
+    // 1️⃣ METADATA-ONLY UPDATE
+    // ────────────────────────────────────────────────
+    if (empty($audioFiles) && $isUpdate) {
+        dispatch(new ProcessAudioUpdateMetadata(
+            $release,
+            $trackIds,
+            $durations,
+            $cacheKey
+        ));
 
-            $track = null;
-            $audio = null;
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'Updating track metadata...',
+            'cacheKey' => $cacheKey
+        ]);
+    }
 
-            if ($isUpdate && $trackId) {
-                // --- CASE 1: Update existing track/audio ---
-                $track = Track::where('music_release_id', $release->id)->find($trackId);
-                if ($track) {
-                    // delete old file if exists
-                    if ($track->audioFile && Storage::disk('public')->exists($track->audioFile->path)) {
-                        Storage::disk('public')->delete($track->audioFile->path);
-                    }
+    // ────────────────────────────────────────────────
+    // 2️⃣ USER TRIED TO UPLOAD NOTHING (INVALID)
+    // ────────────────────────────────────────────────
+    if (empty($audioFiles)) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Please upload at least one audio file.'
+        ], 422);
+    }
 
-                    // update existing or create new audio file
-                    $audio = $track->audioFile;
-                    if ($audio) {
-                        $audio->update([
-                            'filename' => $originalName,
-                            'path' => $path,
-                            'duration_ms' => $durationMs,
-                        ]);
-                    } else {
-                        $audio = $track->audioFile()->create([
-                            'music_release_id' => $release->id,
-                            'filename' => $originalName,
-                            'path' => $path,
-                            'duration_ms' => $durationMs,
-                        ]);
-                    }
+    // ────────────────────────────────────────────────
+    // 3️⃣ SAVE TEMP FILES FOR BACKGROUND JOB
+    // ────────────────────────────────────────────────
+    $tempFiles = [];
 
-                    $track->update([
-                        'duration_ms' => $durationMs,
-                        'audio_file_id' => $audio->id,
-                    ]);
-                }
-            } else {
-                // --- CASE 2: Prevent duplicate insert ---
-                $existingTrack = $release->tracks()
-                    ->where('title', pathinfo($originalName, PATHINFO_FILENAME))
-                    ->first();
+    foreach ($audioFiles as $i => $file) {
+        $tmpName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $tmpPath = $file->storeAs('temp_audios', $tmpName, 'local');
+        $absolutePath = Storage::disk('local')->path($tmpPath);
 
-                if ($existingTrack) {
-                    // update duration and replace audio
-                    $track = $existingTrack;
-                    if ($track->audioFile && Storage::disk('public')->exists($track->audioFile->path)) {
-                        Storage::disk('public')->delete($track->audioFile->path);
-                    }
+        $tempFiles[] = [
+            'tmp_path' => $absolutePath,
+            'original_name' => $file->getClientOriginalName(),
+            'duration_ms' => $durations[$file->getClientOriginalName()] ?? null,
+            'track_id' => $trackIds[$i] ?? null,
+        ];
+    }
 
-                    $audio = $track->audioFile;
-                    if ($audio) {
-                        $audio->update([
-                            'filename' => $originalName,
-                            'path' => $path,
-                            'duration_ms' => $durationMs,
-                        ]);
-                    } else {
-                        $audio = $track->audioFile()->create([
-                            'music_release_id' => $release->id,
-                            'filename' => $originalName,
-                            'path' => $path,
-                            'duration_ms' => $durationMs,
-                        ]);
-                    }
-
-                    $track->update([
-                        'duration_ms' => $durationMs,
-                        'audio_file_id' => $audio->id,
-                    ]);
-                } else {
-                    // --- CASE 3: Fresh new track ---
-                    $audio = $release->audioFiles()->create([
-                        'filename' => $originalName,
-                        'path' => $path,
-                        'duration_ms' => $durationMs,
-                    ]);
-
-                    $isrc = $this->generateIsrcForTrack($release);
-
-                    $track = $release->tracks()->create([
-                        'title' => pathinfo($originalName, PATHINFO_FILENAME),
-                        'duration_ms' => $durationMs,
-                        'audio_file_id' => $audio->id,
-                        'isrc' => $isrc,
-                    ]);
-                }
-            }
-
-            $savedTracks[] = [
-                'track_id' => $track->id,
-                'filename' => $audio->filename,
-                'title' => $track->title,
-                'duration_ms' => $track->duration_ms,
-                'isrc' => $track->isrc,
-                'artist' => $track->artist ?? '',
-                'feature_artist' => $track->feature_artist ?? '',
-                'iswc' => $track->iswc ?? '',
-                'instrumental' => $track->instrumental ?? '',
-                'language' => $track->language ?? '',
-                'parental' => $track->parental ?? '',
-                'lyrics' => $track->track_lyrics ?? '',
-                'for' => json_decode($track->stream_type ?? '[]', true),
-                'genre' => json_decode($track->genre ?? '[]', true),
-                'participants' => $track->participants->map(function ($p) {
-                    return [
-                        'participant' => $p->participant,
-                        'role' => json_decode($p->role ?? '[]', true),
-                        'payout' => $p->payout,
-                    ];
-                }),
-                'audio_url' => Storage::url($audio->path),
-            ];
-        }
-    });
+    // Dispatch update job
+    dispatch(new ProcessAudioUpdate(
+        $release,
+        $tempFiles,
+        $isUpdate,
+        $cacheKey
+    ));
 
     return response()->json([
         'status' => 'ok',
-        'message' => $isUpdate
-            ? 'Audio tracks updated successfully.'
-            : 'Audio uploaded successfully.',
-        'tracks' => $savedTracks,
+        'message' => 'Audio upload is being processed...',
+        'cacheKey' => $cacheKey
     ]);
 }
 
@@ -872,10 +1074,27 @@ class MusicFormController extends Controller
 
 
 
-   public function updateTracks(Request $request, $id){
+    public function checkAudioStatus($cacheKey){
+        $data = Cache::get($cacheKey);
+        if (!$data) {
+        return response()->json([
+            'status' => 'pending',
+            'message' => 'Processing...'
+        ]);
+      }
+
+       return response()->json($data);
+  }
+
+
+
+   
+
+   public function updateTracks(Request $request, $id)
+{
     $release = MusicRelease::with('tracks.participants')->findOrFail($id);
 
-    // Validate - track_id can be null (new track), other fields required by your UI
+    // Validate incoming data
     $validated = $request->validate([
         'tracks' => 'required|array|min:1',
         'tracks.*.track_id' => 'nullable|integer|exists:tracks,id',
@@ -894,8 +1113,52 @@ class MusicFormController extends Controller
         'tracks.*.participants' => 'nullable|array',
         'tracks.*.participants.*.participant' => 'nullable|string',
         'tracks.*.participants.*.roles' => 'nullable|array',
-        'tracks.*.participants.*.payout' => 'nullable',
+        'tracks.*.participants.*.payout' => 'nullable|numeric',
     ]);
+
+    $errors = [];
+
+    // Validate participants per track
+    foreach ($validated['tracks'] as $tIndex => $t) {
+        $participants = $t['participants'] ?? [];
+        $trackNumber = $tIndex + 1;
+
+        if (empty($participants)) {
+            $errors["tracks.{$tIndex}.participants"][] = "Track {$trackNumber}: At least one participant is required.";
+            continue;
+        }
+
+        $totalPayout = 0;
+        foreach ($participants as $pIndex => $p) {
+            $name = trim((string) ($p['participant'] ?? ''));
+            $roles = $p['roles'] ?? [];
+            $payout = $p['payout'] ?? null;
+
+            if ($name === '') {
+                $errors["tracks.{$tIndex}.participants.{$pIndex}.participant"][] = "Track {$trackNumber}, Participant " . ($pIndex+1) . ": Name is required.";
+            }
+            if (!is_array($roles) || count($roles) === 0) {
+                $errors["tracks.{$tIndex}.participants.{$pIndex}.roles"][] = "Track {$trackNumber}, Participant " . ($pIndex+1) . ": At least one role is required.";
+            }
+            if (!is_numeric($payout)) {
+                $errors["tracks.{$tIndex}.participants.{$pIndex}.payout"][] = "Track {$trackNumber}, Participant " . ($pIndex+1) . ": Payout must be numeric.";
+            } else {
+                $totalPayout += (float) $payout;
+            }
+        }
+
+        $totalPayout = round($totalPayout, 2);
+        if ($totalPayout !== 100.00) {
+            $errors["tracks.{$tIndex}.participants_total"][] = "Track {$trackNumber}: Participant payouts must sum to 100% (currently {$totalPayout}%).";
+        }
+    }
+
+    if (!empty($errors)) {
+        return response()->json([
+            'status' => 'error',
+            'errors' => $errors,
+        ], 422);
+    }
 
     $saved = [];
 
@@ -903,18 +1166,14 @@ class MusicFormController extends Controller
         foreach ($validated['tracks'] as $t) {
             $track = null;
 
-            // Try to find an existing track belonging to this release
+            // Update existing track if ID is provided
             if (!empty($t['track_id'])) {
                 $track = $release->tracks()->where('id', $t['track_id'])->first();
             }
 
-            // If not found, create a new track linked to this release
+            // Create new track if not found
             if (!$track) {
-                $isrc = $t['isrc'] ?? null;
-                if (empty($isrc)) {
-                    $isrc = $this->generateIsrcForTrack($release);
-                }
-
+                $isrc = $t['isrc'] ?? $this->generateIsrcForTrack($release);
                 $track = $release->tracks()->create([
                     'title' => $t['title'],
                     'artist' => $t['artist'],
@@ -926,11 +1185,11 @@ class MusicFormController extends Controller
                     'genre' => isset($t['genre']) ? json_encode($t['genre']) : json_encode([]),
                     'track_lyrics' => $t['lyrics'] ?? '',
                     'duration_ms' => $t['duration_ms'] ?? null,
-                    'isrc' => $isrc,
-                    'stream_type' => isset($t['stream_type']) ? json_encode($t['stream_type']) : $track->stream_type,
+                    // 'isrc' => $isrc,
+                    'isrc' => NULL,
+                    'stream_type' => isset($t['stream_type']) ? json_encode($t['stream_type']) : json_encode([]),
                 ]);
             } else {
-                // update existing
                 $track->update([
                     'title' => $t['title'],
                     'artist' => $t['artist'],
@@ -943,32 +1202,30 @@ class MusicFormController extends Controller
                     'stream_type' => isset($t['stream_type']) ? json_encode($t['stream_type']) : $track->stream_type,
                     'track_lyrics' => $t['lyrics'] ?? $track->track_lyrics,
                     'duration_ms' => isset($t['duration_ms']) 
-                    ? (is_numeric($t['duration_ms']) 
-                        ? $t['duration_ms'] 
-                        : $this->parseDurationString($t['duration_ms'])) 
-                    : $track->duration_ms,
-                    // do not overwrite isrc if already present unless explicitly provided
-                    'isrc' => $t['isrc'] ?? $track->isrc,
+                        ? (is_numeric($t['duration_ms']) 
+                            ? $t['duration_ms'] 
+                            : $this->parseDurationString($t['duration_ms'])) 
+                        : $track->duration_ms,
+                    // 'isrc' => $t['isrc'] ?? $track->isrc,
+                    'isrc' => NULL,
                 ]);
             }
 
-            // Participants: if provided, replace them; if not provided, leave existing participants alone
+            // Participants
             if (array_key_exists('participants', $t)) {
-                // remove existing participants
                 $track->participants()->delete();
 
-                if (is_array($t['participants']) && count($t['participants']) > 0) {
-                    foreach ($t['participants'] as $p) {
-                        if (empty($p['participant'])) continue;
-                        $roles = $p['roles'] ?? [];
-                        if (!is_array($roles)) $roles = [$roles];
+                foreach ($t['participants'] as $p) {
+                    if (empty(trim((string)($p['participant'] ?? '')))) continue;
 
-                        $track->participants()->create([
-                            'participant' => $p['participant'],
-                            'role' => json_encode($roles),
-                            'payout' => $p['payout'] ?? 0,
-                        ]);
-                    }
+                    $roles = $p['roles'] ?? [];
+                    if (!is_array($roles)) $roles = [$roles];
+
+                    $track->participants()->create([
+                        'participant' => $p['participant'],
+                        'role' => json_encode($roles),
+                        'payout' => $p['payout'] ?? 0,
+                    ]);
                 }
             }
 
@@ -977,7 +1234,8 @@ class MusicFormController extends Controller
                 'title' => $track->title,
                 'artist' => $track->artist,
                 'feature_artist' => $track->feature_artist,
-                'isrc' => $track->isrc,
+                // 'isrc' => $track->isrc,
+                'isrc' => NULL,
                 'duration_ms' => $track->duration_ms,
                 'lyrics' => $track->track_lyrics,
                 'genre' => json_decode($track->genre ?? '[]', true),
@@ -998,6 +1256,7 @@ class MusicFormController extends Controller
         'tracks' => $saved,
     ]);
 }
+
 
 
 
@@ -1025,6 +1284,96 @@ class MusicFormController extends Controller
         
     ]);
 }
+
+
+    
+
+    public function updateVerification(Request $request, $id)
+ {
+
+    $request->validate([
+        'official_id' => 'required',
+        'account_number' => 'required',
+        'bank' => 'required',
+        'account_name' => 'required',
+        'social_media_handles' => 'required|array',
+        'video_links' => 'required|url'
+    ]);
+
+     $release = MusicRelease::findOrFail($id);
+
+    // Get existing verification if any
+    $verification = Verification::where('music_release_id', $release->id)->first();
+
+    // Conditional validation for file upload
+    if (!$verification || !$verification->id_document) {
+        $request->validate([
+            'upload_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240'
+        ]);
+    } else {
+        $request->validate([
+            'upload_doc' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240'
+        ]);
+    }
+
+    // Keep old document path by default
+    $docPath = $verification?->id_document;
+
+    // Handle new upload
+    if ($request->hasFile('upload_doc')) {
+
+        // Delete old document remotely (do NOT delete row)
+        if ($verification && $verification->id_document) {
+            Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+            ])->delete(
+                config('app.website_storage_link') . "/api/delete_verification",
+                ['upload_doc' => $verification->id_document]
+            );
+        }
+
+        $imageFile = $request->file('upload_doc');
+
+        $response = Http::withHeaders([
+            'X-APP-A-KEY' => env('APP_A_API_KEY'),
+        ])->attach(
+            'upload_doc',
+            file_get_contents($imageFile->getRealPath()),
+            $imageFile->getClientOriginalName()
+        )->post(config('app.website_storage_link') . "/api/upload_verification");
+
+        if ($response->failed()) {
+            return response()->json(['status' => 'error', 'message' => 'Upload failed'], 500);
+        }
+
+        $data = $response->json();
+        $docPath = $data['path']; // overwrite only if new file exists
+    }
+
+    // Bank info
+    $get_bank = DB::table('banks')->where('code', $request->bank)->first();
+
+    //Update existing or create new
+    $verification = Verification::updateOrCreate(
+        ['music_release_id' => $release->id],
+        [
+            'official_id' => $request->official_id,
+            'id_document' => $docPath,
+            'account_number' => $request->account_number,
+            'bank_code' => $request->bank,
+            'bank_name' => $get_bank->name ?? null,
+            'account_name' => $request->account_name,
+            'social_media_handles' => json_encode($request->social_media_handles),
+            'video_link' => $request->video_links,
+        ]
+    );
+
+    return response()->json([
+        'status' => 'ok',
+        'music_release_id' => $release->id,
+    ]);
+}
+
 
 
    
@@ -1062,9 +1411,19 @@ protected function parseDurationString($duration)
 
     if ($track->audioFile) {
         // Delete physical file
-        if (Storage::disk('public')->exists($track->audioFile->path)) {
-            Storage::disk('public')->delete($track->audioFile->path);
-        }
+        // if (Storage::disk('public')->exists($track->audioFile->path)) {
+        //     Storage::disk('public')->delete($track->audioFile->path);
+        // }
+
+        Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+                    ])
+                  ->delete(config('app.website_storage_link')."/api/delete_all_audios", [
+                'path' => $track->audioFile->path
+            ]);
+
+        
+
 
         // Delete audio file record
         $track->audioFile->delete();
@@ -1100,9 +1459,18 @@ protected function parseDurationString($duration)
     DB::transaction(function () use ($release) {
         foreach ($release->tracks as $track) {
             // Delete audio file from storage
-            if ($track->audioFile && Storage::disk('public')->exists($track->audioFile->path)) {
-                Storage::disk('public')->delete($track->audioFile->path);
+            if ($track->audioFile) {
+                Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+                    ])
+                  ->delete(config('app.website_storage_link')."/api/delete_all_audios", [
+                  'path' => $track->audioFile->path
+                ]);
+
             }
+            // if ($track->audioFile && Storage::disk('public')->exists($track->audioFile->path)) {
+            //     Storage::disk('public')->delete($track->audioFile->path);
+            // }
 
             // Delete audio file record
             if ($track->audioFile) {
@@ -1148,16 +1516,21 @@ public function deleteAudioTrack(Request $request)
             $track->participants()->delete();
         }
 
-        // Delete the audio file from storage if it exists
-        if ($track->audio_file && Storage::exists($track->audio_file)) {
-            Storage::delete($track->audio_file);
-        }
+        if ($track->audioFile) {
+        // Delete physical file
+        // if (Storage::disk('public')->exists($track->audioFile->path)) {
+        //     Storage::disk('public')->delete($track->audioFile->path);
+        // }
+
+        Http::withHeaders([
+                'X-APP-A-KEY' => env('APP_A_API_KEY'),
+                    ])->delete(config('app.website_storage_link')."/api/delete_all_audios", [
+            'path' => $track->audioFile->path
+        ]);
 
         // Delete audio file record
-        if ($track->audioFile) {
-            $track->audioFile->delete();
+        $track->audioFile->delete();
         }
-
         // Delete the track itself
         $track->delete();
 
@@ -1171,6 +1544,8 @@ public function deleteAudioTrack(Request $request)
         ], 500);
     }
 }
+
+
 
 
 }

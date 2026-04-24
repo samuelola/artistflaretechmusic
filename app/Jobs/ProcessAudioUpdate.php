@@ -113,6 +113,7 @@ class ProcessAudioUpdate implements ShouldQueue
                     $track->update([
                         'duration_ms'   => $duration,
                         'audio_file_id' => $audio->id,
+                        
                     ]);
                 }
 

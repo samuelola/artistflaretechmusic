@@ -32,89 +32,108 @@ class ProcessAudioUpload implements ShouldQueue
         $this->cacheKey = $cacheKey;
     }
     
-    public function handle(): void
-    {
-       $release = MusicRelease::find($this->releaseId);
-       if (!$release) {
-            Cache::put($this->cacheKey, ['status' => 'error', 'message' => 'Release not found'], 600);
-            return;
-       }
+    
 
-       $baseUrl = config('app.website_storage_link');
-       \Log::info('Uploading audios to: ' . $baseUrl);
+public function handle(): void
+{
+    $release = MusicRelease::find($this->releaseId);
 
-       try {
-        
+    if (!$release) {
+        Cache::put($this->cacheKey, [
+            'status' => 'error',
+            'message' => 'Release not found'
+        ], 600);
+        return;
+    }
 
-           $request = Http::withHeaders([
-                'X-APP-A-KEY' => env('APP_A_API_KEY'),
-                    ])
-                  ->asMultipart();
-            foreach ($this->audioFiles as $i => $fileData) {
-                if (!file_exists($fileData['real_path'])) {
-                    \Log::warning('Missing file: ' . $fileData['real_path']);
-                    continue;
-                }
-                $request = $request->attach(
-                    "audios[{$i}]",
-                    file_get_contents($fileData['real_path']),
-                    $fileData['original_name']
-                );
+    $baseUrl = config('app.website_storage_link');
 
-                if (file_exists($fileData['real_path'])) {
-                   unlink($fileData['real_path']);
-                }
+    try {
+
+        $request = Http::withHeaders([
+            'X-APP-A-KEY' => env('APP_A_API_KEY'),
+        ])
+        ->timeout(300) // 5 minutes
+        ->connectTimeout(60)
+        ->asMultipart();
+
+        // Attach files
+        foreach ($this->audioFiles as $i => $fileData) {
+
+            if (!file_exists($fileData['real_path'])) {
+                \Log::warning('Missing file: ' . $fileData['real_path']);
+                continue;
             }
 
-          $response = $request->post($baseUrl . '/api/upload_audios');
-          if ($response->failed()) {
-            Cache::put($this->cacheKey, [
-                'status' => 'error',
-                'message' => 'Failed to upload files to storage service'
-            ], 600);
+            $request = $request->attach(
+                "audios[{$i}]",
+                file_get_contents($fileData['real_path']),
+                $fileData['original_name']
+            );
+        }
+
+        $response = $request->post($baseUrl . '/api/upload_audios');
+        
+
+        if ($response->failed()) {
+            $this->markAsFailed("Upload failed");
             return;
-          }
+        }
 
-            // if (file_exists($fileData['real_path'])) {
-            //     unlink($fileData['real_path']);
-            // }
+        $uploadedFiles = $response->json()['files'] ?? [];
 
-          $files = $response->json()['files'] ?? [];
-          $saved = [];
-        foreach ($files as $file) {
-            $originalName = $file['original_name'];
-            $path = $file['path'];
-            $url = $file['url'];
+        if (empty($uploadedFiles)) {
+            \Log::error('No files returned from storage API');
+            $this->markAsFailed('No files returned');
+            return;
+        }
 
-            $audio = AudioFile::create([
-                'music_release_id' => $release->id,
-                'filename' => $originalName,
-                'path' => $path,
-                'duration_ms' => $this->durations[$originalName] ?? null,
+        $saved = [];
+
+        foreach ($uploadedFiles as $i => $file) {
+
+            if (!isset($this->audioFiles[$i])) {
+                \Log::warning("Missing local file index: {$i}");
+                continue;
+            }
+
+            $localFile = $this->audioFiles[$i];
+
+            $audio = AudioFile::find($localFile['audio_id']);
+            $track = Track::find($localFile['track_id']);
+
+            if (!$audio || !$track) {
+                \Log::warning('Missing DB record', $localFile);
+                continue;
+            }
+
+            // UPDATE RECORDS
+            $audio->update([
+                'path' => $file['path'],
+                'status' => 'completed'
             ]);
 
-            $isrc = $this->generateIsrcForTrack($release);
-
-            $track = Track::create([
-                'music_release_id' => $release->id,
-                'audio_file_id' => $audio->id,
-                'title' => pathinfo($originalName, PATHINFO_FILENAME),
-                'duration_ms' => $audio->duration_ms,
-                // 'isrc' => $isrc,
-                'isrc' => NULL,
+            $track->update([
+                'status' => 'completed',
+                'audio_file_id' => $audio->id
             ]);
+
+            // DELETE TEMP FILE
+            if (file_exists($localFile['real_path'])) {
+                unlink($localFile['real_path']);
+            }
 
             $saved[] = [
                 'audio_id' => $audio->id,
                 'track_id' => $track->id,
-                'filename' => $originalName,
+                'filename' => $localFile['original_name'], // FIXED
                 'duration_ms' => $audio->duration_ms,
-                //'isrc' => $isrc,
-                'isrc' => NULL,
-                //'audio_url' => config('app.website_storage_link').$url ,
-                'audio_url' => config('app.website_storage_link'). '/storage/' . ltrim($track->audioFile->path, '/') ,
+                'status' => 'completed',
+                'audio_url' => env('R2_PUBLIC_URL') . '/' . ltrim($audio->path, '/'),
             ];
         }
+
+        
 
         Cache::put($this->cacheKey, [
             'status' => 'ok',
@@ -122,14 +141,29 @@ class ProcessAudioUpload implements ShouldQueue
             'files' => $saved
         ], 600);
 
-       }
-       catch (\Exception $e) {
-            \Log::error('Audio upload batch failed: ' . $e->getMessage());
-            Cache::put($this->cacheKey, [
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 600);
-       }
+    } catch (\Exception $e) {
+
+        \Log::error('Upload failed: ' . $e->getMessage());
+        $this->markAsFailed($e->getMessage());
+    }
+}
+
+
+    protected function markAsFailed($message)
+    {
+        foreach ($this->audioFiles as $file) {
+
+            AudioFile::where('id', $file['audio_id'])
+                ->update(['status' => 'failed']);
+
+            Track::where('id', $file['track_id'])
+                ->update(['status' => 'failed']);
+        }
+
+        Cache::put($this->cacheKey, [
+            'status' => 'error',
+            'message' => $message
+        ], 600);
     }
 
 
